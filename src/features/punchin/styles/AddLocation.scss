@@ -1,0 +1,238 @@
+.add-location-container {
+    // max-width: 400px;
+    margin: 40px auto;
+    padding: 24px;
+    // border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+
+
+
+    .set-loc-text {
+        padding-bottom: 12px;
+
+        .set-cus-name {
+            color: #0d7fff;
+        }
+    }
+
+
+
+    .add-location {
+        border-left: 4px solid #dc2929;
+        background-color: #fde8e8;
+        padding: 12px 4px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+        .location-warning {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+
+            .icon {
+                flex-shrink: 0;
+                height: 40px;
+                width: 40px;
+                color: #dc2929;
+            }
+
+            .message {
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+                line-height: 1.4;
+                color: #4a1d1d;
+
+                .title {
+                    margin: 0 0 4px;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    color: #b91c1c;
+                }
+
+                .description {
+                    margin: 0;
+                    font-size: 0.875rem;
+                    color: #6b1818;
+                }
+            }
+        }
+    }
+
+    .location-available- {
+        border-left: 4px solid #1e9e42;
+        background-color: #e8fdea;
+        padding: 12px 4px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        margin-top: 1rem;
+
+        .location-success {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+
+            .icon {
+                flex-shrink: 0;
+                height: 40px;
+                width: 40px;
+                color: #1e9e42;
+            }
+
+            .message {
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                    Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+                    sans-serif;
+                line-height: 1.4;
+                color: #1d4a29;
+
+                .title {
+                    margin: 0 0 4px;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    color: #0f7a2a;
+                }
+
+                .description {
+                    margin: 0;
+                    font-size: 0.875rem;
+                    color: #145c1e;
+                }
+            }
+        }
+    }
+
+
+    .fetch-current {
+        margin-top: 20px;
+        border-radius: 8px;
+        border: 1px solid rgb(231, 219, 219);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0px 6px 9px rgba(0, 0, 0, 0.3);
+        gap: 8px;
+
+        .geo-loc-label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+
+            .icon-geo {
+                color: #0d7fff;
+                flex-shrink: 0;
+                height: 24px;
+                width: 24px;
+            }
+        }
+
+
+        .map {
+            min-height: 200px;
+            background-color: rgb(207, 202, 202);
+            border-radius: 8px;
+        }
+
+        .fetch-current-btn {
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            background: #0d7fff;
+            color: #fff;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+
+            .icon {
+                flex-shrink: 0;
+                height: 24px;
+                width: 24px;
+                // color: #fff;
+            }
+
+        }
+
+        .coordinates {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            // max-width: 400px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+            .coordinate {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                min-width: 150px;
+
+                label {
+                    font-weight: 600;
+                    margin-bottom: 0.25rem;
+                    color: #333;
+                }
+
+                input {
+                    padding: 0.5rem;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    font-size: 0.9rem;
+                    transition: border-color 0.2s ease;
+
+                    &:focus {
+                        border-color: #007bff;
+                        outline: none;
+                    }
+                }
+            }
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            // margin-top: 1rem;
+
+            .btn {
+                padding: 0.6rem 1.2rem;
+                border-radius: 6px;
+                font-size: 0.95rem;
+                font-weight: 600;
+                cursor: pointer;
+                border: none;
+                transition: background-color 0.2s ease, transform 0.1s ease;
+
+                &:active {
+                    transform: scale(0.97);
+                }
+
+                &.cancel {
+                    background-color: #e0e0e0;
+                    color: #333;
+
+                    &:hover {
+                        background-color: #d5d5d5;
+                    }
+                }
+
+                &.save {
+                    background-color: #007bff;
+                    color: white;
+
+                    &:hover {
+                        background-color: #0069d9;
+                    }
+                }
+            }
+        }
+
+    }
+
+
+
+}

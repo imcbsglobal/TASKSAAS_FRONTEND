@@ -1,0 +1,1236 @@
+// Area Assignment View Page Styles
+// Responsive design with mobile-first approach
+
+// Import shared variables (or define them here)
+$primary-color: #3b82f6;
+$primary-hover: #2563eb;
+$primary-light: #eff6ff;
+$secondary-color: #64748b;
+$success-color: #10b981;
+$danger-color: #ef4444;
+$warning-color: #f59e0b;
+$info-color: #06b6d4;
+
+$bg-color: #f8fafc;
+$card-bg: #ffffff;
+$border-color: #e2e8f0;
+$text-primary: #1e293b;
+$text-secondary: #64748b;
+$text-muted: #94a3b8;
+
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+$border-radius-sm: 0.375rem;
+$border-radius-md: 0.5rem;
+$border-radius-lg: 0.75rem;
+
+// Breakpoints
+$mobile: 576px;
+$tablet: 768px;
+$desktop: 992px;
+$large: 1200px;
+
+// Mixins
+@mixin respond-to($breakpoint) {
+    @if $breakpoint == mobile {
+        @media (max-width: #{$mobile - 1}) {
+            @content;
+        }
+    } @else if $breakpoint == tablet-up {
+        @media (min-width: $tablet) {
+            @content;
+        }
+    } @else if $breakpoint == desktop {
+        @media (min-width: $desktop) {
+            @content;
+        }
+    } @else if $breakpoint == large {
+        @media (min-width: $large) {
+            @content;
+        }
+    }
+}
+
+@mixin card-style {
+    background: $card-bg;
+    border-radius: $border-radius-lg;
+    box-shadow: $shadow-md;
+    border: 1px solid $border-color;
+}
+
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+// ===========================
+// Main Container
+// ===========================
+
+.all-body {
+    min-height: 100vh;
+}
+
+.area-assign-view-page {
+    padding: 12px;
+    
+    @include respond-to(tablet-up) {
+        padding: 16px;
+    }
+
+    @include respond-to(desktop) {
+        padding: 20px;
+    }
+}
+
+.area-assign-view {
+    background: $bg-color;
+    color: $text-primary;
+
+    // ===========================
+    // Header
+    // ===========================
+
+    &__header {
+        margin-bottom: 16px;
+        background: white;
+        padding: 16px 12px;
+        border-radius: $border-radius-lg;
+        box-shadow: $shadow-md;
+        border: 1px solid $border-color;
+
+        @include respond-to(desktop) {
+            margin-bottom: 20px;
+            padding: 20px 16px;
+        }
+
+        .header-top {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            @include respond-to(tablet-up) {
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: space-between;
+            }
+
+            .header-tit {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .header-actions {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+
+                @include respond-to(mobile) {
+                    width: 100%;
+                    
+                    button {
+                        flex: 1;
+                    }
+                }
+            }
+        }
+    }
+
+    &__title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: $text-primary;
+        margin: 0 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        line-height: 1.3;
+
+        @include respond-to(tablet-up) {
+            font-size: 1.3rem;
+        }
+
+        @include respond-to(desktop) {
+            font-size: 1.5rem;
+        }
+
+        i {
+            color: $primary-color;
+            font-size: 1rem;
+
+            @include respond-to(tablet-up) {
+                font-size: 1.2rem;
+            }
+        }
+    }
+
+    &__subtitle {
+        font-size: 0.8rem;
+        color: $text-secondary;
+        margin: 0;
+        line-height: 1.4;
+
+        @include respond-to(tablet-up) {
+            font-size: 0.85rem;
+        }
+
+        @include respond-to(desktop) {
+            font-size: 0.9rem;
+        }
+    }
+
+    // Button styles in header
+    .btn-back,
+    .btn-primary {
+        border: none;
+        border-radius: $border-radius-md;
+        padding: 10px 16px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        box-shadow: $shadow-sm;
+
+        &:active {
+            transform: translateY(1px);
+        }
+
+        i {
+            font-size: 1rem;
+        }
+
+        @include respond-to(tablet-up) {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+        }
+    }
+
+    .btn-back {
+        background: white;
+        color: $text-primary;
+        border: 1px solid $border-color;
+
+        &:hover {
+            background: $bg-color;
+            border-color: darken($border-color, 5%);
+        }
+    }
+
+    .btn-primary {
+        background: $primary-color;
+        color: white;
+
+        &:hover {
+            background: $primary-hover;
+            box-shadow: $shadow-md;
+        }
+    }
+
+    // ===========================
+    // Content Layout
+    // ===========================
+
+    &__content {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+
+        @include respond-to(desktop) {
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+        }
+
+        @include respond-to(large) {
+            grid-template-columns: 380px 1fr;
+        }
+    }
+
+    // ===========================
+    // Sidebar
+    // ===========================
+
+    &__sidebar {
+        @include respond-to(mobile) {
+            max-height: 400px;
+        }
+    }
+
+    // ===========================
+    // Main Content
+    // ===========================
+
+    &__main {
+        min-height: 600px;
+    }
+}
+
+// ===========================
+// Header Top
+// ===========================
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    @include respond-to(mobile) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    &__left {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        flex: 1;
+    }
+}
+
+// ===========================
+// Sidebar Panel
+// ===========================
+
+.sidebar-panel {
+    @include card-style;
+    max-height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+
+    @include respond-to(mobile) {
+        max-height: 400px;
+    }
+}
+
+// ===========================
+// User Info Banner
+// ===========================
+
+.user-info-banner {
+    @include card-style;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, $primary-light 0%, white 100%);
+
+    @include respond-to(mobile) {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    &__avatar {
+        @include flex-center;
+        width: 5rem;
+        height: 5rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 600;
+        flex-shrink: 0;
+        box-shadow: $shadow-lg;
+
+        @include respond-to(mobile) {
+            width: 4rem;
+            height: 4rem;
+            font-size: 2rem;
+        }
+    }
+
+    &__details {
+        flex: 1;
+    }
+
+    &__name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: $text-primary;
+        margin: 0 0 0.25rem;
+    }
+
+    &__email {
+        font-size: 1rem;
+        color: $text-secondary;
+        margin: 0 0 0.5rem;
+    }
+
+    &__role {
+        display: inline-block;
+        padding: 0.375rem 0.875rem;
+        border-radius: $border-radius-md;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+
+        &--admin {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        &--user {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        &--sales {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        &--accountant {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+    }
+
+    &__stats {
+        display: flex;
+        gap: 2rem;
+
+        @include respond-to(mobile) {
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+    }
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    i {
+        font-size: 2rem;
+        color: $primary-color;
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: $text-primary;
+        line-height: 1;
+    }
+
+    &__label {
+        font-size: 0.75rem;
+        color: $text-secondary;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}
+
+// ===========================
+// Tabs
+// ===========================
+
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid $border-color;
+
+    @include respond-to(mobile) {
+        flex-direction: column;
+        border-bottom: none;
+    }
+
+    &__btn {
+        padding: 0.875rem 1.5rem;
+        border: none;
+        background: transparent;
+        color: $text-secondary;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        @include respond-to(mobile) {
+            border-bottom: none;
+            border-left: 3px solid transparent;
+            justify-content: flex-start;
+        }
+
+        &:hover {
+            color: $primary-color;
+            background: $primary-light;
+        }
+
+        &--active {
+            color: $primary-color;
+            border-bottom-color: $primary-color;
+
+            @include respond-to(mobile) {
+                border-bottom-color: transparent;
+                border-left-color: $primary-color;
+                background: $primary-light;
+            }
+        }
+    }
+}
+
+// ===========================
+// Tab Content
+// ===========================
+
+.tab-content {
+    animation: fadeIn 0.3s ease;
+}
+
+.assignments-panel,
+.history-panel {
+    @include card-style;
+    min-height: 400px;
+}
+
+// ===========================
+// Area Grid (Detailed Cards)
+// ===========================
+
+.area-grid {
+    display: grid;
+    gap: 1.5rem;
+    padding: 1.5rem;
+
+    &--grid {
+        grid-template-columns: 1fr;
+
+        @include respond-to(tablet-up) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @include respond-to(large) {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    &--list {
+        grid-template-columns: 1fr;
+    }
+}
+
+.area-card-detailed {
+    @include card-style;
+    padding: 1.5rem;
+    transition: all 0.3s;
+    position: relative;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: $shadow-xl;
+    }
+
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    &__icon {
+        @include flex-center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    &__remove {
+        @include flex-center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: $danger-color;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            background: $danger-color;
+            color: white;
+        }
+    }
+
+    &__content {
+        padding-left: 0.5rem;
+    }
+
+    &__name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: $text-primary;
+        margin: 0 0 0.75rem;
+    }
+
+    &__address,
+    &__coordinates,
+    &__date {
+        font-size: 0.875rem;
+        color: $text-secondary;
+        margin: 0.5rem 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+
+        i {
+            color: $text-muted;
+            margin-top: 0.2rem;
+            flex-shrink: 0;
+        }
+    }
+}
+
+// ===========================
+// Timeline (History)
+// ===========================
+
+.timeline {
+    padding: 2rem;
+    position: relative;
+
+    @include respond-to(mobile) {
+        padding: 1rem;
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 2rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: $border-color;
+
+        @include respond-to(mobile) {
+            left: 1rem;
+        }
+    }
+}
+
+.timeline-item {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    &__marker {
+        @include flex-center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid $primary-color;
+        color: $primary-color;
+        font-size: 1rem;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    &__content {
+        flex: 1;
+        @include card-style;
+        padding: 1.25rem;
+    }
+
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    &__date {
+        font-size: 0.875rem;
+        color: $text-muted;
+    }
+
+    &__title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: $text-primary;
+        margin: 0 0 0.5rem;
+    }
+
+    &__description,
+    &__meta,
+    &__notes {
+        font-size: 0.875rem;
+        color: $text-secondary;
+        margin: 0.25rem 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+
+        i {
+            color: $text-muted;
+            margin-top: 0.2rem;
+        }
+    }
+
+    &__notes {
+        background: $bg-color;
+        padding: 0.75rem;
+        border-radius: $border-radius-md;
+        margin-top: 0.5rem;
+    }
+}
+
+// ===========================
+// Badge
+// ===========================
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: $border-radius-md;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    &--success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    &--danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    &--warning {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    &--info {
+        background: #cffafe;
+        color: #155e75;
+    }
+}
+
+// ===========================
+// Empty State Large
+// ===========================
+
+.empty-state-large {
+    @include flex-center;
+    flex-direction: column;
+    padding: 4rem 2rem;
+    text-align: center;
+    color: $text-secondary;
+
+    i {
+        font-size: 5rem;
+        color: $text-muted;
+        margin-bottom: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: $text-primary;
+        margin: 0 0 0.5rem;
+    }
+
+    p {
+        font-size: 1rem;
+        margin: 0;
+    }
+}
+
+// ===========================
+// Panel Components
+// ===========================
+
+.panel-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid $border-color;
+    flex-shrink: 0;
+
+    @include respond-to(tablet-up) {
+        padding: 1.5rem;
+    }
+
+    &__title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: $text-primary;
+        margin: 0 0 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        i {
+            color: $primary-color;
+        }
+    }
+
+    &__search {
+        position: relative;
+
+        i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: $text-muted;
+        }
+    }
+}
+
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+
+    @include respond-to(tablet-up) {
+        padding: 1.25rem;
+    }
+
+    // Custom scrollbar
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: $bg-color;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: $border-color;
+        border-radius: 4px;
+
+        &:hover {
+            background: $text-muted;
+        }
+    }
+}
+
+.panel-toolbar {
+    padding: 1rem 1.25rem;
+    background: $bg-color;
+    border-bottom: 1px solid $border-color;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    @include respond-to(tablet-up) {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+    }
+
+    &__title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: $text-primary;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        i {
+            color: $primary-color;
+        }
+    }
+
+    &__search {
+        position: relative;
+        flex: 1;
+
+        i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: $text-muted;
+        }
+    }
+
+    &__actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+}
+
+// ===========================
+// Search Input
+// ===========================
+
+.search-input {
+    width: 100%;
+    padding: 0.625rem 0.75rem 0.625rem 2.5rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius-md;
+    font-size: 0.875rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+        outline: none;
+        border-color: $primary-color;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    &::placeholder {
+        color: $text-muted;
+    }
+}
+
+// ===========================
+// User List & Cards
+// ===========================
+
+.user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.user-card {
+    @include card-style;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+
+    &:hover {
+        transform: translateX(4px);
+        box-shadow: $shadow-lg;
+        border-color: $primary-light;
+    }
+
+    &--active {
+        border-color: $primary-color;
+        background: $primary-light;
+        transform: translateX(4px);
+
+        .user-card__name {
+            color: $primary-color;
+        }
+    }
+
+    &__avatar {
+        @include flex-center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+        color: white;
+        font-size: 1.25rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    &__info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: $text-primary;
+        margin: 0 0 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__email {
+        font-size: 0.875rem;
+        color: $text-secondary;
+        margin: 0 0 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__role {
+        display: inline-block;
+        padding: 0.125rem 0.5rem;
+        border-radius: $border-radius-sm;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+
+        &--admin {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        &--user {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        &--sales {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        &--accountant {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+    }
+
+    &__check {
+        font-size: 1.5rem;
+        color: $primary-color;
+        flex-shrink: 0;
+    }
+}
+
+// ===========================
+// View Toggle
+// ===========================
+
+.view-toggle {
+    display: flex;
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: $border-radius-md;
+    padding: 0.25rem;
+    gap: 0.25rem;
+
+    &__btn {
+        @include flex-center;
+        width: 2rem;
+        height: 2rem;
+        border: none;
+        background: transparent;
+        color: $text-secondary;
+        border-radius: $border-radius-sm;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            background: $bg-color;
+            color: $primary-color;
+        }
+
+        &--active {
+            background: $primary-color;
+            color: white;
+
+            &:hover {
+                background: $primary-hover;
+            }
+        }
+    }
+}
+
+// ===========================
+// Buttons
+// ===========================
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: $border-radius-md;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &--primary {
+        background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+        color: white;
+
+        &:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: $shadow-lg;
+        }
+    }
+
+    &--secondary {
+        background: white;
+        color: $text-primary;
+        border: 1px solid $border-color;
+
+        &:hover:not(:disabled) {
+            background: $bg-color;
+            border-color: $primary-color;
+            color: $primary-color;
+        }
+    }
+
+    &--sm {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+
+    &--icon {
+        @include flex-center;
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        border-radius: 50%;
+    }
+}
+
+// ===========================
+// Loading & Empty States
+// ===========================
+
+.loading-state,
+.empty-state {
+    @include flex-center;
+    flex-direction: column;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: $text-secondary;
+
+    i {
+        font-size: 3rem;
+        color: $text-muted;
+        margin-bottom: 1rem;
+    }
+
+    p, h3 {
+        margin: 0.5rem 0;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+        color: $text-primary;
+    }
+}
+
+.spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid $border-color;
+    border-top-color: $primary-color;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// ===========================
+// Animations
+// ===========================
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// ===========================
+// Responsive Utilities
+// ===========================
+
+@include respond-to(mobile) {
+    .area-assign-view {
+        padding: 0.75rem;
+
+        &__header {
+            margin-bottom: 1.5rem;
+        }
+
+        &__title {
+            font-size: 1.5rem;
+        }
+
+        &__content {
+            gap: 1rem;
+        }
+    }
+
+    .timeline-item {
+        gap: 1rem;
+    }
+}
+
+// ===========================
+// Print Styles
+// ===========================
+
+@media print {
+    .area-assign-view {
+        &__header,
+        .btn,
+        .tabs,
+        .view-toggle,
+        .search-input,
+        .area-card-detailed__remove {
+            display: none !important;
+        }
+
+        &__content {
+            display: block;
+        }
+
+        &__sidebar {
+            display: none;
+        }
+
+        .user-info-banner,
+        .timeline-item__content,
+        .area-card-detailed {
+            page-break-inside: avoid;
+            box-shadow: none;
+        }
+    }
+}

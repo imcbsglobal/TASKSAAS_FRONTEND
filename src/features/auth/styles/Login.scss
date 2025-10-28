@@ -1,0 +1,167 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #f5fbff, #fef8f6); // subtle light blue to soft orange tint
+    padding: 1rem;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.login-card {
+    background: #ffffff;
+    padding: 3rem 2.5rem;
+    border-radius: 18px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    border-top: 6px solid #00B2FF; // Logo blue
+    transition: all 0.3s ease-in-out;
+}
+
+.login-logo {
+    max-width: 100px;
+    margin: 0 auto 2rem auto;
+    display: block;
+    animation: pulseLogo 3s ease-in-out infinite;
+}
+
+// Logo pulse animation
+@keyframes pulseLogo {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1); // Scales up to 110%
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.login-form-container {
+    width: 100%;
+}
+
+// Login Type Toggle Styles - matching the original clean style
+.login-toggle {
+    display: flex;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 3px;
+    margin-bottom: 2rem;
+    border: 1px solid #ccc;
+
+    .toggle-btn {
+        flex: 1;
+        padding: 0.7rem 1rem;
+        border: none;
+        background: transparent;
+        color: #666;
+        font-weight: 600;
+        font-size: 0.95rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        
+        &:hover {
+            color: #333;
+        }
+
+        &.active {
+            background-color: #F25C05;
+            color: white;
+        }
+    }
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    h2 {
+        margin-bottom: 0.5rem;
+        color: #F25C05; // Logo orange
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .error-message {
+        color: #dc3545;
+        padding: 0.75rem;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 4px;
+        font-size: 0.95rem;
+    }
+
+    .form-group {
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        input {
+            padding: 0.7rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border 0.3s, box-shadow 0.3s;
+
+            &:focus {
+                border-color: #F25C05;
+                box-shadow: 0 0 0 4px rgba(242, 92, 5, 0.15);
+                outline: none;
+            }
+        }
+    }
+
+    button {
+        padding: 0.85rem;
+        background-color: #F25C05;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s;
+
+        &:hover {
+            background-color: #d14e04;
+            transform: scale(1.02);
+        }
+
+        &:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    }
+}
+
+@media (max-width: 500px) {
+    .login-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .login-logo {
+        max-width: 80px; // Adjust logo size on mobile
+    }
+    
+    .login-toggle {
+        .toggle-btn {
+            padding: 0.6rem 0.8rem;
+            font-size: 0.9rem;
+        }
+    }
+}

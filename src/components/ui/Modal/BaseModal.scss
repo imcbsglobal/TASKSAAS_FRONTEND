@@ -1,0 +1,90 @@
+/* === BaseModal Styles === */
+
+.confirm_modal {
+  position: fixed;
+  inset: 0;
+  /* shorthand for top/right/bottom/left: 0 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(17, 24, 39, 0.6);
+  /* semi-transparent dark backdrop */
+  z-index: 10000;
+  /* stays on top of most UI elements */
+  // padding: 1rem;
+  overflow-y: auto;
+  /* allows scrolling if modal content is too tall */
+}
+
+.confirm__container {
+  background: #fff;
+  color: #111827;
+  /* dark text */
+  border-radius: 0.75rem;
+  // max-width: 500px;
+  max-height: 500px;
+  overflow: auto;
+  box-sizing: content-box;
+  // width: 100%;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  padding: 2rem;
+  position: relative;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+}
+
+/* Optional close button */
+.closs_cross {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 50%;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  transition: background-color 0.25s ease, color 0.25s ease, transform 0.15s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #ef4444; // a nice red for hover
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus {
+    outline: 2px solid #ef4444;
+    outline-offset: 2px;
+  }
+}
+
+.confirm__container::after:hover {
+  color: #111827;
+}
+
+/* Responsive behavior */
+@media (max-width: 640px) {
+  .confirm__container {
+    width: 100%;
+    max-width: none;
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}

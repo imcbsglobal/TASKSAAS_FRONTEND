@@ -1,0 +1,132 @@
+╔══════════════════════════════════════════════════════════════╗
+║          USER-BASED ROUTE ACCESS - QUICK REFERENCE          ║
+╚══════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────┐
+│ 1. USER OBJECT STRUCTURE (in localStorage)                  │
+└──────────────────────────────────────────────────────────────┘
+
+{
+  id: 1,
+  username: "john_doe",
+  role: "Admin",
+  allowedRoutes: ["/dashboard", "/item-details", ...]
+}
+
+┌──────────────────────────────────────────────────────────────┐
+│ 2. TEST IN BROWSER CONSOLE                                  │
+└──────────────────────────────────────────────────────────────┘
+
+// Set test user
+localStorage.setItem('user', JSON.stringify({
+  id: 1,
+  username: "test",
+  role: "Admin",
+  allowedRoutes: ["/dashboard", "/item-details", "/cash-book"]
+}));
+window.location.reload();
+
+// Check current user
+JSON.parse(localStorage.getItem('user'))
+
+┌──────────────────────────────────────────────────────────────┐
+│ 3. AVAILABLE ROUTES                                          │
+└──────────────────────────────────────────────────────────────┘
+
+Top Level Routes:
+  • /dashboard          - Dashboard
+  • /item-details       - Item Details
+  • /debtors           - Debtors
+  • /company           - Company Info
+
+Bank & Cash Dropdown:
+  • /cash-book         - Cash Book
+  • /bank-book         - Bank Book
+
+Punch In Dropdown:
+  • /punch-in          - Punch In
+  • /punch-in/location - Location Capture
+
+Master Dropdown (Admin Only):
+  • /master/users      - User Management
+  • /settings          - Settings
+
+┌──────────────────────────────────────────────────────────────┐
+│ 4. EXAMPLE USER CONFIGURATIONS                              │
+└──────────────────────────────────────────────────────────────┘
+
+ADMIN (Full Access):
+["/dashboard", "/item-details", "/cash-book", "/bank-book",
+ "/debtors", "/company", "/punch-in", "/punch-in/location",
+ "/master/users", "/settings"]
+
+SALES REP:
+["/dashboard", "/item-details", "/debtors",
+ "/punch-in", "/punch-in/location"]
+
+ACCOUNTANT:
+["/dashboard", "/cash-book", "/bank-book", "/debtors"]
+
+REGULAR USER:
+["/dashboard", "/punch-in", "/punch-in/location"]
+
+┌──────────────────────────────────────────────────────────────┐
+│ 5. QUICK TEST FUNCTIONS (in browser console)                │
+└──────────────────────────────────────────────────────────────┘
+
+// Load test functions
+// 1. Copy content from docs/test-user-access.js
+// 2. Paste in browser console
+// 3. Run:
+
+testAdminUser()      → Test admin access
+testSalesRep()       → Test sales rep access
+testAccountant()     → Test accountant access
+testRegularUser()    → Test regular user access
+checkCurrentUser()   → View current user
+clearUser()          → Logout
+
+┌──────────────────────────────────────────────────────────────┐
+│ 6. TROUBLESHOOTING                                          │
+└──────────────────────────────────────────────────────────────┘
+
+Problem: Navbar is blank
+Solution: Check if user.allowedRoutes exists and has values
+Command: JSON.parse(localStorage.getItem('user')).allowedRoutes
+
+Problem: Some menu items missing
+Solution: Add routes to user's allowedRoutes array
+
+Problem: Dropdown menu not showing
+Solution: Ensure at least one child route is in allowedRoutes
+
+┌──────────────────────────────────────────────────────────────┐
+│ 7. BACKEND API RESPONSE FORMAT                              │
+└──────────────────────────────────────────────────────────────┘
+
+{
+  "success": true,
+  "token": "jwt_token",
+  "user": {
+    "id": 1,
+    "username": "john",
+    "role": "Admin",
+    "allowedRoutes": ["/dashboard", ...]
+  }
+}
+
+┌──────────────────────────────────────────────────────────────┐
+│ 8. IMPORTANT NOTES                                           │
+└──────────────────────────────────────────────────────────────┘
+
+✓ Routes are case-sensitive
+✓ Must include leading slash (e.g., "/dashboard")
+✓ Frontend filtering is for UX only
+✓ Always implement backend authorization
+✓ Fallback to role-based if allowedRoutes missing
+
+═══════════════════════════════════════════════════════════════
+For detailed documentation, see:
+- docs/USER_ROUTE_ACCESS_GUIDE.md
+- docs/NAVBAR_FIX_SUMMARY.md
+═══════════════════════════════════════════════════════════════

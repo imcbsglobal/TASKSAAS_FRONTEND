@@ -1,0 +1,426 @@
+// Compact Navbar Container
+.navbar-container-desk,
+.navbar-container-mob {
+  position: relative;
+  z-index: 1000;
+}
+
+// Compact Top Navbar
+.top-navbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 200px; // Smaller sidebar
+  height: 50px; // Reduced height
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 16px;
+  z-index: 998;
+  transition: left 0.3s ease;
+
+  @media (max-width: 768px) {
+    left: 0;
+    height: 54px;
+    padding: 0 12px;
+  }
+}
+
+// Simplified Profile Dropdown
+.profile-dropdown {
+  position: relative;
+
+  .profile-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    padding: 6px 10px 6px 6px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: #667eea;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .profile-avatar {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .dropdown-arrow {
+      color: #6b7280;
+      transition: transform 0.2s ease;
+      width: 10px;
+      height: 10px;
+
+      &.open {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    border: 1px solid #e5e7eb;
+    min-width: 200px;
+    z-index: 1001;
+    overflow: hidden;
+    margin-top: 4px;
+
+    .dropdown-header {
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .user-info {
+        .username {
+          margin: 0 0 2px 0;
+          font-weight: 600;
+          color: #1f2937;
+          font-size: 13px;
+        }
+
+        .user-role {
+          margin: 0;
+          font-size: 11px;
+          color: #667eea;
+          text-transform: uppercase;
+          font-weight: 500;
+        }
+      }
+    }
+
+    .logout-button {
+      width: 100%;
+      padding: 10px 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #dc2626;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: #fef2f2;
+      }
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+}
+
+// Compact Sidebar
+.sidebar {
+  user-select: none;
+  width: 200px; // Reduced width
+  background: #1e272e;
+  color: white;
+  height: 100vh;
+  transition: transform 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  transform: translateX(0);
+
+  @media (max-width: 768px) {
+    &.collapsed {
+      transform: translateX(-100%);
+    }
+  }
+}
+
+// Simple Toggle Button
+.sidebar-toggle {
+  position: fixed;
+  top: 10px;
+  left: 14px;
+  z-index: 1001;
+  background: #1e272e;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  opacity: 0;
+  visibility: hidden;
+
+  @media (max-width: 768px) {
+    &.show {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+
+  &:hover {
+    background: #2f3640;
+  }
+}
+
+// Compact Sidebar Header
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+  .toggle-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+
+    @media (max-width: 768px) {
+      display: block;
+    }
+
+    @media (min-width: 769px) {
+      display: none;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .brand {
+    font-size: 16px;
+    font-weight: 600;
+    color: #667eea;
+  }
+}
+
+// Simplified Navigation Menu
+.nav-menu {
+  list-style: none;
+  padding: 8px 0;
+  margin: 0;
+
+  li {
+    margin: 2px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    &:not(.menu-item) {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      cursor: pointer;
+      gap: 10px;
+
+      &:hover {
+        background: #2f3640;
+        transform: translateX(4px);
+      }
+
+      .icon {
+        font-size: 16px;
+        color: #a4b0be;
+        min-width: 16px;
+      }
+
+      span {
+        font-size: 13px;
+        font-weight: 500;
+        color: #f5f6fa;
+      }
+
+      &:hover .icon,
+      &:hover span {
+        color: #667eea;
+      }
+    }
+
+    // Compact dropdown menu
+    &.menu-item {
+      .menu-main {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        gap: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-radius: 6px;
+
+        .chevron {
+          margin-left: auto;
+          font-size: 10px;
+          color: #a4b0be;
+          transition: transform 0.2s ease;
+        }
+
+        &:hover {
+          background: #2f3640;
+          transform: translateX(4px);
+          
+          .icon,
+          span,
+          .chevron {
+            color: #667eea;
+          }
+        }
+
+        .icon {
+          font-size: 16px;
+          color: #a4b0be;
+        }
+
+        span {
+          font-size: 13px;
+          font-weight: 500;
+          color: #f5f6fa;
+        }
+      }
+
+      &.active .menu-main {
+        background: #2f3640;
+        
+        .icon,
+        span,
+        .chevron {
+          color: #667eea;
+        }
+
+      }
+
+      .submenu {
+        list-style: none;
+        padding: 4px 0;
+        margin: 4px 0 0 0;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+
+        li {
+          margin: 1px 4px;
+          padding: 8px 12px 8px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
+            
+            span,
+            svg {
+              color: #667eea;
+            }
+          }
+
+          span {
+            font-size: 12px;
+            font-weight: 500;
+            color: #cbd5e0;
+          }
+
+          svg {
+            color: #a4b0be;
+            font-size: 12px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Content Area
+.main-content {
+  margin-left: 200px;
+  margin-top: 50px;
+  transition: margin-left 0.3s ease;
+  min-height: calc(100vh - 50px);
+  padding: 16px;
+  background: #f8fafc;
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+    margin-top: 54px;
+    min-height: calc(100vh - 45px);
+    padding: 12px;
+  }
+
+  &.sidebar-collapsed {
+    margin-left: 0;
+  }
+}
+
+// Mobile Overlay
+.sidebar-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  z-index: 998 !important;
+}
+
+// Container adjustments
+.navbar-container-mob .top-navbar {
+  left: 0;
+  height: 54px;
+}
+
+.navbar-container-desk .top-navbar {
+  left: 200px;
+  height: 50px;
+}
