@@ -4,7 +4,7 @@ const MasterPage = () => {
     return (
         <div className='all-body'>
             <div>
-                <span>fsd   </span>
+                <span>MAster Page</span>
             </div>
         </div>
     )

@@ -29,48 +29,11 @@ export const USER_ROLES = {
 // Security Note: Routes are mapped internally, users only get menu IDs
 export const MENU_CONFIG = [
     {
-        id: 'item-details',
-        type: MENU_TYPES.SIMPLE,
-        label: 'Item Details',
-        icon: FaBox,
-        route: '/item-details',
-        order: 1
-    },
-    {
-        id: 'bank-cash',
-        type: MENU_TYPES.DROPDOWN,
-        label: 'Bank & Cash',
-        icon: FaUniversity,
-        order: 2,
-        children: [
-            {
-                id: 'cash-book',
-                label: 'Cash Book',
-                icon: FaMoneyBillWave,
-                route: '/cash-book'
-            },
-            {
-                id: 'bank-book',
-                label: 'Bank Book',
-                icon: FaUniversity,
-                route: '/bank-book'
-            }
-        ]
-    },
-    {
-        id: 'debtors',
-        type: MENU_TYPES.SIMPLE,
-        label: 'Debtors',
-        icon: FaMoneyBillWave,
-        route: '/debtors',
-        order: 3
-    },
-    {
         id: 'company',
         type: MENU_TYPES.SIMPLE,
         label: 'Company Info',
         icon: FaBuilding,
-        route: 'company', // Special handling in component
+        route: 'company',
         order: 4
     },
     {

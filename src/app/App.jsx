@@ -4,11 +4,11 @@ import DashboardAdmin from '../features/dashboard/pages/Dashboard_admin';
 import DashboardUser from '../features/dashboard/pages/Dashboard_user';
 import ProtectedRoute from '../features/auth/components/ProtectedRoute';
 import Navbar from '../components/layout/Navbar';
-import Debtors from '../features/finance/pages/Debtors';
-import BankBook from "../features/finance/pages/BankBook";
-import CashBook from "../features/finance/pages/CashBook";
-import CashBookLedger from "../features/finance/pages/CashBookLedger";
-import BankBookLedger from "../features/finance/pages/BankBookLedger";
+// import Debtors from '../features/finance/pages/Debtors';
+// import BankBook from "../features/finance/pages/BankBook";
+// import CashBook from "../features/finance/pages/CashBook";
+// import CashBookLedger from "../features/finance/pages/CashBookLedger";
+// import BankBookLedger from "../features/finance/pages/BankBookLedger";
 import NotFound from '../components/ui/NotFound';
 // import LocationCapture from '../features/punchin/pages/LocationRecords';
 import StoreLocationCapture from '../features/punchin/pages/StoreLocationCapture';
@@ -20,7 +20,10 @@ import MasterPage from '../features/settings/pages/MasterPage';
 import UserManagement from '../features/settings/pages/MenuManagement';
 import MenuManagement from '../features/settings/pages/MenuManagement';
 import { AreaAssign, AreaAssignView } from '../features/punchin';
-
+import { SiKfc } from 'react-icons/si';
+import { TbAdFilled } from 'react-icons/tb';
+import { LuFastForward } from 'react-icons/lu';
+import js from '@eslint/js';
 const AppLayout = () => {
     const location = useLocation();
     const hideNavbarRoutes = ['/', '/login'];
@@ -49,26 +52,26 @@ const AppLayout = () => {
                         </ProtectedRoute>
                     }
                 />
-                <Route
+                {/* <Route
                     path="/debtors"
                     element={<ProtectedRoute><Debtors /></ProtectedRoute>}
-                />
-                <Route
+                /> */}
+                {/* <Route
                     path="/cash-book"
                     element={<ProtectedRoute><CashBook /></ProtectedRoute>}
-                />
-                <Route
+                /> */}
+                {/* <Route
                     path="/cash-book-ledger"
                     element={<ProtectedRoute><CashBookLedger /></ProtectedRoute>}
-                />
-                <Route
+                /> */}
+                {/* <Route
                     path="/bank-book"
                     element={<ProtectedRoute><BankBook /></ProtectedRoute>}
-                />
-                <Route
+                /> */}
+                {/* <Route
                     path="/bank-book-ledger"
                     element={<ProtectedRoute><BankBookLedger /></ProtectedRoute>}
-                />
+                /> */}
 
                 <Route
                     path="/punch-in/location"
@@ -87,7 +90,6 @@ const AppLayout = () => {
                 <Route path="/master" >
                     <Route path='users' element={<MenuManagement />} />
                 </Route>
-
                 <Route
                     path='/*'
                     element={<NotFound />}
