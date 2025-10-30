@@ -95,129 +95,62 @@ export const PunchAPI = {
         }
     },
 
-    //PUNCHIN Get Cloudinary upload signature
-    getUploadSignature: async ({ customerName }) => {
-        try {
-            const response = await apiClient.get(`/punch-in/cloudinary-signature/?customerName=${encodeURIComponent(customerName)}`)
-                ;
-            return response.data;
-        } catch (error) {
-            console.error("Error getting upload signature:", error);
-            throw error;
-        }
-    },
-
-    // Upload image directly to Cloudinary - Production Ready
-    uploadImageToCloudinary: async (imageFile, customerName, progressCallback = null) => {
+    // Punch-in with image upload - Backend handles R2 upload
+    punchIn: async ({ customerCode, customerName, image, location, onProgress = null }) => {
+        console.log(customerCode, customerName, image, location)
         try {
             // Client-side validation
-            const maxFileSize = 5 * 1024 * 1024; // 5MB
-            if (imageFile.size > maxFileSize) {
-                throw new Error('File size too large. Maximum size is 5MB');
-            }
-
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-            if (!allowedTypes.includes(imageFile.type)) {
-                throw new Error('Invalid file type. Only JPG, JPEG, and PNG are allowed.');
-            }
-
-            progressCallback?.(10);
-
-            // Get upload signature from backend
-            const signatureData = await PunchAPI.getUploadSignature({ customerName });
-
-            // Check API key
-            const apiKey = import.meta.env.VITE_CLOUDINARY_API_KEY;
-            if (!apiKey) {
-                throw new Error('Cloudinary configuration missing');
-            }
-
-            progressCallback?.(30);
-
-            // Prepare form data for Cloudinary
-            const formData = new FormData();
-            formData.append('file', imageFile);
-            formData.append('api_key', apiKey);
-            formData.append('timestamp', signatureData.timestamp);
-            formData.append('signature', signatureData.signature);
-
-            // Add signed parameters
-            if (signatureData.folder) formData.append('folder', signatureData.folder);
-            if (signatureData.allowed_formats) formData.append('allowed_formats', signatureData.allowed_formats);
-            if (signatureData.tags) formData.append('tags', signatureData.tags);
-            if (signatureData.public_id) formData.append('public_id', signatureData.public_id);
-
-            progressCallback?.(50);
-
-            // Upload to Cloudinary with timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-
-            const uploadResponse = await fetch(
-                `https://api.cloudinary.com/v1_1/${signatureData.cloudName}/image/upload`,
-                {
-                    method: 'POST',
-                    body: formData,
-                    signal: controller.signal
-                }
-            );
-
-            clearTimeout(timeoutId);
-            progressCallback?.(80);
-
-            if (!uploadResponse.ok) {
-                const errorText = await uploadResponse.text();
-                throw new Error(`Upload failed: ${uploadResponse.status}`);
-            }
-
-            const result = await uploadResponse.json();
-            progressCallback?.(100);
-
-            return {
-                success: true,
-                url: result.secure_url,
-                public_id: result.public_id,
-                format: result.format,
-                bytes: result.bytes
-            };
-
-        } catch (error) {
-            progressCallback?.(0);
-            if (error.name === 'AbortError') {
-                throw new Error('Upload timeout - please try again');
-            }
-            throw error;
-        }
-    },
-
-    // Enhanced punch-in with Cloudinary upload
-    punchIn: async ({ customerCode, customerName, image, location, onProgress = null }) => {
-        try {
-            let photoUrl = null;
-
-            // Upload image to Cloudinary if provided
             if (image) {
-                const uploadResult = await PunchAPI.uploadImageToCloudinary(image, customerName, onProgress);
-                photoUrl = uploadResult.url;
+                const maxFileSize = 5 * 1024 * 1024; // 5MB
+                if (image.size > maxFileSize) {
+                    throw new Error('File size too large. Maximum size is 5MB');
+                }
+
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!allowedTypes.includes(image.type)) {
+                    throw new Error('Invalid file type. Only JPG, JPEG, and PNG are allowed.');
+                }
             }
 
-            // Send punch-in data to backend
-            const punchData = {
-                customerCode,
-                latitude: location?.latitude,
-                longitude: location?.longitude,
-                photo_url: photoUrl
-            };
+            onProgress?.(20);
 
-            const response = await apiClient.post("/punch-in/", punchData);
+            // Prepare FormData to send to backend
+            const formData = new FormData();
+            formData.append('customerCode', customerCode);
+            formData.append('customerName', customerName);
+            formData.append('latitude', location?.latitude);
+            formData.append('longitude', location?.longitude);
+            
+            if (image) {
+                formData.append('image', image);
+            }
+
+            onProgress?.(40);
+
+            // Send everything to backend - backend handles R2 upload
+            const response = await apiClient.post("/punch-in/", formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                onUploadProgress: (progressEvent) => {
+                    if (progressEvent.total) {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        onProgress?.(40 + (percentCompleted * 0.6)); // 40% to 100%
+                    }
+                }
+            });
+
+            onProgress?.(100);
 
             return {
                 success: true,
                 data: response.data,
-                photo_url: photoUrl
+                photo_url: response.data.photo_url || null
             };
 
         } catch (error) {
+            onProgress?.(0);
+            console.error('Punch-in error:', error);
             throw error;
         }
     },
