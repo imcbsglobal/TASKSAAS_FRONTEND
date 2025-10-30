@@ -46,7 +46,7 @@
 
     &:hover {
       border-color: #667eea;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .profile-avatar {
@@ -80,7 +80,7 @@
     right: 0;
     background: white;
     border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     border: 1px solid #e5e7eb;
     min-width: 200px;
     z-index: 1001;
@@ -155,7 +155,7 @@
 // Compact Sidebar
 .sidebar {
   user-select: none;
-  width: 200px; // Reduced width
+  width: 200px;
   background: #1e272e;
   color: white;
   height: 100vh;
@@ -171,6 +171,13 @@
   @media (max-width: 768px) {
     &.collapsed {
       transform: translateX(-100%);
+    }
+  }
+
+  @media screen and (min-width:1400px) {
+    & {
+      width: 15%;
+      font-size: 2.3rem;
     }
   }
 }
@@ -274,9 +281,9 @@
         color: #a4b0be;
         min-width: 16px;
       }
-
+      
       span {
-        font-size: 13px;
+        font-size: 2.0vh;
         font-weight: 500;
         color: #f5f6fa;
       }
@@ -308,7 +315,7 @@
         &:hover {
           background: #2f3640;
           transform: translateX(4px);
-          
+
           .icon,
           span,
           .chevron {
@@ -322,7 +329,7 @@
         }
 
         span {
-          font-size: 13px;
+          font-size: 1.9vh;
           font-weight: 500;
           color: #f5f6fa;
         }
@@ -330,7 +337,7 @@
 
       &.active .menu-main {
         background: #2f3640;
-        
+
         .icon,
         span,
         .chevron {
@@ -359,7 +366,7 @@
           &:hover {
             background: rgba(255, 255, 255, 0.1);
             transform: translateX(4px);
-            
+
             span,
             svg {
               color: #667eea;
