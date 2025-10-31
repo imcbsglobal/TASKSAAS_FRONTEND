@@ -84,7 +84,7 @@ export const PunchAPI = {
             throw error;
         }
     },
-
+    //shop location update
     updateStatus: async (statusData) => {
         try {
             const response = await apiClient.post("/shop-location/status/", statusData);
@@ -94,10 +94,19 @@ export const PunchAPI = {
             throw error;
         }
     },
+    //punchin status update
+    updatePunchinStatus: async (statusData) => {
+        try {
+            const response = await apiClient.post('/punch-in/updateStatus',statusData)
+            return response;
+        } catch (error) {
+            console.error("Error Updating Punchin status:", error);
+            throw error;
+        }
+    },
 
     // Punch-in with image upload - Backend handles R2 upload
     punchIn: async ({ customerCode, customerName, image, location, onProgress = null }) => {
-        console.log(customerCode, customerName, image, location)
         try {
             // Client-side validation
             if (image) {
@@ -120,7 +129,7 @@ export const PunchAPI = {
             formData.append('customerName', customerName);
             formData.append('latitude', location?.latitude);
             formData.append('longitude', location?.longitude);
-            
+
             if (image) {
                 formData.append('image', image);
             }

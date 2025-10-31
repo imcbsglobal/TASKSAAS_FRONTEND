@@ -19,7 +19,6 @@ const StatusCell = ({ initialStatus, row, onStatusUpdate }) => {
     const [status, setStatus] = useState(initialStatus);
     const [isUpdating, setIsUpdating] = useState(false);
 
-
     const handleChangeStatus = async (e) => {
         const newStatus = e.target.value;
         setStatus(newStatus);
@@ -27,7 +26,7 @@ const StatusCell = ({ initialStatus, row, onStatusUpdate }) => {
 
         try {
             // Call API to update status
-            await PunchAPI.updateStatus({ "shop_id": row.original.firm_code, "status": newStatus });
+            await PunchAPI.updatePunchinStatus({ "shop_id": row.original.firm_code, "status": newStatus, "id": row.original.id, "createdBy": row.original.created_by });
             onStatusUpdate?.(row.original.id, newStatus);
         } catch (error) {
             console.error("Failed to update status", error);
@@ -300,7 +299,7 @@ const PunchinTable = () => {
 
     return (
         <div className='table_section'>
-            <h4 className="table_title">Recently Added Store Locations</h4>
+            <h4 className="table_title">Punch-in Table</h4>
             <div className="filter_search_section">
                 {/* Search Section */}
                 <div className="search_section">
