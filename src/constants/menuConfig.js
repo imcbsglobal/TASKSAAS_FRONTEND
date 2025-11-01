@@ -28,12 +28,22 @@ export const USER_ROLES = {
 // Menu configuration with hierarchical structure
 // Security Note: Routes are mapped internally, users only get menu IDs
 export const MENU_CONFIG = [
+
+         
+    {
+        id: 'debtors',
+        type: MENU_TYPES.SIMPLE,
+        label: 'Debtors',
+        icon: FaMoneyBillWave,
+        route: '/debtors',
+        order: 3
+    },
     {
         id: 'company',
         type: MENU_TYPES.SIMPLE,
         label: 'Company Info',
         icon: FaBuilding,
-        route: 'company',
+        route: 'company', // Special handling in component
         order: 4
     },
     {

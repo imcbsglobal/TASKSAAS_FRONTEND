@@ -4,7 +4,7 @@ import DashboardAdmin from '../features/dashboard/pages/Dashboard_admin';
 import DashboardUser from '../features/dashboard/pages/Dashboard_user';
 import ProtectedRoute from '../features/auth/components/ProtectedRoute';
 import Navbar from '../components/layout/Navbar';
-// import Debtors from '../features/finance/pages/Debtors';
+import Debtors from '../features/finance/pages/Debtors';
 // import BankBook from "../features/finance/pages/BankBook";
 // import CashBook from "../features/finance/pages/CashBook";
 // import CashBookLedger from "../features/finance/pages/CashBookLedger";
@@ -52,10 +52,10 @@ const AppLayout = () => {
                         </ProtectedRoute>
                     }
                 />
-                {/* <Route
+                <Route
                     path="/debtors"
                     element={<ProtectedRoute><Debtors /></ProtectedRoute>}
-                /> */}
+                />
                 {/* <Route
                     path="/cash-book"
                     element={<ProtectedRoute><CashBook /></ProtectedRoute>}
