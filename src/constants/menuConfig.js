@@ -28,30 +28,20 @@ export const USER_ROLES = {
 // Menu configuration with hierarchical structure
 // Security Note: Routes are mapped internally, users only get menu IDs
 export const MENU_CONFIG = [
-
-         
     {
         id: 'debtors',
         type: MENU_TYPES.SIMPLE,
         label: 'Debtors',
         icon: FaMoneyBillWave,
         route: '/debtors',
-        order: 3
-    },
-    {
-        id: 'company',
-        type: MENU_TYPES.SIMPLE,
-        label: 'Company Info',
-        icon: FaBuilding,
-        route: 'company', // Special handling in component
-        order: 4
+        order: 1
     },
     {
         id: 'punch-in',
         type: MENU_TYPES.DROPDOWN,
         label: 'Punch In',
         icon: FaFingerprint,
-        order: 5,
+        order: 2,
         children: [
             {
                 id: 'location-capture',
@@ -65,35 +55,59 @@ export const MENU_CONFIG = [
                 icon: FaFingerprint,
                 route: '/punch-in'
             },
-            {
-                id: 'area-assign',
-                label: 'Assign Area',
-                icon: RiUserLocationLine, 
-                route: '/area-assign',
-            },
         ]
     },
+
     {
-        id: 'master',
-        type: MENU_TYPES.DROPDOWN,
-        label: 'Master',
+        id: 'area-assign',
+        type: MENU_TYPES.SIMPLE,
+        label: 'Area Assign',
+        icon: RiUserLocationLine,
+        route: '/area-assign',
+        order: 3
+    },
+    {
+        id: 'user-menu',
+        type: MENU_TYPES.SIMPLE,
+        label: 'Menu Management',
+        icon: FaTable,
+        route: '/master/users',
+        order:4
+    },
+
+    {
+        id: 'company',
+        type: MENU_TYPES.SIMPLE,
+        label: 'Company Info',
+        icon: FaBuilding,
+        route: 'company', // Special handling in component
+        order: 5
+    },
+    {
+        id: 'settings',
+        label: 'Settings',
+        type:MENU_TYPES.SIMPLE,
         icon: FaCog,
-        order: 6,
-        children: [
-            {
-                id: 'user-menu',
-                label: 'User Management',
-                icon: FaTable,
-                route: '/master/users'
-            },
-            {
-                id: 'settings',
-                label: 'Settings',
-                icon: FaCog,
-                route: '/settings'
-            }
-        ]
-    }
+        route: '/settings',
+        order:6
+    },
+
+    // {
+    //     id: 'master',
+    //     type: MENU_TYPES.DROPDOWN,
+    //     label: 'Master',
+    //     icon: FaCog,
+    //     order: 7,
+    //     children: [
+
+    //         {
+    //             id: 'settings',
+    //             label: 'Settings',
+    //             icon: FaCog,
+    //             route: '/settings'
+    //         }
+    //     ]
+    // }
 ];
 
 // Helper function to get menu items by allowed menu IDs (Secure approach)
@@ -105,31 +119,31 @@ export const getMenuItemsByAllowedIds = (allowedMenuIds = []) => {
     const filterByIds = (item) => {
         // Create a copy to avoid mutating the original
         const itemCopy = { ...item };
-        
+
         // Check if item ID is allowed
         const isAllowed = allowedMenuIds.includes(item.id);
-        
+
         // If item has children, filter them
         if (item.children) {
             const filteredChildren = item.children.filter(child =>
                 allowedMenuIds.includes(child.id)
             );
-            
+
             // Include parent if it has allowed children
             if (filteredChildren.length > 0) {
                 itemCopy.children = filteredChildren;
                 return itemCopy;
             }
         }
-        
+
         // Return item if it's allowed
         if (isAllowed) {
             return itemCopy;
         }
-        
+
         return null;
     };
-    
+
     return MENU_CONFIG
         .map(filterByIds)
         .filter(item => item !== null)
@@ -163,18 +177,18 @@ export const isMenuIdAllowed = (menuId, allowedMenuIds = []) => {
 // Helper function to get all menu IDs for validation
 export const getAllMenuIds = () => {
     const menuIds = [];
-    
+
     MENU_CONFIG.forEach(item => {
-        
+
         if (item.children) {
             item.children.forEach(child => {
                 menuIds.push(child.id);
             });
-        }else{
-               menuIds.push(item.id);
+        } else {
+            menuIds.push(item.id);
         }
     });
-    
+
     return menuIds;
 };
 
@@ -207,32 +221,32 @@ export const getMenuItemsByAllowedRoutes = (allowedRoutes = []) => {
     const filterByRoutes = (item) => {
         // Create a copy of the item to avoid mutating the original
         const itemCopy = { ...item };
-        
+
         // Check if item has a direct route that's allowed
         const hasAllowedRoute = item.route && allowedRoutes.includes(item.route);
-        
+
         // Check if item has children
         if (item.children) {
             // Filter children that have allowed routes
             const filteredChildren = item.children.filter(child =>
                 child.route && allowedRoutes.includes(child.route)
             );
-            
+
             // If there are allowed children, include the parent with filtered children
             if (filteredChildren.length > 0) {
                 itemCopy.children = filteredChildren;
                 return itemCopy;
             }
         }
-        
+
         // Return the item if it has an allowed route
         if (hasAllowedRoute) {
             return itemCopy;
         }
-        
+
         return null;
     };
-    
+
     return MENU_CONFIG
         .map(filterByRoutes)
         .filter(item => item !== null)
