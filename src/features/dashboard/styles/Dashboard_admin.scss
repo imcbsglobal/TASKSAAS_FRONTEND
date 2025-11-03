@@ -1,9 +1,16 @@
+.all-body {
+    margin-left: 15%;
+    margin-top: 50px;
 
-
-.all-body{
-    // margin-left: 15%;
     
+    @media screen and (min-width:768px)  and (max-width:968px) {
+        margin-left: 21%;
+    }
+      @media screen and (min-width:968px)  and (max-width:1210px) {
+        margin-left: 17%;
+    }
 }
+    
 .dashboard {
     padding: 20px;
     font-family: Arial, sans-serif;
@@ -62,12 +69,12 @@
                 color: #444;
             }
 
-            
+
 
             .misel-table {
                 width: 100%;
                 border-collapse: collapse;
-                
+
 
                 td {
                     padding: 10px;
@@ -100,24 +107,27 @@
 
     .all-body {
         margin-left: 0;
-        margin-top: 15%;
-        }
-    
+        // margin-top: 15%;
+        margin-top: 50px;
+    }
 
-    
+
+
     .full-table {
         overflow-x: auto;
         display: block;
         width: 100%;
         -webkit-overflow-scrolling: touch;
     }
+
     .dashboard {
-    width: 100%;
-    padding: 10px;
-    box-sizing: border-box;
-    overflow-x: hidden; /* prevents unexpected horizontal scroll */
-    
-}
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        overflow-x: hidden;
+        /* prevents unexpected horizontal scroll */
+
+    }
 }
 
 // s
