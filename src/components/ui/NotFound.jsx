@@ -1,62 +1,63 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import taskLogo from '../../assets/TASK11.png';
+import './NotFound.scss';
 
 export default function NotFound() {
-    const containerStyle = {
-        position: 'fixed',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 10000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#f7f7f9',
-    };
+    const navigate = useNavigate();
 
-    const cardStyle = {
-        textAlign: 'center',
-        padding: '32px',
-        borderRadius: '8px',
-        background: '#ffffff',
-        boxShadow: '0 6px 24px rgba(0,0,0,0.08)',
-        maxWidth: '720px',
-        width: '90%',
-    };
-
-    const codeStyle = {
-        fontSize: '8rem',
-        lineHeight: 1,
-        margin: 0,
-        color: '#111827',
-    };
-
-    const msgStyle = {
-        marginTop: '8px',
-        color: '#4b5563',
-        fontSize: '1.1rem',
-    };
-
-    const linkStyle = {
-        display: 'inline-block',
-        marginTop: '20px',
-        padding: '10px 18px',
-        fontSize: '1rem',
-        color: '#fff',
-        background: '#2563eb',
-        borderRadius: '6px',
-        textDecoration: 'none',
-        boxShadow: '0 3px 8px rgba(37,99,235,0.24)',
+    const handleBack = () => {
+        navigate(-1); // Go back one step in history
     };
 
     return (
-        <div style={containerStyle}>
-            <div style={cardStyle}>
-                <h1 style={codeStyle}>404</h1>
-                <p style={msgStyle}>Page not found</p>
-                <a href="/" style={linkStyle} aria-label="Go to home">
-                    Go home
-                </a>
+        <div className="not-found-container">
+            <div className="not-found-background">
+                <div className="floating-shape shape-1"></div>
+                <div className="floating-shape shape-2"></div>
+                <div className="floating-shape shape-3"></div>
+            </div>
+
+            <div className="not-found-content">
+                <div className="not-found-card">
+                    {/* Logo */}
+                    <div className="logo-container">
+                        <img src={taskLogo} alt="Task SaaS Logo" className="task-logo" />
+                    </div>
+
+                    {/* 404 Animation */}
+                    <div className="error-code">
+                        <span className="digit">4</span>
+                        <span className="digit zero">0</span>
+                        <span className="digit">4</span>
+                    </div>
+
+                    {/* Brand */}
+                    <div className="brand-name">Task SaaS</div>
+
+                    {/* Error Message */}
+                    <h1 className="error-title">Page Not Found</h1>
+                    <p className="error-description">
+                        Oops! The page you're looking for doesn't exist. 
+                        It might have been moved or deleted.
+                    </p>
+
+                    {/* Back Button */}
+                    <button 
+                        onClick={handleBack} 
+                        className="back-button"
+                        aria-label="Go back to previous page"
+                    >
+                        <ArrowLeft size={20} />
+                        <span>Go Back</span>
+                    </button>
+                </div>
+
+                {/* Footer */}
+                <div className="not-found-footer">
+                    <p>© 2025 Task SaaS. All rights reserved.</p>
+                </div>
             </div>
         </div>
     );

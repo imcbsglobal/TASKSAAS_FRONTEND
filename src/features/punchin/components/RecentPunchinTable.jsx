@@ -14,7 +14,9 @@ import { PunchAPI } from '../services/punchService';
 import BaseModal from '../../../components/ui/Modal/BaseModal';
 import { formatDT, timeDiff, formatDateApi } from '@/utils';
 import DatePickerFilter from './DatePickerFilter';
-
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
+// status pending ...... ok lets implement this page 
 const StatusCell = ({ initialStatus, row, onStatusUpdate }) => {
     const [status, setStatus] = useState(initialStatus);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -289,9 +291,49 @@ const PunchinTable = () => {
         }
     })
 
+    // if (loading) {
+    //     return <div className="loading">Loading store data...</div>
+    // }
     if (loading) {
-        return <div className="loading">Loading store data...</div>
+        const columnsCount = userRole === "Admin" ? 6 : 5;
+        return (
+            <div className="table_section">
+                <h4 className="table_title">Recently Added Store Locations</h4>
+
+                {/* Skeleton for Filters */}
+                <div className="filter_search_section">
+                    <Skeleton height={40} width="100%" />
+                </div>
+
+                {/* Skeleton Table */}
+                <div className="table_container skeleton-loading">
+                    <table>
+                        <thead>
+                            <tr>
+                                {[...Array(columnsCount)].map((_, index) => (
+                                    <th key={index}>
+                                        <Skeleton height={20} width="70%" />
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[...Array(4)].map((_, rowIndex) => (
+                                <tr key={rowIndex}>
+                                    {[...Array(columnsCount)].map((_, colIndex) => (
+                                        <td key={colIndex}>
+                                            <Skeleton height={20} width="90%" />
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
     }
+
 
     if (error) {
         return <div className="error">Error: {error}</div>

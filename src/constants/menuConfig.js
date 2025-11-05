@@ -69,7 +69,7 @@ export const MENU_CONFIG = [
     {
         id: 'user-menu',
         type: MENU_TYPES.SIMPLE,
-        label: 'Menu Management',
+        label: 'User Management',
         icon: FaTable,
         route: '/master/users',
         order:4
