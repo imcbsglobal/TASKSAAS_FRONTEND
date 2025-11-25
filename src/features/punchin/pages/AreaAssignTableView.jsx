@@ -33,19 +33,39 @@ const AreaAssignTableView = () => {
             console.log("📦 API Response:", result);
             
             if (result.areas && Array.isArray(result.areas)) {
-                const clientId = result.client_id || 'N/A';
-                const formattedData = result.areas.map((areaName, index) => ({
-                    id: index + 1,
-                    client_id: clientId,
-                    area: areaName
-                }));
+                const formattedData = result.areas.map((item, index) => {
+                    // Handle if item is a string (just area name) or object (with area and user info)
+                    if (typeof item === 'string') {
+                        return {
+                            id: index + 1,
+                            area: item,
+                            user_name: null
+                        };
+                    } else {
+                        return {
+                            id: index + 1,
+                            area: item.area || item.name || 'N/A',
+                            user_name: item.user_name || item.assigned_to || item.user || null
+                        };
+                    }
+                });
                 setData(formattedData);
             } else if (Array.isArray(result)) {
-                const formattedData = result.map((areaName, index) => ({
-                    id: index + 1,
-                    client_id: 'N/A',
-                    area: areaName
-                }));
+                const formattedData = result.map((item, index) => {
+                    if (typeof item === 'string') {
+                        return {
+                            id: index + 1,
+                            area: item,
+                            user_name: null
+                        };
+                    } else {
+                        return {
+                            id: index + 1,
+                            area: item.area || item.name || 'N/A',
+                            user_name: item.user_name || item.assigned_to || item.user || null
+                        };
+                    }
+                });
                 setData(formattedData);
             } else {
                 setData([]);
@@ -68,8 +88,8 @@ const AreaAssignTableView = () => {
         let filtered = data.filter(row => {
             const searchLower = searchTerm.toLowerCase();
             const area = (row.area || '').toLowerCase();
-            const clientId = (row.client_id || '').toLowerCase();
-            return area.includes(searchLower) || clientId.includes(searchLower);
+            const userName = (row.user_name || '').toLowerCase();
+            return area.includes(searchLower) || userName.includes(searchLower);
         });
 
         // Sort alphabetically by area (A-Z)
@@ -183,7 +203,7 @@ const AreaAssignTableView = () => {
                             </svg>
                             <input
                                 type="text"
-                                placeholder="Search by name or area..."
+                                placeholder="Search by area or user name..."
                                 value={searchTerm}
                                 onChange={handleSearchChange}
                                 className="search-input"
@@ -213,8 +233,8 @@ const AreaAssignTableView = () => {
                         <thead>
                             <tr>
                                 <th>NO</th>
-                                <th>CLIENT ID</th>
                                 <th>AREA</th>
+                                <th>USER NAME</th>
                             </tr>
                         </thead>
 
@@ -238,8 +258,15 @@ const AreaAssignTableView = () => {
                                 currentItems.map((row, index) => (
                                     <tr key={row.id || index}>
                                         <td>{indexOfFirstItem + index + 1}</td>
-                                        <td>{row.client_id || 'N/A'}</td>
                                         <td>{row.area || 'N/A'}</td>
+                                        <td>
+                                            <span style={{
+                                                color: row.user_name ? '#059669' : '#9ca3af',
+                                                fontStyle: row.user_name ? 'normal' : 'italic'
+                                            }}>
+                                                {row.user_name || 'null'}
+                                            </span>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (

@@ -74,55 +74,58 @@ export const MENU_CONFIG = [
         route: '/area-assign',
         order: 3
     },
-    {
-        id: 'user-menu',
-        type: MENU_TYPES.SIMPLE,
-        label: 'User Management',
-        icon: FaTable,
-        route: '/masters/',
-        order:4
-    },
 
-    {
-        id: 'company',
-        type: MENU_TYPES.SIMPLE,
-        label: 'Company Info',
-        icon: FaBuilding,
-        route: '/dashboard/user',
-        order: 5
-    },
     {
         id: 'settings',
         label: 'Settings',
-        type:MENU_TYPES.SIMPLE,
+        type: MENU_TYPES.DROPDOWN,
         icon: FaCog,
-        route: '/settings',
-        order:6
+        order: 4,
+        children: [
+            {
+                id: 'user-menu',
+                label: 'User Management',
+                icon: FaTable,
+                route: '/masters/'
+            },
+            {
+                id: 'company',
+                label: 'Company Info',
+                icon: FaBuilding,
+                route: '/dashboard/user'
+            }
+        ]
     },
 
 
-    {
+   {
     id: 'master',
     type: MENU_TYPES.DROPDOWN,
     label: 'Masters',
     icon: FaUniversity,
     route: '/masters',
-    order: 7,
+    order: 5,
     children: [
         {
             id: 'users',
             label: 'Users',
-            icon: FaUserFriends,               // UPDATED
+            icon: FaUserFriends,
             route: '/masters/users'
         },
         {
             id: 'master-debtors',
             label: 'Customers',
-            icon: MdAccountBalanceWallet,      // UPDATED
-            route: '/masters/debtors'
+            icon: MdAccountBalanceWallet,
+            route: '/masters/debtors' //name chnaged to Customers
+        },
+        {
+            id: 'area-table',                    // NEW ENTRY
+            label: 'Area Table',
+            icon: FaTable,
+            route: '/masters/area-table'
         }
     ]
-},
+}
 
 
 

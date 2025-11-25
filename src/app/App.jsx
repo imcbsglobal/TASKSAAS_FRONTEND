@@ -74,7 +74,8 @@ const AppLayout = () => {
 
                 {/* Area Assign */}
                 <Route path="/area-assign" element={<AreaAssign />} />
-                <Route path="/area-table" element={<AreaAssignTableView />} />
+               <Route path="/masters/area-table" element={<AreaAssignTableView />} />
+
 
                 {/* Masters group with nested routes */}
                 <Route path="/masters">

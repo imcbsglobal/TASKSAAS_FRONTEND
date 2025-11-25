@@ -54,7 +54,20 @@ const MasterUsers = () => {
     fetchUsers();
   }, []);
 
-  // Search logic - searches by id, role, and client_id
+  // Function to format role display
+  const formatRole = (role) => {
+    if (!role) return 'N/A';
+    const roleLower = role.toLowerCase().trim();
+    
+    if (roleLower === 'level 3') return 'Administrator';
+    if (roleLower === 'level 1') return 'User';
+    if (roleLower === 'level 2') return 'Level 2';
+    
+    // Return original role for other cases
+    return role;
+  };
+
+  // Search logic - searches by id and role
   const filtered = useMemo(() => {
     if (!searchTerm) return data;
     const t = searchTerm.trim().toLowerCase();
@@ -62,7 +75,7 @@ const MasterUsers = () => {
       (d) =>
         (d.id || "").toLowerCase().includes(t) ||
         (d.role || "").toLowerCase().includes(t) ||
-        (d.client_id || "").toLowerCase().includes(t)
+        formatRole(d.role).toLowerCase().includes(t)
     );
   }, [data, searchTerm]);
 
@@ -99,7 +112,7 @@ const MasterUsers = () => {
   // Get role badge class
   const getRoleBadgeClass = (role) => {
     if (!role) return "role-default";
-    const roleLower = role.toLowerCase();
+    const roleLower = role.toLowerCase().trim();
     const roleMap = {
       admin: "role-admin",
       administrator: "role-admin",
@@ -108,6 +121,7 @@ const MasterUsers = () => {
       staff: "role-staff",
       viewer: "role-viewer",
       operator: "role-operator",
+      user: "role-viewer",
       "level 1": "role-viewer",
       "level 2": "role-staff",
       "level 3": "role-admin"
@@ -153,7 +167,7 @@ const MasterUsers = () => {
                 <input
                   id="mu-search"
                   type="search"
-                  placeholder="Search by client ID, name, or role..."
+                  placeholder="Search by name or role..."
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -186,7 +200,6 @@ const MasterUsers = () => {
               <thead>
                 <tr>
                   <th>S.No</th>
-                  <th>client ID</th>
                   <th>Name</th>
                   <th>User Role</th>
                 </tr>
@@ -195,14 +208,14 @@ const MasterUsers = () => {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="4" className="mu-loading">
+                    <td colSpan="3" className="mu-loading">
                       <div className="mu-spinner"></div>
                       <span>Loading users...</span>
                     </td>
                   </tr>
                 ) : total === 0 ? (
                   <tr>
-                    <td colSpan="4" className="mu-no-data">
+                    <td colSpan="3" className="mu-no-data">
                       <div className="mu-no-data-content">
                         <span className="mu-no-data-icon">🔭</span>
                         <p>{searchTerm ? `No results for "${searchTerm}"` : 'No users found'}</p>
@@ -213,15 +226,12 @@ const MasterUsers = () => {
                   pageItems.map((row, i) => (
                     <tr key={i}>
                       <td className="mu-sno-cell">{(page - 1) * pageSize + i + 1}</td>
-                      <td className="mu-userid-cell">
-                        <span className="mu-userid-badge">{row.client_id || 'N/A'}</span>
-                      </td>
                       <td className="mu-name-cell">
                         <span className="mu-user-name">{row.id || 'N/A'}</span>
                       </td>
                       <td className="mu-role-cell">
                         <span className={`mu-role-badge ${getRoleBadgeClass(row.role)}`}>
-                          {row.role !== null ? row.role : 'null'}
+                          {formatRole(row.role)}
                         </span>
                       </td>
                     </tr>

@@ -232,13 +232,13 @@ console.log(users)
         </p>
     </div>
 
-    <button 
+    {/* <button 
         className="btn btn--secondary"
-        onClick={() => navigate('/area-table')}
+        onClick={() => navigate('/masters/area-table')}
     >
         <i className="fas fa-table"></i>
         View Area
-    </button>
+    </button> */}
 </div>
 
                     </div>
