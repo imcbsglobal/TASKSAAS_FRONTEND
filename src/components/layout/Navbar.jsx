@@ -101,16 +101,20 @@ const Navbar = () => {
         }));
     };
 
+    // Navigate safely; route should be an absolute path like '/masters/debtors' or special key 'company'
     const handleNavigation = (route) => {
+        if (!route) return;
+
         if (route === 'company') {
             if (user?.role === 'Admin') {
                 navigate('/dashboard/admin');
             } else {
                 navigate('/dashboard/user');
             }
-
         } else {
-            navigate(route);
+            // If route is a relative path accidentally provided, normalize it
+            const target = route.startsWith('/') ? route : `/${route}`;
+            navigate(target);
         }
 
         // Close sidebar on mobile after navigation
@@ -131,6 +135,28 @@ const Navbar = () => {
         return username.charAt(0).toUpperCase();
     };
 
+    // Helper to compute final target URL for a menu item / child
+    const computeTargetRoute = (parent, child) => {
+        // If child provided and has route
+        if (child && child.route) {
+            // Absolute route -> use as-is
+            if (child.route.startsWith('/')) {
+                return child.route;
+            }
+            // Relative child route -> join with parent (ensure single slash)
+            const parentRoute = (parent && parent.route) ? parent.route.replace(/\/$/, '') : '';
+            return `${parentRoute}/${child.route}`.replace(/\/+/g, '/');
+        }
+
+        // If child not provided, use parent.route (if available)
+        if (parent && parent.route) {
+            return parent.route.startsWith('/') ? parent.route : `/${parent.route}`;
+        }
+
+        // fallback
+        return '/';
+    };
+
     // Render menu items recursively
     const renderMenuItem = (item) => {
         const IconComponent = item.icon;
@@ -138,9 +164,10 @@ const Navbar = () => {
         const isSubmenuOpen = openSubmenus[item.id];
 
         if (item.type === MENU_TYPES.SIMPLE) {
+            const to = computeTargetRoute(item, null);
             return (
-                <li key={item.id} onClick={() => handleNavigation(item.route)}>
-                    <IconComponent className="icon" />
+                <li key={item.id} onClick={() => handleNavigation(to)}>
+                    {IconComponent && <IconComponent className="icon" />}
                     <span>{item.label}</span>
                 </li>
             );
@@ -150,7 +177,7 @@ const Navbar = () => {
             return (
                 <li key={item.id} className={`menu-item ${isSubmenuOpen ? 'active' : ''}`}>
                     <div className="menu-main" onClick={() => toggleSubmenu(item.id)}>
-                        <IconComponent className="icon" />
+                        {IconComponent && <IconComponent className="icon" />}
                         <span>{item.label}</span>
                         <ChevronIcon className="chevron" />
                     </div>
@@ -158,9 +185,10 @@ const Navbar = () => {
                         <ul className="submenu">
                             {item.children.map(child => {
                                 const ChildIcon = child.icon;
+                                const to = computeTargetRoute(item, child);
                                 return (
-                                    <li key={child.id} onClick={() => handleNavigation(child.route)}>
-                                        <ChildIcon style={{ marginRight: '8px' }} />
+                                    <li key={child.id} onClick={() => handleNavigation(to)}>
+                                        {ChildIcon && <ChildIcon style={{ marginRight: '8px' }} />}
                                         <span>{child.label}</span>
                                     </li>
                                 );

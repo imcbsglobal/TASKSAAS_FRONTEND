@@ -1,16 +1,24 @@
+// Font Awesome icons
 import {
-    FaBox,
-    FaUniversity,
-    FaMoneyBillWave,
-    FaBuilding,
-    FaFingerprint,
-    FaCog,
-    FaMapMarkerAlt,
-    FaTable,
-    FaChevronDown,
-    FaChevronRight
+  FaBox,
+  FaUniversity,
+  FaMoneyBillWave,
+  FaBuilding,
+  FaFingerprint,
+  FaCog,
+  FaMapMarkerAlt,
+  FaTable,
+  FaChevronDown,
+  FaChevronRight,
+  FaUserFriends
 } from 'react-icons/fa';
-import { RiUserLocationLine } from "react-icons/ri";
+
+// Material icons
+import { MdAccountBalanceWallet } from 'react-icons/md';
+
+// Remix / Remix Icon (you already used this)
+import { RiUserLocationLine } from 'react-icons/ri';
+
 
 
 // Menu item types
@@ -31,7 +39,7 @@ export const MENU_CONFIG = [
     {
         id: 'debtors',
         type: MENU_TYPES.SIMPLE,
-        label: 'Debtors',
+        label: 'Statements',  
         icon: FaMoneyBillWave,
         route: '/debtors',
         order: 1
@@ -71,7 +79,7 @@ export const MENU_CONFIG = [
         type: MENU_TYPES.SIMPLE,
         label: 'User Management',
         icon: FaTable,
-        route: '/master/users',
+        route: '/masters/',
         order:4
     },
 
@@ -80,7 +88,7 @@ export const MENU_CONFIG = [
         type: MENU_TYPES.SIMPLE,
         label: 'Company Info',
         icon: FaBuilding,
-        route: 'company', // Special handling in component
+        route: '/dashboard/user',
         order: 5
     },
     {
@@ -91,6 +99,32 @@ export const MENU_CONFIG = [
         route: '/settings',
         order:6
     },
+
+
+    {
+    id: 'master',
+    type: MENU_TYPES.DROPDOWN,
+    label: 'Masters',
+    icon: FaUniversity,
+    route: '/masters',
+    order: 7,
+    children: [
+        {
+            id: 'users',
+            label: 'Users',
+            icon: FaUserFriends,               // UPDATED
+            route: '/masters/users'
+        },
+        {
+            id: 'master-debtors',
+            label: 'Customers',
+            icon: MdAccountBalanceWallet,      // UPDATED
+            route: '/masters/debtors'
+        }
+    ]
+},
+
+
 
     // {
     //     id: 'master',

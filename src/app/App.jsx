@@ -15,15 +15,17 @@ import StoreLocationCapture from '../features/punchin/pages/StoreLocationCapture
 import LocationRecords from '../features/punchin/pages/LocationRecords';
 import PunchinRecords from '../features/punchin/pages/PunchinRecords';
 import PunchInCapture from '../features/punchin/pages/PunchInCapture';
-import SettingsPage from '../features/settings/pages/MasterPage';
 import MasterPage from '../features/settings/pages/MasterPage';
-import UserManagement from '../features/settings/pages/MenuManagement';
 import MenuManagement from '../features/settings/pages/MenuManagement';
-import { AreaAssign, AreaAssignView } from '../features/punchin';
+import MasterDebtors from '../features/masters/page/masterDebtors';
+
+import { AreaAssign } from '../features/punchin';
+import AreaAssignTableView from '../features/punchin/pages/AreaAssignTableView';
 import { SiKfc } from 'react-icons/si';
 import { TbAdFilled } from 'react-icons/tb';
 import { LuFastForward } from 'react-icons/lu';
-import js from '@eslint/js';
+import MasterUsers from '../features/masters/page/MasterUsers';
+
 const AppLayout = () => {
     const location = useLocation();
     const hideNavbarRoutes = ['/', '/login'];
@@ -33,8 +35,10 @@ const AppLayout = () => {
             {!hideNavbarRoutes.includes(location.pathname) && <Navbar />}
 
             <Routes>
+                {/* Login */}
                 <Route path="/" element={<Login />} />
 
+                {/* Dashboards */}
                 <Route
                     path="/dashboard/admin"
                     element={
@@ -43,7 +47,6 @@ const AppLayout = () => {
                         </ProtectedRoute>
                     }
                 />
-
                 <Route
                     path="/dashboard/user"
                     element={
@@ -52,48 +55,57 @@ const AppLayout = () => {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Finance */}
                 <Route
                     path="/debtors"
-                    element={<ProtectedRoute><Debtors /></ProtectedRoute>}
+                    element={
+                        <ProtectedRoute>
+                            <Debtors />
+                        </ProtectedRoute>
+                    }
                 />
-                {/* <Route
-                    path="/cash-book"
-                    element={<ProtectedRoute><CashBook /></ProtectedRoute>}
-                /> */}
-                {/* <Route
-                    path="/cash-book-ledger"
-                    element={<ProtectedRoute><CashBookLedger /></ProtectedRoute>}
-                /> */}
-                {/* <Route
-                    path="/bank-book"
-                    element={<ProtectedRoute><BankBook /></ProtectedRoute>}
-                /> */}
-                {/* <Route
-                    path="/bank-book-ledger"
-                    element={<ProtectedRoute><BankBookLedger /></ProtectedRoute>}
-                /> */}
 
-                <Route
-                    path="/punch-in/location"
-                    element={<LocationRecords />}
-                />
-                <Route path='/punch-in/location/capture' element={<StoreLocationCapture />} />
+                {/* Punch-In */}
+                <Route path="/punch-in/location" element={<LocationRecords />} />
+                <Route path="/punch-in/location/capture" element={<StoreLocationCapture />} />
+                <Route path="/punch-in" element={<PunchinRecords />} />
+                <Route path="/punch-in/capture" element={<PunchInCapture />} />
 
-                <Route
-                    path="/punch-in"
-                    element={<PunchinRecords />}
-                />
-                <Route path='/punch-in/capture' element={<PunchInCapture />} />
-                <Route path='/area-assign' element={<AreaAssign />} />
-                {/* <Route path='/area-assign-view' element={<AreaAssignView />} /> */}
+                {/* Area Assign */}
+                <Route path="/area-assign" element={<AreaAssign />} />
+                <Route path="/area-table" element={<AreaAssignTableView />} />
 
-                <Route path="/master" >
-                    <Route path='users' element={<MenuManagement />} />
+                {/* Masters group with nested routes */}
+                <Route path="/masters">
+                    <Route
+                        index
+                        element={
+                            <ProtectedRoute>
+                                <MenuManagement />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="users"
+                        element={
+                            <ProtectedRoute>
+                                <MasterUsers />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="debtors"
+                        element={
+                            <ProtectedRoute>
+                                <MasterDebtors />
+                            </ProtectedRoute>
+                        }
+                    />
                 </Route>
-                <Route
-                    path='/*'
-                    element={<NotFound />}
-                />
+
+                {/* 404 fallback */}
+                <Route path="/*" element={<NotFound />} />
             </Routes>
         </>
     );

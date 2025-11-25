@@ -1508,3 +1508,20 @@ $wide: 1280px;
     opacity: 1;
   }
 }
+
+
+/* Option A: color only the View Area button in header (no JSX change) */
+.area-assign__header .btn.btn--secondary {
+  background: linear-gradient(135deg, $primary-500, $primary-600);
+  color: #fff;
+  border: 2px solid rgba(0,0,0,0.06);
+  box-shadow: 0 6px 18px rgba(37,99,235,0.12);
+  padding: $space-2 $space-4;
+  border-radius: $radius-md;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.area-assign__header .btn.btn--secondary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(0.95);
+}

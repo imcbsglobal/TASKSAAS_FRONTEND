@@ -1,0 +1,54 @@
+// features/punchin/styles/AreaAssignTable.scss
+
+.area-table-page {
+    padding: 24px;
+    width: 100%;
+    min-height: 100vh;
+    background: #f7f9fb;
+}
+
+.area-table-header {
+    margin-bottom: 20px;
+
+    h1 {
+        font-size: 26px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 5px;
+    }
+
+    p {
+        font-size: 14px;
+        color: #64748b;
+    }
+}
+
+.area-table-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    overflow-x: auto;
+}
+
+.area-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+        font-size: 14px;
+    }
+
+    th {
+        background: #f1f5f9;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    tr:hover {
+        background: #f8fafc;
+    }
+}

@@ -219,26 +219,28 @@ console.log(users)
                 <div className="area-assign__header">
                     <div className="area-assign__header-content">
                         <div className="header-top">
-                            <div className="header-tit">
-                                <h1 className="area-assign__title">
-                                    <i className="fas fa-map-marked-alt"></i>
-                                    Area Assignment
-                                </h1>
-                                <p className="area-assign__subtitle">
-                                    {step === 1 
-                                        ? 'Step 1: Select a user to assign areas' 
-                                        : `Step 2: Assign areas to ${selectedUser?.id}`
-                                    }
-                                </p>
-                            </div>
-                            {/* <button 
-                                className="btn btn--secondary"
-                                onClick={() => navigate('/area-assign-view')}
-                            >
-                                <i className="fas fa-list"></i>
-                                View Assignments
-                            </button> */}
-                        </div>
+    <div className="header-tit">
+        <h1 className="area-assign__title">
+            <i className="fas fa-map-marked-alt"></i>
+            Area Assignment
+        </h1>
+        <p className="area-assign__subtitle">
+            {step === 1 
+                ? 'Step 1: Select a user to assign areas' 
+                : `Step 2: Assign areas to ${selectedUser?.id}`
+            }
+        </p>
+    </div>
+
+    <button 
+        className="btn btn--secondary"
+        onClick={() => navigate('/area-table')}
+    >
+        <i className="fas fa-table"></i>
+        View Area
+    </button>
+</div>
+
                     </div>
                 
                 {/* Step Indicator */}
