@@ -34,7 +34,6 @@ const AreaAssignTableView = () => {
             
             if (result.areas && Array.isArray(result.areas)) {
                 const formattedData = result.areas.map((item, index) => {
-                    // Handle if item is a string (just area name) or object (with area and user info)
                     if (typeof item === 'string') {
                         return {
                             id: index + 1,
@@ -92,7 +91,6 @@ const AreaAssignTableView = () => {
             return area.includes(searchLower) || userName.includes(searchLower);
         });
 
-        // Sort alphabetically by area (A-Z)
         filtered.sort((a, b) => {
             const areaA = (a.area || '').toLowerCase();
             const areaB = (b.area || '').toLowerCase();
@@ -140,94 +138,91 @@ const AreaAssignTableView = () => {
 
     return (
         <div className="assign-table-container">
-            <div className="header-section">
-                <h1 className="table-title">Area Assignments</h1>
-                <div className="title-underline"></div>
-                <button 
-                    className="refresh-btn" 
-                    onClick={fetchAreaAssignments}
-                    disabled={loading}
-                    style={{
-                        marginLeft: '20px',
-                        padding: '8px 16px',
-                        background: '#4f46e5',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: loading ? 'not-allowed' : 'pointer',
-                        opacity: loading ? 0.6 : 1
-                    }}
-                >
-                    🔄 {loading ? 'Loading...' : 'Refresh'}
-                </button>
-            </div>
-
-            {error && (
-                <div style={{
-                    background: '#fee2e2',
-                    border: '1px solid #fecaca',
-                    borderRadius: '8px',
-                    padding: '12px 16px',
-                    margin: '16px 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    color: '#dc2626'
-                }}>
-                    <span>⚠️</span>
-                    <span>{error}</span>
-                    <button 
-                        onClick={fetchAreaAssignments}
-                        style={{
-                            marginLeft: 'auto',
-                            padding: '6px 12px',
-                            background: '#dc2626',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Retry
-                    </button>
-                </div>
-            )}
-
             <div className="table-wrapper">
-                <div className="table-controls">
-                    <div className="search-section">
-                        <label className="control-label">Search</label>
-                        <div className="search-box">
-                            <svg className="search-icon" width="18" height="18" viewBox="0 0 20 20" fill="none">
-                                <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            <input
-                                type="text"
-                                placeholder="Search by area or user name..."
-                                value={searchTerm}
-                                onChange={handleSearchChange}
-                                className="search-input"
-                                disabled={loading}
-                            />
+                {/* Header Section */}
+                <header className="header-section">
+                    <div className="header-left">
+                        <h1 className="table-title">Area Assignments</h1>
+                        <p className="subtitle">Manage and view all area assignments</p>
+                    </div>
+                    <button 
+                        className="refresh-btn" 
+                        onClick={fetchAreaAssignments}
+                        disabled={loading}
+                    >
+                        🔄 {loading ? 'Loading...' : 'Refresh'}
+                    </button>
+                </header>
+
+                {/* Error Banner */}
+                {error && (
+                    <div style={{
+                        background: 'linear-gradient(135deg, #fee2e2, #fecaca)',
+                        border: '2px solid #fca5a5',
+                        borderRadius: '10px',
+                        padding: '16px 24px',
+                        marginBottom: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '16px',
+                        color: '#991b1b',
+                        fontWeight: '600'
+                    }}>
+                        <span>⚠️</span>
+                        <span>{error}</span>
+                        <button 
+                            onClick={fetchAreaAssignments}
+                            style={{
+                                marginLeft: 'auto',
+                                padding: '10px 20px',
+                                background: 'linear-gradient(135deg, #dc2626, #ef4444)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '13px',
+                                fontWeight: '700',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
+
+                {/* Table Controls */}
+                {!loading && !error && (
+                    <div className="table-controls">
+                        <div className="search-section">
+                            <label className="control-label">Search</label>
+                            <div className="search-box">
+                                <span className="search-icon">🔍</span>
+                                <input
+                                    type="search"
+                                    placeholder="Search by area or user name..."
+                                    value={searchTerm}
+                                    onChange={handleSearchChange}
+                                    className="search-input"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="rows-section">
+                            <label className="control-label">Rows:</label>
+                            <select 
+                                value={itemsPerPage} 
+                                onChange={handleItemsPerPageChange} 
+                                className="rows-select"
+                            >
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                            </select>
                         </div>
                     </div>
+                )}
 
-                    <div className="rows-section">
-                        <label className="control-label">Rows:</label>
-                        <select 
-                            value={itemsPerPage} 
-                            onChange={handleItemsPerPageChange} 
-                            className="rows-select"
-                            disabled={loading}
-                        >
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={15}>15</option>
-                            <option value={20}>20</option>
-                        </select>
-                    </div>
-                </div>
-
+                {/* Table */}
                 <div className="table-scroll">
                     <table className="styled-table">
                         <thead>
@@ -241,17 +236,19 @@ const AreaAssignTableView = () => {
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan="3" style={{ textAlign: 'center', padding: '40px' }}>
+                                    <td colSpan="3" style={{ textAlign: 'center', padding: '60px 20px' }}>
                                         <div style={{
                                             display: 'inline-block',
-                                            width: '24px',
-                                            height: '24px',
-                                            border: '3px solid #f3f3f3',
-                                            borderTop: '3px solid #4f46e5',
+                                            width: '40px',
+                                            height: '40px',
+                                            border: '4px solid rgba(37, 99, 235, 0.1)',
+                                            borderTop: '4px solid #2563eb',
                                             borderRadius: '50%',
-                                            animation: 'spin 1s linear infinite'
+                                            animation: 'spin 0.8s linear infinite'
                                         }}></div>
-                                        <p style={{ marginTop: '10px', color: '#666' }}>Loading area assignments...</p>
+                                        <p style={{ marginTop: '16px', color: '#64748b', fontSize: '16px', fontWeight: '500' }}>
+                                            Loading area assignments...
+                                        </p>
                                     </td>
                                 </tr>
                             ) : currentItems.length > 0 ? (
@@ -261,10 +258,10 @@ const AreaAssignTableView = () => {
                                         <td>{row.area || 'N/A'}</td>
                                         <td>
                                             <span style={{
-                                                color: row.user_name ? '#059669' : '#9ca3af',
+                                                color: row.user_name ? '#334155' : '#9ca3af',
                                                 fontStyle: row.user_name ? 'normal' : 'italic'
                                             }}>
-                                                {row.user_name || 'null'}
+                                                {row.user_name || '-'}
                                             </span>
                                         </td>
                                     </tr>
@@ -282,17 +279,18 @@ const AreaAssignTableView = () => {
                     </table>
                 </div>
 
+                {/* Pagination */}
                 {filteredAndSortedData.length > 0 && !loading && (
                     <div className="pagination">
                         <button 
-                            className="page-btn prev-btn"
+                            className="page-btn"
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
                         >
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                 <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
-                            Previous
+                            Prev
                         </button>
 
                         <div className="page-numbers">
@@ -308,7 +306,7 @@ const AreaAssignTableView = () => {
                         </div>
 
                         <button 
-                            className="page-btn next-btn"
+                            className="page-btn"
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
                         >

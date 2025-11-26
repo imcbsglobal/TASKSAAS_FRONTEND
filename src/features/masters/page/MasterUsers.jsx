@@ -7,6 +7,7 @@ const MasterUsers = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
   const pageSize = 20;
   const [page, setPage] = useState(1);
 
@@ -33,13 +34,21 @@ const MasterUsers = () => {
       const result = await response.json();
       
       // Based on your API structure: { success: true, users: [...] }
+      let users = [];
       if (result.users && Array.isArray(result.users)) {
-        setData(result.users);
+        users = result.users;
       } else if (Array.isArray(result)) {
-        setData(result);
-      } else {
-        setData([]);
+        users = result;
       }
+      
+      // Filter to only include Level 1 and Level 3 users (excluding null/undefined roles)
+      const filteredUsers = users.filter(user => {
+        if (!user.role) return false;
+        const roleLower = user.role.toLowerCase().trim();
+        return roleLower === 'level 1' || roleLower === 'level 3';
+      });
+      
+      setData(filteredUsers);
       
     } catch (err) {
       console.error("Error:", err);
@@ -61,23 +70,36 @@ const MasterUsers = () => {
     
     if (roleLower === 'level 3') return 'Administrator';
     if (roleLower === 'level 1') return 'User';
-    if (roleLower === 'level 2') return 'Level 2';
     
     // Return original role for other cases
     return role;
   };
 
-  // Search logic - searches by id and role
+  // Search and role filter logic
   const filtered = useMemo(() => {
-    if (!searchTerm) return data;
-    const t = searchTerm.trim().toLowerCase();
-    return data.filter(
-      (d) =>
-        (d.id || "").toLowerCase().includes(t) ||
-        (d.role || "").toLowerCase().includes(t) ||
-        formatRole(d.role).toLowerCase().includes(t)
-    );
-  }, [data, searchTerm]);
+    let result = data;
+
+    // Apply role filter
+    if (roleFilter !== "all") {
+      result = result.filter((d) => {
+        const roleLower = (d.role || "").toLowerCase().trim();
+        return roleLower === roleFilter;
+      });
+    }
+
+    // Apply search filter
+    if (searchTerm) {
+      const t = searchTerm.trim().toLowerCase();
+      result = result.filter(
+        (d) =>
+          (d.id || "").toLowerCase().includes(t) ||
+          (d.role || "").toLowerCase().includes(t) ||
+          formatRole(d.role).toLowerCase().includes(t)
+      );
+    }
+
+    return result;
+  }, [data, searchTerm, roleFilter]);
 
   // Sort filtered data alphabetically by name (id field)
   const sortedData = useMemo(() => {
@@ -114,16 +136,7 @@ const MasterUsers = () => {
     if (!role) return "role-default";
     const roleLower = role.toLowerCase().trim();
     const roleMap = {
-      admin: "role-admin",
-      administrator: "role-admin",
-      manager: "role-manager",
-      supervisor: "role-manager",
-      staff: "role-staff",
-      viewer: "role-viewer",
-      operator: "role-operator",
-      user: "role-viewer",
       "level 1": "role-viewer",
-      "level 2": "role-staff",
       "level 3": "role-admin"
     };
     return roleMap[roleLower] || "role-default";
@@ -136,7 +149,7 @@ const MasterUsers = () => {
           <header className="mu-card-header">
             <div>
               <h1 className="mu-title">Master Users</h1>
-              <p className="mu-subtitle">Manage and view all users</p>
+              <p className="mu-subtitle">Manage users</p>
             </div>
             <button 
               className="mu-refresh-btn" 
@@ -158,7 +171,7 @@ const MasterUsers = () => {
             </div>
           )}
 
-          {/* Search */}
+          {/* Search and Filter Row */}
           <div className="mu-filter-row">
             <div className="mu-filter-item mu-filter-search compact">
               <label htmlFor="mu-search">Search</label>
@@ -187,9 +200,31 @@ const MasterUsers = () => {
                 )}
               </div>
             </div>
+
+            <div className="mu-filter-item mu-filter-role">
+              <label htmlFor="mu-role-filter">Filter by Role</label>
+              <div className="mu-select-wrap">
+                <select
+                  id="mu-role-filter"
+                  value={roleFilter}
+                  onChange={(e) => {
+                    setRoleFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  disabled={loading}
+                  className="mu-role-select"
+                >
+                  <option value="all">All Roles</option>
+                  <option value="level 1">Users</option>
+                  <option value="level 3">Administrators</option>
+                </select>
+                <span className="mu-select-arrow">▼</span>
+              </div>
+            </div>
+
             <div className="mu-stats">
               <span className="mu-stat-badge">
-                Total Users: <strong>{loading ? '...' : total}</strong>
+                Total: <strong>{loading ? '...' : total}</strong>
               </span>
             </div>
           </div>
@@ -218,7 +253,14 @@ const MasterUsers = () => {
                     <td colSpan="3" className="mu-no-data">
                       <div className="mu-no-data-content">
                         <span className="mu-no-data-icon">🔭</span>
-                        <p>{searchTerm ? `No results for "${searchTerm}"` : 'No users found'}</p>
+                        <p>
+                          {searchTerm 
+                            ? `No results for "${searchTerm}"` 
+                            : roleFilter === "all" 
+                              ? 'No Level 1 or Level 3 users found' 
+                              : `No ${formatRole(roleFilter)}s found`
+                          }
+                        </p>
                       </div>
                     </td>
                   </tr>
