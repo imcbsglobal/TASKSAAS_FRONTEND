@@ -5,6 +5,8 @@ import DashboardUser from '../features/dashboard/pages/Dashboard_user';
 import ProtectedRoute from '../features/auth/components/ProtectedRoute';
 import Navbar from '../components/layout/Navbar';
 import Debtors from '../features/finance/pages/Debtors';
+import LedgerPage from '../features/finance/pages/LedgerPage';
+import InvoicePage from '../features/finance/pages/InvoicePage';
 // import BankBook from "../features/finance/pages/BankBook";
 // import CashBook from "../features/finance/pages/CashBook";
 // import CashBookLedger from "../features/finance/pages/CashBookLedger";
@@ -65,6 +67,22 @@ const AppLayout = () => {
                         </ProtectedRoute>
                     }
                 />
+                <Route
+                    path="/debtors/ledger/:accountCode"
+                    element={
+                        <ProtectedRoute>
+                            <LedgerPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/debtors/invoice/:accountCode"
+                    element={
+                        <ProtectedRoute>
+                            <InvoicePage />
+                        </ProtectedRoute>
+                    }
+                />
 
                 {/* Punch-In */}
                 <Route path="/punch-in/location" element={<LocationRecords />} />
@@ -74,8 +92,7 @@ const AppLayout = () => {
 
                 {/* Area Assign */}
                 <Route path="/area-assign" element={<AreaAssign />} />
-               <Route path="/masters/area-table" element={<AreaAssignTableView />} />
-
+                <Route path="/masters/area-table" element={<AreaAssignTableView />} />
 
                 {/* Masters group with nested routes */}
                 <Route path="/masters">
