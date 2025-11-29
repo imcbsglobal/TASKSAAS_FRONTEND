@@ -10,7 +10,8 @@ import {
   FaTable,
   FaChevronDown,
   FaChevronRight,
-  FaUserFriends
+  FaUserFriends,
+  FaTruck
 } from 'react-icons/fa';
 
 // Material icons
@@ -116,10 +117,16 @@ export const MENU_CONFIG = [
             id: 'master-debtors',
             label: 'Customers',
             icon: MdAccountBalanceWallet,
-            route: '/masters/debtors' //name chnaged to Customers
+            route: '/masters/debtors'
         },
         {
-            id: 'area-table',                    // NEW ENTRY
+            id: 'master-suppliers',              // NEW ENTRY
+            label: 'Suppliers',
+            icon: FaTruck,
+            route: '/masters/suppliers'
+        },
+        {
+            id: 'area-table',
             label: 'Area Table',
             icon: FaTable,
             route: '/masters/area-table'

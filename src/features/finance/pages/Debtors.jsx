@@ -7,29 +7,30 @@ import '../styles/Debtors.scss';
 const Debtors = () => {
     const navigate = useNavigate();
     const [allData, setAllData] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
-    const [pageSize, setPageSize] = useState(20);
-    const [currentPage, setCurrentPage] = useState(1);
-
-    const pageSizeOptions = [10, 20, 50, 100];
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedAccount, setSelectedAccount] = useState(null);
 
     useEffect(() => {
         fetchDebtorsData();
     }, []);
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            setCurrentPage(1);
-        }, 500);
-
-        return () => clearTimeout(timeoutId);
-    }, [searchTerm]);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [pageSize]);
+        if (searchTerm.trim()) {
+            const search = searchTerm.toLowerCase();
+            const filtered = allData.filter(item =>
+                (item.name || '').toLowerCase().includes(search) ||
+                (item.code || '').toLowerCase().includes(search) ||
+                (item.place || '').toLowerCase().includes(search)
+            );
+            setFilteredData(filtered);
+        } else {
+            setFilteredData(allData);
+        }
+    }, [searchTerm, allData]);
 
     const fetchDebtorsData = async () => {
         try {
@@ -55,16 +56,18 @@ const Debtors = () => {
                 const filteredData = response.data.data.filter(item => {
                     const debit = parseFloat(item.master_debit || 0);
                     const credit = parseFloat(item.master_credit || 0);
-                    
                     return debit !== 0 || credit !== 0;
                 });
                 
-                // Check what fields are available in the API response
-                console.log('Total records:', filteredData.length);
-                console.log('Sample record (first item):', filteredData[0]);
-                console.log('All fields:', filteredData[0] ? Object.keys(filteredData[0]) : 'No data');
+                // Sort alphabetically by name
+                const sorted = [...filteredData].sort((a, b) => {
+                    const nameA = (a.name || '').toLowerCase();
+                    const nameB = (b.name || '').toLowerCase();
+                    return nameA.localeCompare(nameB);
+                });
                 
-                setAllData(filteredData);
+                setAllData(sorted);
+                setFilteredData(sorted);
             } else {
                 setError(response.data.error || 'Failed to fetch data');
             }
@@ -75,79 +78,28 @@ const Debtors = () => {
         }
     };
 
-    const getDisplayData = () => {
-        let filtered = allData;
-
-        if (searchTerm.trim()) {
-            const search = searchTerm.toLowerCase();
-            filtered = filtered.filter(item => 
-                (item.code || '').toString().toLowerCase().includes(search) ||
-                (item.name || '').toString().toLowerCase().includes(search) ||
-                (item.place || '').toString().toLowerCase().includes(search)
-            );
-        }
-
-        // Sort alphabetically by name
-        filtered = [...filtered].sort((a, b) => {
-            const nameA = (a.name || '').toLowerCase();
-            const nameB = (b.name || '').toLowerCase();
-            return nameA.localeCompare(nameB);
-        });
-
-        const totalRecords = filtered.length;
-        const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedData = filtered.slice(startIndex, endIndex);
-
-        return {
-            data: paginatedData,
-            totalRecords,
-            totalPages
-        };
-    };
-
-    const displayInfo = getDisplayData();
-    const displayData = displayInfo.data;
-    const totalPages = displayInfo.totalPages;
-    const totalRecords = displayInfo.totalRecords;
-
-    const handlePageChange = (newPage) => {
-        if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
-            setCurrentPage(newPage);
-        }
-    };
-
-    const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value);
-    };
-
-    const handlePageSizeChange = (e) => {
-        const newPageSize = parseInt(e.target.value);
-        setPageSize(newPageSize);
-    };
-
-    const clearSearch = () => {
+    const handleSelectAccount = (account) => {
+        setSelectedAccount(account);
+        setIsOpen(false);
         setSearchTerm('');
-    };
-
-    const handleLedgerClick = (account) => {
-        // Navigate to ledger page with account code
+        
+        // Navigate to ledger page
         navigate(`/debtors/ledger/${account.code}`, {
             state: { accountName: account.name, accountData: account }
         });
     };
 
-    const handleInvoiceClick = (account) => {
-        // Navigate to invoice page with account code
-        navigate(`/debtors/invoice/${account.code}`, {
-            state: { accountName: account.name, accountData: account }
-        });
+    const clearSelection = () => {
+        setSelectedAccount(null);
+        setSearchTerm('');
     };
 
     const formatCurrency = (amount) => {
         if (!amount) return '0.00';
-        return parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return parseFloat(amount).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     };
 
     const calculateBalance = (debit, credit) => {
@@ -160,18 +112,16 @@ const Debtors = () => {
         <div className="dbt-page">
             <div className="dbt-card">
                 <div className="dbt-card-inner">
+                    {/* Header */}
                     <header className="dbt-card-header">
                         <div className="dbt-header-content">
                             <div className="dbt-header-left">
-                                <h1 className="dbt-title">Debtors Statement</h1>
-                                <p className="dbt-subtitle">Manage and view all debtor accounts</p>
+                                <h1 className="dbt-title">Debtors Ledger</h1>
+                                <p className="dbt-subtitle">Select an account to view ledger details</p>
                             </div>
                             <button 
                                 className="dbt-refresh-btn" 
-                                onClick={() => {
-                                    setLoading(true);
-                                    fetchDebtorsData();
-                                }}
+                                onClick={fetchDebtorsData}
                                 disabled={loading}
                             >
                                 🔄 Refresh
@@ -179,152 +129,154 @@ const Debtors = () => {
                         </div>
                     </header>
 
+                    {/* Error State */}
+                    {error && (
+                        <div className="dbt-error">⚠️ Error: {error}</div>
+                    )}
+
+                    {/* Loading State */}
                     {loading && (
                         <div className="dbt-loading">Loading debtors data...</div>
                     )}
-                    
-                    {error && (
-                        <div className="dbt-error">Error: {error}</div>
-                    )}
 
+                    {/* Dropdown Section */}
                     {!loading && !error && (
-                        <>
-                            <div className="dbt-filter-row">
-                                <div className="dbt-filter-left">
-                                    <div className="dbt-filter-item dbt-filter-search">
-                                        <label htmlFor="dbt-search">Search</label>
-                                        <div className="dbt-search-wrap">
+                        <div className="dbt-dropdown-section">
+                            <label className="dbt-dropdown-label">Select Debtor Account</label>
+                            
+                            {/* Dropdown Button */}
+                            <div className="dbt-dropdown-container">
+                                <button
+                                    className="dbt-dropdown-button"
+                                    onClick={() => setIsOpen(!isOpen)}
+                                    disabled={loading}
+                                >
+                                    <span className="dbt-dropdown-text">
+                                        {selectedAccount ? (
+                                            <>
+                                                <span>{selectedAccount.name}</span>
+                                                {selectedAccount.place && (
+                                                    <>
+                                                        <span className="dbt-dropdown-separator">•</span>
+                                                        <span className="dbt-dropdown-place">{selectedAccount.place}</span>
+                                                    </>
+                                                )}
+                                            </>
+                                        ) : (
+                                            'Choose an account...'
+                                        )}
+                                    </span>
+                                    <span className={`dbt-dropdown-arrow ${isOpen ? 'open' : ''}`}>▼</span>
+                                </button>
+
+                                {/* Dropdown Menu */}
+                                {isOpen && (
+                                    <div className="dbt-dropdown-menu">
+                                        {/* Search Box */}
+                                        <div className="dbt-dropdown-search">
                                             <span className="dbt-search-icon">🔍</span>
                                             <input
-                                                id="dbt-search"
                                                 type="text"
-                                                placeholder="Search by name, code, place..."
+                                                placeholder="Search by name, code, or place..."
                                                 value={searchTerm}
-                                                onChange={handleSearchChange}
-                                                disabled={loading}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="dbt-dropdown-search-input"
                                             />
                                             {searchTerm && (
                                                 <button
-                                                    type="button"
                                                     className="dbt-search-clear"
-                                                    onClick={clearSearch}
-                                                    aria-label="Clear search"
+                                                    onClick={() => setSearchTerm('')}
                                                 >
                                                     ✕
                                                 </button>
                                             )}
                                         </div>
+
+                                        {/* Options List */}
+                                        <div className="dbt-dropdown-list">
+                                            {filteredData.length === 0 ? (
+                                                <div className="dbt-dropdown-empty">
+                                                    {searchTerm ? `No accounts found matching "${searchTerm}"` : 'No accounts available'}
+                                                </div>
+                                            ) : (
+                                                filteredData.map((account) => (
+                                                        <button
+                                                            key={account.code}
+                                                            className="dbt-dropdown-item"
+                                                            onClick={() => handleSelectAccount(account)}
+                                                        >
+                                                            <div className="dbt-dropdown-item-main">
+                                                                <div className="dbt-dropdown-item-info">
+                                                                    <div className="dbt-dropdown-item-name">{account.name}</div>
+                                                                    {account.place && (
+                                                                        <div className="dbt-dropdown-item-place">📍 {account.place}</div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </button>
+                                                    ))
+                                                )
+                                            }
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Selected Account Info */}
+                            {selectedAccount && (
+                                <div className="dbt-selected-account">
+                                    <div className="dbt-selected-account-inner">
+                                        <div className="dbt-selected-account-header">
+                                            <h3 className="dbt-selected-account-title">Selected Account</h3>
+                                            <button
+                                                className="dbt-clear-selection"
+                                                onClick={clearSelection}
+                                                title="Clear selection"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                        <div className="dbt-selected-account-details">
+                                            <p><span className="label">Code:</span> <span className="value code">{selectedAccount.code}</span></p>
+                                            <p><span className="label">Name:</span> <span className="value">{selectedAccount.name}</span></p>
+                                            {selectedAccount.place && (
+                                                <p><span className="label">Place:</span> <span className="value">{selectedAccount.place}</span></p>
+                                            )}
+                                        </div>
+                                        <div className="dbt-selected-account-stats">
+                                            <div className="stat-card">
+                                                <div className="stat-label">Debit</div>
+                                                <div className="stat-value">₹{formatCurrency(selectedAccount.master_debit)}</div>
+                                            </div>
+                                            <div className="stat-card">
+                                                <div className="stat-label">Credit</div>
+                                                <div className="stat-value">₹{formatCurrency(selectedAccount.master_credit)}</div>
+                                            </div>
+                                            <div className="stat-card">
+                                                <div className="stat-label">Balance</div>
+                                                <div className={`stat-value ${
+                                                    calculateBalance(selectedAccount.master_debit, selectedAccount.master_credit) >= 0
+                                                        ? 'positive'
+                                                        : 'negative'
+                                                }`}>
+                                                    ₹{formatCurrency(Math.abs(calculateBalance(selectedAccount.master_debit, selectedAccount.master_credit)))}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            )}
 
-                                <div className="dbt-stats">
-                                    <div className="dbt-rows-selector">
-                                        <label htmlFor="dbt-rows-select">Rows:</label>
-                                        <select
-                                            id="dbt-rows-select"
-                                            value={pageSize}
-                                            onChange={handlePageSizeChange}
-                                            disabled={loading}
-                                        >
-                                            {pageSizeOptions.map(size => (
-                                                <option key={size} value={size}>
-                                                    {size}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
+                            {/* Stats */}
+                            {allData.length > 0 && (
+                                <div className="dbt-total-stats">
+                                    Total Accounts: <span className="highlight">{allData.length}</span>
+                                    {searchTerm && filteredData.length !== allData.length && (
+                                        <> | Filtered: <span className="highlight">{filteredData.length}</span></>
+                                    )}
                                 </div>
-                            </div>
-
-                            <div className="dbt-table-wrap">
-                                <table className="dbt-debtors-table">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Code</th>
-                                            <th>Name</th>
-                                            <th>Ledger</th>
-                                            <th>Invoice</th>
-                                            <th>Place</th>
-                                            <th>Phone</th>
-                                            <th>Opening</th>
-                                            <th>Debit</th>
-                                            <th>Credit</th>
-                                            <th>Balance</th>
-                                            <th>Dept</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {displayData.length === 0 ? (
-                                            <tr>
-                                                <td colSpan="12" className="dbt-no-data">
-                                                    {searchTerm ? `No records found matching "${searchTerm}".` : "No debtor records found."}
-                                                </td>
-                                            </tr>
-                                        ) : (
-                                            displayData.map((item, index) => {
-                                                const balance = calculateBalance(item.master_debit, item.master_credit);
-                                                const serialNo = (currentPage - 1) * pageSize + index + 1;
-                                                return (
-                                                    <tr key={`${item.code}-${index}`}>
-                                                        <td data-label="No">{serialNo}</td>
-                                                        <td data-label="Code" className="dbt-account-code">{item.code}</td>
-                                                        <td data-label="Name" className="dbt-account-name">{item.name || 'N/A'}</td>
-                                                        <td data-label="Ledger" className="dbt-eye-icon-cell">
-                                                            <button 
-                                                                className="dbt-eye-icon-btn" 
-                                                                onClick={() => handleLedgerClick(item)}
-                                                                title="View Ledger Details"
-                                                            >
-                                                                👁️
-                                                            </button>
-                                                        </td>
-                                                        <td data-label="Invoice" className="dbt-eye-icon-cell">
-                                                            <button 
-                                                                className="dbt-eye-icon-btn" 
-                                                                onClick={() => handleInvoiceClick(item)}
-                                                                title="View Invoice Details"
-                                                            >
-                                                                👁️
-                                                            </button>
-                                                        </td>
-                                                        <td data-label="Place">{item.place || '-'}</td>
-                                                        <td data-label="Phone">{item.phone2 || '-'}</td>
-                                                        <td data-label="Opening" className="dbt-currency">₹{formatCurrency(item.opening_balance)}</td>
-                                                        <td data-label="Debit" className="dbt-currency">₹{formatCurrency(item.master_debit)}</td>
-                                                        <td data-label="Credit" className="dbt-currency">₹{formatCurrency(item.master_credit)}</td>
-                                                        <td data-label="Balance" className={`dbt-currency ${balance >= 0 ? 'dbt-balance-positive' : 'dbt-balance-negative'}`}>
-                                                            ₹{formatCurrency(Math.abs(balance))}
-                                                        </td>
-                                                        <td data-label="Dept">{item.openingdepartment || '-'}</td>
-                                                    </tr>
-                                                );
-                                            })
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div className="dbt-pagination">
-                                <button 
-                                    className="dbt-page-btn" 
-                                    onClick={() => handlePageChange(currentPage - 1)} 
-                                    disabled={currentPage === 1 || loading}
-                                >
-                                    Prev
-                                </button>
-                                <div className="dbt-page-info">
-                                    {totalRecords === 0 ? "No records" : `Showing ${totalRecords} records (Page ${currentPage} of ${totalPages})`}
-                                </div>
-                                <button 
-                                    className="dbt-page-btn" 
-                                    onClick={() => handlePageChange(currentPage + 1)} 
-                                    disabled={currentPage === totalPages || loading}
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        </>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>

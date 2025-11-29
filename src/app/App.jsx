@@ -20,13 +20,14 @@ import PunchInCapture from '../features/punchin/pages/PunchInCapture';
 import MasterPage from '../features/settings/pages/MasterPage';
 import MenuManagement from '../features/settings/pages/MenuManagement';
 import MasterDebtors from '../features/masters/page/masterDebtors';
+import MasterSuppliers from '../features/masters/page/MasterSuppliers';
+import MasterUsers from '../features/masters/page/MasterUsers';
 
 import { AreaAssign } from '../features/punchin';
 import AreaAssignTableView from '../features/punchin/pages/AreaAssignTableView';
 import { SiKfc } from 'react-icons/si';
 import { TbAdFilled } from 'react-icons/tb';
 import { LuFastForward } from 'react-icons/lu';
-import MasterUsers from '../features/masters/page/MasterUsers';
 
 const AppLayout = () => {
     const location = useLocation();
@@ -117,6 +118,14 @@ const AppLayout = () => {
                         element={
                             <ProtectedRoute>
                                 <MasterDebtors />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="suppliers"
+                        element={
+                            <ProtectedRoute>
+                                <MasterSuppliers />
                             </ProtectedRoute>
                         }
                     />

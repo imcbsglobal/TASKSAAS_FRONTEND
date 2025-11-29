@@ -10,8 +10,13 @@ const LedgerPage = () => {
     const navigate = useNavigate();
     
     const [ledgerDetails, setLedgerDetails] = useState([]);
+    const [filteredLedgerDetails, setFilteredLedgerDetails] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    
+    // Date filter states
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
     
     // Get account info from location state or use default
     const accountName = location.state?.accountName || 'Account';
@@ -22,6 +27,10 @@ const LedgerPage = () => {
             fetchLedgerDetails();
         }
     }, [accountCode]);
+
+    useEffect(() => {
+        applyDateFilter();
+    }, [ledgerDetails, fromDate, toDate]);
 
     const fetchLedgerDetails = async () => {
         try {
@@ -62,6 +71,40 @@ const LedgerPage = () => {
         }
     };
 
+    const applyDateFilter = () => {
+        if (!fromDate && !toDate) {
+            setFilteredLedgerDetails(ledgerDetails);
+            return;
+        }
+
+        const filtered = ledgerDetails.filter(entry => {
+            const entryDate = new Date(entry.entry_date);
+            
+            if (fromDate && toDate) {
+                const from = new Date(fromDate);
+                const to = new Date(toDate);
+                to.setHours(23, 59, 59, 999); // Include the entire "to" date
+                return entryDate >= from && entryDate <= to;
+            } else if (fromDate) {
+                const from = new Date(fromDate);
+                return entryDate >= from;
+            } else if (toDate) {
+                const to = new Date(toDate);
+                to.setHours(23, 59, 59, 999);
+                return entryDate <= to;
+            }
+            
+            return true;
+        });
+
+        setFilteredLedgerDetails(filtered);
+    };
+
+    const handleClearFilter = () => {
+        setFromDate('');
+        setToDate('');
+    };
+
     const handleBack = () => {
         navigate('/debtors');
     };
@@ -86,7 +129,7 @@ const LedgerPage = () => {
     // Calculate running balance
     const calculateRunningBalance = () => {
         let balance = parseFloat(accountData?.opening_balance || 0);
-        return ledgerDetails.map((entry) => {
+        return filteredLedgerDetails.map((entry) => {
             const debit = parseFloat(entry.debit || 0);
             const credit = parseFloat(entry.credit || 0);
             balance += debit - credit;
@@ -97,7 +140,7 @@ const LedgerPage = () => {
     const ledgerWithBalance = calculateRunningBalance();
 
     // Calculate totals
-    const totals = ledgerDetails.reduce(
+    const totals = filteredLedgerDetails.reduce(
         (acc, entry) => {
             acc.debit += parseFloat(entry.debit || 0);
             acc.credit += parseFloat(entry.credit || 0);
@@ -132,6 +175,47 @@ const LedgerPage = () => {
                             </button>
                         </div>
                     </header>
+
+                    {/* Date Filter */}
+                    <div className="ldg-date-filter">
+                        <div className="ldg-filter-title">
+                            📅 Filter by Date Range
+                        </div>
+                        <div className="ldg-filter-controls">
+                            <div className="ldg-filter-group">
+                                <label htmlFor="fromDate" className="ldg-filter-label">From Date</label>
+                                <input
+                                    type="date"
+                                    id="fromDate"
+                                    className="ldg-date-input"
+                                    value={fromDate}
+                                    onChange={(e) => setFromDate(e.target.value)}
+                                />
+                            </div>
+                            <div className="ldg-filter-group">
+                                <label htmlFor="toDate" className="ldg-filter-label">To Date</label>
+                                <input
+                                    type="date"
+                                    id="toDate"
+                                    className="ldg-date-input"
+                                    value={toDate}
+                                    onChange={(e) => setToDate(e.target.value)}
+                                />
+                            </div>
+                            <button 
+                                className="ldg-clear-filter-btn"
+                                onClick={handleClearFilter}
+                                disabled={!fromDate && !toDate}
+                            >
+                                Clear Filter
+                            </button>
+                        </div>
+                        {(fromDate || toDate) && (
+                            <div className="ldg-filter-info">
+                                Showing {filteredLedgerDetails.length} of {ledgerDetails.length} entries
+                            </div>
+                        )}
+                    </div>
 
                     {/* Account Summary */}
                     {accountData && (
@@ -182,16 +266,20 @@ const LedgerPage = () => {
                     {/* Ledger Table */}
                     {!loading && !error && (
                         <>
-                            {ledgerDetails.length === 0 ? (
+                            {filteredLedgerDetails.length === 0 ? (
                                 <div className="ldg-no-data">
                                     <div className="ldg-no-data-icon">📋</div>
-                                    <p>No ledger entries found for this account.</p>
+                                    <p>
+                                        {ledgerDetails.length === 0 
+                                            ? 'No ledger entries found for this account.'
+                                            : 'No entries found for the selected date range.'}
+                                    </p>
                                 </div>
                             ) : (
                                 <>
                                     <div className="ldg-table-info">
                                         <span className="ldg-entries-count">
-                                            Total Entries: <strong>{ledgerDetails.length}</strong>
+                                            Total Entries: <strong>{filteredLedgerDetails.length}</strong>
                                         </span>
                                     </div>
 

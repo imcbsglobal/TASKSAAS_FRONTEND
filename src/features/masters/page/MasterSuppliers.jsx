@@ -1,13 +1,13 @@
 import React, { useMemo, useState, useEffect } from "react";
-import "./masterDebtors.scss";
+import "./MasterSuppliers.scss";
 
-const MasterDebtors = () => {
+const MasterSuppliers = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Extract fetchDebtors as a separate function
-  const fetchDebtors = async () => {
+  // Extract fetchSuppliers as a separate function
+  const fetchSuppliers = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -37,29 +37,29 @@ const MasterDebtors = () => {
       const result = await response.json();
       
       if (result.success && Array.isArray(result.data)) {
-        // Filter only records where super_code is 'DEBTO'
-        const debtoData = result.data.filter(item => 
-          item.super_code === 'DEBTO'
+        // Filter only records where super_code is 'SUNCR' (sundry creditors/suppliers)
+        const suppliersData = result.data.filter(item => 
+          item.super_code === 'SUNCR'
         );
-        setData(debtoData);
+        setData(suppliersData);
       } else {
         throw new Error("Invalid data format received");
       }
     } catch (err) {
       setError(err.message);
-      console.error("Error fetching debtors:", err);
+      console.error("Error fetching suppliers:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDebtors();
+    fetchSuppliers();
   }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedArea, setSelectedArea] = useState(""); // New state for area filter
-  const [areaSearchTerm, setAreaSearchTerm] = useState(""); // Search within area dropdown
+  const [selectedArea, setSelectedArea] = useState("");
+  const [areaSearchTerm, setAreaSearchTerm] = useState("");
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
   const [pageSize, setPageSize] = useState(20);
   const [page, setPage] = useState(1);
@@ -147,7 +147,7 @@ const MasterDebtors = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!e.target.closest('.md-area-dropdown-container')) {
+      if (!e.target.closest('.ms-area-dropdown-container')) {
         setIsAreaDropdownOpen(false);
       }
     };
@@ -156,20 +156,20 @@ const MasterDebtors = () => {
   }, []);
 
   return (
-    <div className="md-page">
-      <div className="md-card" role="main" aria-labelledby="md-page-title">
-        <div className="md-card-inner">
-          <header className="md-card-header">
-            <div className="md-header-content">
-              <div className="md-header-left">
-                <h1 id="md-page-title" className="md-title">Customer Statement</h1>
-                <p className="md-subtitle">Manage and view all Customers</p>
+    <div className="ms-page">
+      <div className="ms-card" role="main" aria-labelledby="ms-page-title">
+        <div className="ms-card-inner">
+          <header className="ms-card-header">
+            <div className="ms-header-content">
+              <div className="ms-header-left">
+                <h1 id="ms-page-title" className="ms-title">Suppliers Master</h1>
+                <p className="ms-subtitle">Complete overview of supplier accounts</p>
               </div>
               <button 
-                className="md-refresh-btn" 
+                className="ms-refresh-btn" 
                 onClick={() => {
                   setLoading(true);
-                  fetchDebtors();
+                  fetchSuppliers();
                 }}
                 disabled={loading}
               >
@@ -179,27 +179,27 @@ const MasterDebtors = () => {
           </header>
 
           {loading && (
-            <div className="md-loading" style={{ padding: "2rem", textAlign: "center" }}>
-              Loading debtors data...
+            <div className="ms-loading" style={{ padding: "2rem", textAlign: "center" }}>
+              Loading suppliers data...
             </div>
           )}
           
           {error && (
-            <div className="md-error" style={{ padding: "1rem", color: "#d32f2f", background: "#ffebee", borderRadius: "4px", margin: "1rem 0" }}>
+            <div className="ms-error" style={{ padding: "1rem", color: "#d32f2f", background: "#ffebee", borderRadius: "4px", margin: "1rem 0" }}>
               Error: {error}
             </div>
           )}
 
           {!loading && !error && (
             <>
-              <div className="md-filter-row">
-                <div className="md-filter-left">
-                  <div className="md-filter-item md-filter-search compact">
-                    <label htmlFor="md-search">Search</label>
-                    <div className="md-search-wrap">
-                      <span className="md-search-icon">🔍</span>
+              <div className="ms-filter-row">
+                <div className="ms-filter-left">
+                  <div className="ms-filter-item ms-filter-search compact">
+                    <label htmlFor="ms-search">Search</label>
+                    <div className="ms-search-wrap">
+                      <span className="ms-search-icon">🔍</span>
                       <input
-                        id="md-search"
+                        id="ms-search"
                         type="search"
                         placeholder="Search by code, name, place, phone or area..."
                         value={searchTerm}
@@ -211,7 +211,7 @@ const MasterDebtors = () => {
                       {searchTerm && (
                         <button
                           type="button"
-                          className="md-search-clear"
+                          className="ms-search-clear"
                           onClick={clearSearch}
                           aria-label="Clear search"
                         >
@@ -221,63 +221,63 @@ const MasterDebtors = () => {
                     </div>
                   </div>
 
-                  <div className="md-filter-item md-filter-area">
+                  <div className="ms-filter-item ms-filter-area">
                     <label htmlFor="area-select">Filter by Area</label>
-                    <div className="md-area-dropdown-container">
+                    <div className="ms-area-dropdown-container">
                       <button
                         type="button"
-                        className="md-area-select-button"
+                        className="ms-area-select-button"
                         onClick={() => setIsAreaDropdownOpen(!isAreaDropdownOpen)}
                       >
-                        <span className="md-area-selected">
+                        <span className="ms-area-selected">
                           {selectedArea || "All Areas"}
                         </span>
-                        <span className="md-area-arrow">{isAreaDropdownOpen ? "▲" : "▼"}</span>
+                        <span className="ms-area-arrow">{isAreaDropdownOpen ? "▲" : "▼"}</span>
                       </button>
                       
                       {isAreaDropdownOpen && (
-                        <div className="md-area-dropdown-menu">
-                          <div className="md-area-search-container">
-                            <span className="md-area-search-icon">🔍</span>
+                        <div className="ms-area-dropdown-menu">
+                          <div className="ms-area-search-container">
+                            <span className="ms-area-search-icon">🔍</span>
                             <input
                               type="text"
                               placeholder="Search areas..."
                               value={areaSearchTerm}
                               onChange={(e) => setAreaSearchTerm(e.target.value)}
-                              className="md-area-search-input"
+                              className="ms-area-search-input"
                               onClick={(e) => e.stopPropagation()}
                             />
                           </div>
                           
-                          <div className="md-area-options">
+                          <div className="ms-area-options">
                             <div
-                              className={`md-area-option ${!selectedArea ? 'active' : ''}`}
+                              className={`ms-area-option ${!selectedArea ? 'active' : ''}`}
                               onClick={() => handleAreaSelect("")}
                             >
                               All Areas
-                              {!selectedArea && <span className="md-check">✓</span>}
+                              {!selectedArea && <span className="ms-check">✓</span>}
                             </div>
                             
                             {filteredAreas.length > 0 ? (
                               filteredAreas.map(area => (
                                 <div
                                   key={area}
-                                  className={`md-area-option ${selectedArea === area ? 'active' : ''}`}
+                                  className={`ms-area-option ${selectedArea === area ? 'active' : ''}`}
                                   onClick={() => handleAreaSelect(area)}
                                 >
                                   {area}
-                                  {selectedArea === area && <span className="md-check">✓</span>}
+                                  {selectedArea === area && <span className="ms-check">✓</span>}
                                 </div>
                               ))
                             ) : (
-                              <div className="md-area-no-results">
+                              <div className="ms-area-no-results">
                                 No areas found
                               </div>
                             )}
                           </div>
                           
                           {uniqueAreas.length > 10 && (
-                            <div className="md-area-count">
+                            <div className="ms-area-count">
                               Showing {filteredAreas.length} of {uniqueAreas.length} areas
                             </div>
                           )}
@@ -289,7 +289,7 @@ const MasterDebtors = () => {
                   {(searchTerm || selectedArea) && (
                     <button
                       type="button"
-                      className="md-clear-filters-btn"
+                      className="ms-clear-filters-btn"
                       onClick={clearFilters}
                     >
                       Clear All Filters
@@ -297,8 +297,8 @@ const MasterDebtors = () => {
                   )}
                 </div>
 
-                <div className="md-stats">
-                  <div className="md-rows-selector">
+                <div className="ms-stats">
+                  <div className="ms-rows-selector">
                     <label htmlFor="rows-select">Rows:</label>
                     <select
                       id="rows-select"
@@ -317,9 +317,9 @@ const MasterDebtors = () => {
                 </div>
               </div>
 
-              <div className="md-table-wrap" role="region" aria-label="Debtors table">
-                <table className="md-debtors-table" role="table" aria-describedby="md-desc">
-                  <caption id="md-desc" style={{ display: "none" }}>
+              <div className="ms-table-wrap" role="region" aria-label="Suppliers table">
+                <table className="ms-suppliers-table" role="table" aria-describedby="ms-desc">
+                  <caption id="ms-desc" style={{ display: "none" }}>
                     Columns: serialno, code, name, place, phone, area, balance
                   </caption>
 
@@ -338,7 +338,7 @@ const MasterDebtors = () => {
                   <tbody>
                     {total === 0 ? (
                       <tr>
-                        <td colSpan="7" className="md-no-data">No customers found</td>
+                        <td colSpan="7" className="ms-no-data">No suppliers found</td>
                       </tr>
                     ) : (
                       pageItems.map((row, i) => (
@@ -357,14 +357,14 @@ const MasterDebtors = () => {
                 </table>
               </div>
 
-              <div className="md-pagination" role="navigation" aria-label="Pagination">
-                <button className="md-page-btn" onClick={() => changePage(page - 1)} disabled={page === 1 || total === 0}>
+              <div className="ms-pagination" role="navigation" aria-label="Pagination">
+                <button className="ms-page-btn" onClick={() => changePage(page - 1)} disabled={page === 1 || total === 0}>
                   Prev
                 </button>
-                <div className="md-page-info">
+                <div className="ms-page-info">
                   {total === 0 ? "No records" : `Page ${page} of ${totalPages}`}
                 </div>
-                <button className="md-page-btn" onClick={() => changePage(page + 1)} disabled={page === totalPages || total === 0}>
+                <button className="ms-page-btn" onClick={() => changePage(page + 1)} disabled={page === totalPages || total === 0}>
                   Next
                 </button>
               </div>
@@ -376,4 +376,4 @@ const MasterDebtors = () => {
   );
 };
 
-export default MasterDebtors;
+export default MasterSuppliers;
