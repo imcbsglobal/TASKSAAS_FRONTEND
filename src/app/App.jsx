@@ -23,6 +23,8 @@ import MasterDebtors from '../features/masters/page/masterDebtors';
 import MasterSuppliers from '../features/masters/page/MasterSuppliers';
 import MasterUsers from '../features/masters/page/MasterUsers';
 
+import BillsReceivable from '../features/bills/BillsReceivable';
+
 import { AreaAssign } from '../features/punchin';
 import AreaAssignTableView from '../features/punchin/pages/AreaAssignTableView';
 import { SiKfc } from 'react-icons/si';
@@ -81,6 +83,25 @@ const AppLayout = () => {
                     element={
                         <ProtectedRoute>
                             <InvoicePage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* NEW: Bills Receivable invoice route */}
+                <Route
+                    path="/bills/receivable/invoice/:accountCode"
+                    element={
+                        <ProtectedRoute>
+                            <InvoicePage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/bills/receivable"
+                    element={
+                        <ProtectedRoute>
+                            <BillsReceivable />
                         </ProtectedRoute>
                     }
                 />

@@ -1,0 +1,687 @@
+/* Modern Bills Receivable Design */
+
+:root {
+  --navbar-height: 50px;
+  --sidebar-width: 200px;
+}
+
+/* Page Container */
+.bills-page {
+  min-height: 100vh;
+  padding-top: calc(var(--navbar-height) + 24px);
+  padding-left: calc(var(--sidebar-width) + 84px);
+  padding-right: 40px;
+  padding-bottom: 40px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #ddd6fe 100%);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Main Card */
+.bills-card {
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header Section */
+.bills-card-header {
+  margin-bottom: 32px;
+}
+
+.bills-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 32px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.bills-title {
+  margin: 0;
+  font-size: 42px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #db2777 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -1px;
+}
+
+.bills-subtitle {
+  margin: 8px 0 0 0;
+  font-size: 15px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Refresh Button */
+.bills-refresh-btn {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
+  white-space: nowrap;
+}
+
+.bills-refresh-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.4);
+}
+
+.bills-refresh-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.bills-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Dropdown Section */
+.bills-dropdown-section {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.bills-dropdown-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+/* Error Message */
+.bills-error-message {
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 2px solid #fca5a5;
+  border-radius: 12px;
+  color: #dc2626;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Dropdown Container */
+.bills-dropdown-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+/* Dropdown Button */
+.bills-dropdown-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #ffffff;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bills-dropdown-button:hover:not(:disabled) {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.bills-dropdown-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f9fafb;
+}
+
+.bills-dropdown-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  color: #1f2937;
+}
+
+.bills-dropdown-separator {
+  color: #94a3b8;
+  margin: 0 6px;
+}
+
+.bills-dropdown-place {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.bills-dropdown-arrow {
+  font-size: 12px;
+  color: #6b7280;
+  transition: transform 0.2s ease;
+}
+
+.bills-dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.bills-dropdown-menu {
+  position: absolute;
+  z-index: 100;
+  width: 100%;
+  margin-top: 4px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  max-height: 400px;
+  overflow: hidden;
+  animation: dropdownOpen 0.15s ease-out;
+}
+
+@keyframes dropdownOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dropdown Search */
+.bills-dropdown-search {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.bills-dropdown-search-input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+  color: #374151;
+}
+
+.bills-dropdown-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.bills-dropdown-search-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.bills-dropdown-search .bills-search-icon {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.bills-dropdown-search .bills-search-clear {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.bills-dropdown-search .bills-search-clear:hover {
+  color: #ef4444;
+}
+
+/* Dropdown List */
+.bills-dropdown-list {
+  overflow-y: auto;
+  max-height: 320px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.bills-dropdown-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.bills-dropdown-list::-webkit-scrollbar-track {
+  background: #f9fafb;
+}
+
+.bills-dropdown-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.bills-dropdown-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Dropdown Item */
+.bills-dropdown-item {
+  padding: 12px 16px;
+  background: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.bills-dropdown-item:hover {
+  background: #f0f9ff;
+}
+
+.bills-dropdown-item-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.bills-dropdown-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.bills-dropdown-item-name {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.bills-dropdown-item-place {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.bills-dropdown-item-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.bills-dropdown-item-balance {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Balance in dropdown - RED COLOR */
+.bills-dropdown-item-balance-show {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.bills-balance-type {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* Show Button */
+.bills-show-btn {
+  padding: 6px 16px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.bills-show-btn:hover {
+  background: #1d4ed8;
+}
+
+.bills-show-btn:active {
+  transform: scale(0.98);
+}
+
+/* Dropdown Empty */
+.bills-dropdown-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* Selected Account */
+.bills-selected-account {
+  margin-top: 24px;
+  padding: 24px;
+  background: #f0f9ff;
+  border: 2px solid #bfdbfe;
+  border-radius: 12px;
+  animation: accountFadeIn 0.3s ease;
+}
+
+@keyframes accountFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bills-selected-account-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bills-selected-account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #bfdbfe;
+}
+
+.bills-selected-account-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e40af;
+}
+
+.bills-clear-selection {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bills-clear-selection:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.bills-selected-account-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  font-size: 14px;
+
+  p {
+    margin: 0;
+    padding: 12px;
+    background: #ffffff;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .label {
+    font-weight: 500;
+    color: #6b7280;
+    font-size: 12px;
+  }
+
+  .value {
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .value.code {
+    color: #2563eb;
+    font-weight: 700;
+  }
+
+  /* Balance value in selected account - RED COLOR */
+  p:has(.label:contains("Balance")) .value {
+    color: #dc2626;
+  }
+}
+
+/* View Invoice Button */
+.bills-view-invoice-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+
+.bills-view-invoice-btn:hover {
+  background: #1d4ed8;
+}
+
+.bills-view-invoice-btn:active {
+  transform: scale(0.98);
+}
+
+/* Total Stats */
+.bills-total-stats {
+  text-align: center;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+  margin-top: 24px;
+}
+
+.bills-total-stats .highlight {
+  font-weight: 700;
+  color: #2563eb;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .bills-page {
+    padding-left: calc(var(--sidebar-width) + 40px);
+    padding-right: 30px;
+  }
+}
+
+@media (max-width: 880px) {
+  .bills-page {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: calc(var(--navbar-height) + 16px);
+  }
+
+  .bills-title {
+    font-size: 32px;
+  }
+
+  .bills-header-content {
+    padding: 24px;
+  }
+
+  .bills-dropdown-section {
+    padding: 24px;
+  }
+
+  .bills-dropdown-item-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .bills-dropdown-item-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .bills-show-btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .bills-header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bills-refresh-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bills-selected-account-details {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .bills-page {
+    padding: calc(var(--navbar-height) + 12px) 12px 16px;
+  }
+
+  .bills-header-content {
+    padding: 20px;
+  }
+
+  .bills-dropdown-section {
+    padding: 20px;
+  }
+
+  .bills-title {
+    font-size: 28px;
+  }
+
+  .bills-dropdown-button {
+    padding: 12px 14px;
+  }
+
+  .bills-dropdown-item {
+    padding: 10px 12px;
+  }
+}
+
+/* Remove uppercase from table headers */
+.inv-invoice-table thead th {
+  text-transform: none;
+}
+/* ============================
+   BALANCE (should be red)
+============================= */
+.inv-summary-balance .inv-summary-value,
+.inv-balance {
+    color: #d40000 !important;    /* RED */
+    font-weight: 600;
+}
+
+/* ============================
+   NET TOTAL (should be green)
+============================= */
+.inv-summary-nettotal .inv-summary-value,
+.inv-amount-nettotal {
+    color: #008000 !important;    /* GREEN */
+    font-weight: 600;
+}
+
+/* ============================
+   PAID (optional green)
+============================= */
+.inv-summary-paid .inv-summary-value,
+.inv-amount-paid {
+    color: #008000 !important; 
+    font-weight: 600;
+}

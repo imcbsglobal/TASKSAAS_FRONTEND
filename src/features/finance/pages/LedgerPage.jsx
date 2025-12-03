@@ -11,6 +11,7 @@ const LedgerPage = () => {
     
     const [ledgerDetails, setLedgerDetails] = useState([]);
     const [filteredLedgerDetails, setFilteredLedgerDetails] = useState([]);
+    const [accountInfo, setAccountInfo] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     
@@ -18,21 +19,21 @@ const LedgerPage = () => {
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
     
-    // Get account info from location state or use default
-    const accountName = location.state?.accountName || 'Account';
+    // Get account info from location state (will be null on refresh)
+    const accountName = location.state?.accountName || accountInfo?.name || 'Account';
     const accountData = location.state?.accountData || null;
 
     useEffect(() => {
         if (accountCode) {
-            fetchLedgerDetails();
+            fetchAccountAndLedger();
         }
-    }, [accountCode]);
+    }, []);
 
     useEffect(() => {
         applyDateFilter();
     }, [ledgerDetails, fromDate, toDate]);
 
-    const fetchLedgerDetails = async () => {
+    const fetchAccountAndLedger = async () => {
         try {
             setLoading(true);
             setError('');
@@ -43,29 +44,41 @@ const LedgerPage = () => {
                 return;
             }
 
-            const response = await axios.get(
-                `${API_BASE_URL}/get-ledger-details/?account_code=${accountCode}`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
 
-            if (response.data.success) {
-                // Sort ledger details by date (oldest to newest)
-                const sortedData = [...response.data.data].sort((a, b) => {
+            // Fetch both account info and ledger details
+            const [accountResponse, ledgerResponse] = await Promise.all([
+                axios.get('https://tasksas.com/api/debtors/get-debtors/', { headers }),
+                axios.get(`${API_BASE_URL}/get-ledger-details/?account_code=${accountCode}`, { headers })
+            ]);
+
+            // Get account info
+            if (accountResponse.data.success && accountResponse.data.data) {
+                const account = accountResponse.data.data.find(acc => acc.code === accountCode);
+                if (account) {
+                    console.log('Found account info:', account);
+                    setAccountInfo(account);
+                }
+            }
+
+            // Get and sort ledger details
+            if (ledgerResponse.data.success) {
+                const sortedData = [...ledgerResponse.data.data].sort((a, b) => {
                     const dateA = new Date(a.entry_date || 0);
                     const dateB = new Date(b.entry_date || 0);
                     return dateA - dateB;
                 });
+                console.log('Ledger entries:', sortedData.length);
                 setLedgerDetails(sortedData);
             } else {
-                setError(response.data.error || 'Failed to fetch ledger details');
+                setError(ledgerResponse.data.error || 'Failed to fetch ledger details');
             }
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to fetch ledger details');
+            setError(err.response?.data?.error || 'Failed to fetch data');
+            console.error('Fetch error:', err);
         } finally {
             setLoading(false);
         }
@@ -83,7 +96,7 @@ const LedgerPage = () => {
             if (fromDate && toDate) {
                 const from = new Date(fromDate);
                 const to = new Date(toDate);
-                to.setHours(23, 59, 59, 999); // Include the entire "to" date
+                to.setHours(23, 59, 59, 999);
                 return entryDate >= from && entryDate <= to;
             } else if (fromDate) {
                 const from = new Date(fromDate);
@@ -119,28 +132,15 @@ const LedgerPage = () => {
     };
 
     const formatCurrency = (amount) => {
-        if (!amount) return '0.00';
+        if (!amount && amount !== 0) return '0.00';
         return parseFloat(amount).toLocaleString('en-IN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
     };
 
-    // Calculate running balance
-    const calculateRunningBalance = () => {
-        let balance = parseFloat(accountData?.opening_balance || 0);
-        return filteredLedgerDetails.map((entry) => {
-            const debit = parseFloat(entry.debit || 0);
-            const credit = parseFloat(entry.credit || 0);
-            balance += debit - credit;
-            return { ...entry, runningBalance: balance };
-        });
-    };
-
-    const ledgerWithBalance = calculateRunningBalance();
-
-    // Calculate totals
-    const totals = filteredLedgerDetails.reduce(
+    // Calculate totals from ALL ledger entries (this is the key fix!)
+    const allLedgerTotals = ledgerDetails.reduce(
         (acc, entry) => {
             acc.debit += parseFloat(entry.debit || 0);
             acc.credit += parseFloat(entry.credit || 0);
@@ -148,6 +148,62 @@ const LedgerPage = () => {
         },
         { debit: 0, credit: 0 }
     );
+
+    console.log('All ledger totals calculated:', allLedgerTotals);
+
+    // Get opening balance
+    const openingBalance = parseFloat(
+        accountData?.opening_balance || 
+        accountInfo?.opening_balance || 
+        0
+    );
+
+    // Total debit and credit - use passed data first, fallback to calculated
+    const totalDebit = accountData?.master_debit || allLedgerTotals.debit;
+    const totalCredit = accountData?.master_credit || allLedgerTotals.credit;
+
+    console.log('Summary values:', {
+        openingBalance,
+        totalDebit,
+        totalCredit,
+        fromAccountData: !!accountData?.master_debit,
+        fromCalculation: !accountData?.master_debit
+    });
+
+    // Current balance = opening + total debit - total credit
+    const currentBalance = openingBalance + totalDebit - totalCredit;
+
+    // Calculate running balance for each row
+    const calculateRunningBalances = (entries) => {
+        let runningBalance = openingBalance;
+        
+        return entries.map((entry) => {
+            const debit = parseFloat(entry.debit || 0);
+            const credit = parseFloat(entry.credit || 0);
+            runningBalance = runningBalance + debit - credit;
+            
+            return {
+                ...entry,
+                runningBalance: runningBalance
+            };
+        });
+    };
+
+    // Get entries with running balances
+    const entriesWithBalance = calculateRunningBalances(filteredLedgerDetails);
+
+    // Totals over FILTERED rows
+    const filteredTotals = filteredLedgerDetails.reduce(
+        (acc, entry) => {
+            acc.debit += parseFloat(entry.debit || 0);
+            acc.credit += parseFloat(entry.credit || 0);
+            return acc;
+        },
+        { debit: 0, credit: 0 }
+    );
+
+    // Final balance in footer = opening + filtered debit - filtered credit
+    const finalBalance = openingBalance + filteredTotals.debit - filteredTotals.credit;
 
     return (
         <div className="ldg-page">
@@ -168,7 +224,7 @@ const LedgerPage = () => {
                             </div>
                             <button 
                                 className="ldg-refresh-btn" 
-                                onClick={fetchLedgerDetails}
+                                onClick={fetchAccountAndLedger}
                                 disabled={loading}
                             >
                                 🔄 Refresh
@@ -217,31 +273,36 @@ const LedgerPage = () => {
                         )}
                     </div>
 
-                    {/* Account Summary */}
-                    {accountData && (
+                    {/* Account Summary - Always show if we have data */}
+                    {ledgerDetails.length > 0 && (
                         <div className="ldg-summary-cards">
                             <div className="ldg-summary-card">
                                 <div className="ldg-summary-label">Opening Balance</div>
-                                <div className="ldg-summary-value">₹{formatCurrency(accountData.opening_balance)}</div>
+                                <div className="ldg-summary-value">
+                                    ₹{formatCurrency(openingBalance)}
+                                </div>
                             </div>
                             <div className="ldg-summary-card ldg-summary-debit">
                                 <div className="ldg-summary-label">Total Debit</div>
-                                <div className="ldg-summary-value">₹{formatCurrency(accountData.master_debit)}</div>
+                                <div className="ldg-summary-value">
+                                    ₹{formatCurrency(totalDebit)}
+                                </div>
                             </div>
                             <div className="ldg-summary-card ldg-summary-credit">
                                 <div className="ldg-summary-label">Total Credit</div>
-                                <div className="ldg-summary-value">₹{formatCurrency(accountData.master_credit)}</div>
+                                <div className="ldg-summary-value">
+                                    ₹{formatCurrency(totalCredit)}
+                                </div>
                             </div>
                             <div className="ldg-summary-card ldg-summary-balance">
                                 <div className="ldg-summary-label">Current Balance</div>
                                 <div className={`ldg-summary-value ${
-                                    (parseFloat(accountData.master_debit) - parseFloat(accountData.master_credit)) >= 0 
-                                        ? 'positive' 
-                                        : 'negative'
+                                    currentBalance >= 0 ? 'positive' : 'negative'
                                 }`}>
-                                    ₹{formatCurrency(Math.abs(
-                                        parseFloat(accountData.master_debit || 0) - parseFloat(accountData.master_credit || 0)
-                                    ))}
+                                    ₹{formatCurrency(Math.abs(currentBalance))}
+                                    <span className="balance-type">
+                                        {' '}{currentBalance >= 0 ? 'Dr' : 'Cr'}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -299,7 +360,7 @@ const LedgerPage = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {ledgerWithBalance.map((entry, index) => (
+                                                {entriesWithBalance.map((entry, index) => (
                                                     <tr key={index}>
                                                         <td data-label="No" className="ldg-col-no">{index + 1}</td>
                                                         <td data-label="Date" className="ldg-col-date">
@@ -326,10 +387,14 @@ const LedgerPage = () => {
                                                                 ? `₹${formatCurrency(entry.credit)}`
                                                                 : '-'}
                                                         </td>
-                                                        <td data-label="Balance" className={`ldg-col-amount ldg-balance ${
-                                                            entry.runningBalance >= 0 ? 'positive' : 'negative'
-                                                        }`}>
+                                                        <td
+                                                            data-label="Balance"
+                                                            className={`ldg-col-amount ldg-balance ${
+                                                                entry.runningBalance >= 0 ? 'positive' : 'negative'
+                                                            }`}
+                                                        >
                                                             ₹{formatCurrency(Math.abs(entry.runningBalance))}
+                                                            <span className="balance-type"> {entry.runningBalance >= 0 ? 'Dr' : 'Cr'}</span>
                                                         </td>
                                                         <td data-label="Narration" className="ldg-col-narration">
                                                             {entry.narration || '-'}
@@ -341,15 +406,16 @@ const LedgerPage = () => {
                                                 <tr className="ldg-totals-row">
                                                     <td colSpan="5" className="ldg-totals-label">Total</td>
                                                     <td className="ldg-col-amount ldg-amount-debit ldg-total">
-                                                        ₹{formatCurrency(totals.debit)}
+                                                        ₹{formatCurrency(filteredTotals.debit)}
                                                     </td>
                                                     <td className="ldg-col-amount ldg-amount-credit ldg-total">
-                                                        ₹{formatCurrency(totals.credit)}
+                                                        ₹{formatCurrency(filteredTotals.credit)}
                                                     </td>
                                                     <td className={`ldg-col-amount ldg-total ${
-                                                        (totals.debit - totals.credit) >= 0 ? 'positive' : 'negative'
+                                                        finalBalance >= 0 ? 'positive' : 'negative'
                                                     }`}>
-                                                        ₹{formatCurrency(Math.abs(totals.debit - totals.credit))}
+                                                        ₹{formatCurrency(Math.abs(finalBalance))}
+                                                        <span className="balance-type"> {finalBalance >= 0 ? 'Dr' : 'Cr'}</span>
                                                     </td>
                                                     <td></td>
                                                 </tr>

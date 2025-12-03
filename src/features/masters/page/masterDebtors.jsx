@@ -358,16 +358,43 @@ const MasterDebtors = () => {
               </div>
 
               <div className="md-pagination" role="navigation" aria-label="Pagination">
-                <button className="md-page-btn" onClick={() => changePage(page - 1)} disabled={page === 1 || total === 0}>
-                  Prev
-                </button>
-                <div className="md-page-info">
-                  {total === 0 ? "No records" : `Page ${page} of ${totalPages}`}
-                </div>
-                <button className="md-page-btn" onClick={() => changePage(page + 1)} disabled={page === totalPages || total === 0}>
-                  Next
-                </button>
-              </div>
+  <button 
+    className="md-page-btn" 
+    onClick={() => changePage(1)} 
+    disabled={page === 1 || total === 0}
+  >
+    First
+  </button>
+
+  <button 
+    className="md-page-btn" 
+    onClick={() => changePage(page - 1)} 
+    disabled={page === 1 || total === 0}
+  >
+    Prev
+  </button>
+
+  <div className="md-page-info">
+    {total === 0 ? "No records" : `Page ${page} of ${totalPages}`}
+  </div>
+
+  <button 
+    className="md-page-btn" 
+    onClick={() => changePage(page + 1)} 
+    disabled={page === totalPages || total === 0}
+  >
+    Next
+  </button>
+
+  <button 
+    className="md-page-btn" 
+    onClick={() => changePage(totalPages)} 
+    disabled={page === totalPages || total === 0}
+  >
+    Last
+  </button>
+</div>
+
             </>
           )}
         </div>

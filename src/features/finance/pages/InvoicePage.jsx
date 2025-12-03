@@ -63,7 +63,12 @@ const InvoicePage = () => {
     };
 
     const handleBack = () => {
-        navigate('/debtors');
+        // Check if we came from bills receivable or debtors based on current path
+        if (location.pathname.includes('/bills/receivable/')) {
+            navigate('/bills/receivable');
+        } else {
+            navigate('/debtors');
+        }
     };
 
     const formatDate = (dateString) => {
@@ -98,12 +103,11 @@ const InvoicePage = () => {
     return (
         <div className="invoice-page-root">
             <div className="inv-page">
-
                 <div className="inv-card">
                     <div className="inv-card-inner">
                         {/* Header */}
                         <header className="inv-card-header">
-                            <button className="inv-back-btn" onClick={handleBack} title="Back to Debtors">
+                            <button className="inv-back-btn" onClick={handleBack} title="Go Back">
                                 ← Back
                             </button>
                             <div className="inv-header-content">
