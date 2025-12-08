@@ -94,6 +94,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .ldg-back-btn:hover {
@@ -125,6 +126,7 @@
   background-clip: text;
   font-weight: 800;
   letter-spacing: -0.5px;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .ldg-subtitle {
@@ -132,6 +134,7 @@
   font-size: 16px;
   color: #64748b;
   font-weight: 500;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   .ldg-account-name {
     color: #1e40af;
@@ -160,6 +163,7 @@
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
   white-space: nowrap;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .ldg-refresh-btn:hover:not(:disabled) {
@@ -195,6 +199,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .ldg-filter-controls {
@@ -219,6 +224,7 @@
   color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .ldg-date-input {
@@ -230,7 +236,7 @@
   color: #334155;
   background: #ffffff;
   transition: all 0.3s ease;
-  font-family: inherit;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   &:focus {
     outline: none;
@@ -255,6 +261,7 @@
   transition: all 0.3s ease;
   white-space: nowrap;
   height: fit-content;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   &:hover:not(:disabled) {
     background: linear-gradient(135deg, #475569, #334155);
@@ -277,6 +284,7 @@
   font-size: 11px;
   font-weight: 600;
   color: #1e40af;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 /* Summary Cards */
@@ -310,7 +318,7 @@
     }
 
     .ldg-summary-value {
-      color: #16a34a;   /* green */
+      color: #16a34a;
     }
   }
 
@@ -355,13 +363,14 @@
   text-transform: capitalize;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .ldg-summary-value {
   font-size: 28px;
   font-weight: 800;
   color: #1e40af;
-  font-family: 'Courier New', monospace;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 /* Loading State */
@@ -383,6 +392,7 @@
   p {
     font-size: 16px;
     font-weight: 500;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 }
 
@@ -404,6 +414,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   .ldg-error-icon {
     font-size: 24px;
@@ -425,6 +436,7 @@
   p {
     font-size: 18px;
     font-weight: 500;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 }
 
@@ -442,6 +454,7 @@
   font-size: 14px;
   color: #64748b;
   font-weight: 500;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   strong {
     color: #2563eb;
@@ -468,6 +481,7 @@
   border-spacing: 0;
   min-width: 1400px;
   font-size: 14px;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 /* Table Header */
@@ -488,6 +502,7 @@
   letter-spacing: 0.5px;
   border-right: 1px solid rgba(255, 255, 255, 0.3);
   white-space: nowrap;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   &:last-child {
     border-right: none;
@@ -518,10 +533,6 @@
   }
 
   &.ldg-col-particulars {
-    min-width: 200px;
-  }
-
-  &.ldg-col-narration {
     min-width: 250px;
   }
 }
@@ -536,6 +547,7 @@
   border-right: 1px solid #e5e7eb;
   border-bottom: 1px solid #e5e7eb;
   transition: all 0.2s ease;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   &:last-child {
     border-right: none;
@@ -554,7 +566,6 @@
 
   &.ldg-col-voucher {
     text-align: center;
-    font-family: 'Courier New', monospace;
     color: #6366f1;
     font-weight: 600;
   }
@@ -565,37 +576,56 @@
 
   &.ldg-col-amount {
     text-align: right;
-    font-family: 'Courier New', monospace;
     font-weight: 600;
 
     &.ldg-amount-debit {
-      color: #16a34a;
+      color: #000000;
     }
 
     &.ldg-amount-credit {
-      color: #16a34a;
+      color: #000000;
     }
 
     &.ldg-balance {
       font-weight: 700;
       font-size: 15px;
-      color:#16a34a;
+      color: #000000;
 
       &.positive {
-        color: #dc2626;
+        color: #000000;
       }
 
       &.negative {
-        color: #dc2626;
+        color: #000000;
       }
     }
   }
 
-  &.ldg-col-particulars,
-  &.ldg-col-narration {
+  &.ldg-col-particulars {
     line-height: 1.6;
     word-wrap: break-word;
+    padding: 12px;
   }
+}
+
+/* Particulars and Narration Styling */
+.ldg-particulars-main {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.ldg-narration-text {
+  font-size: 12px;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.5;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #e2e8f0;
+  font-style: italic;
 }
 
 /* Mode Badge */
@@ -609,6 +639,7 @@
   letter-spacing: 0.5px;
   background: linear-gradient(135deg, #e0e7ff, #ddd6fe);
   color: #4c1d95;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   &.ldg-mode-cash {
     background: linear-gradient(135deg, #dcfce7, #bbf7d0);
@@ -654,6 +685,7 @@
   padding: 18px 12px;
   border-right: 1px solid #cbd5e1;
   border-bottom: none;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   &:last-child {
     border-right: none;
@@ -669,14 +701,13 @@
 
   &.ldg-total {
     font-size: 16px;
-    font-family: 'Courier New', monospace;
 
     &.ldg-amount-debit {
-      color: #16a34a;
+      color: #000000;
     }
 
     &.ldg-amount-credit {
-      color: #16a34a;
+      color: #000000;
     }
 
     &.positive {
@@ -701,7 +732,7 @@
   }
 
   .ldg-ledger-table {
-    min-width: 1300px;
+    min-width: 1200px;
   }
 }
 
@@ -774,7 +805,7 @@
   }
 
   .ldg-ledger-table {
-    min-width: 1200px;
+    min-width: 1100px;
     font-size: 13px;
   }
 }

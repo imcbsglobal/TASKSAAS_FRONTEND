@@ -43,13 +43,51 @@ const MenuManagement = () => {
             document.removeEventListener('keydown', handleEscapeKey);
         };
     }, [isDropdownOpen]);
+
+    // Check if user is level one
+    const isLevelOne = (user) => {
+        if (!user) return false;
+
+        if (user.level !== undefined && user.level !== null) {
+            const n = Number(user.level);
+            if (!isNaN(n) && n === 1) return true;
+        }
+
+        const roleStr = (user.role ?? '').toString().trim().toLowerCase();
+        if (!roleStr) return false;
+        if (roleStr === '1') return true;
+        if (/level[\s-]*1/.test(roleStr)) return true;
+        return false;
+    };
+
     // Fetch users from API
     const fetchUsers = async () => {     
         try {
             setLoading(true);
             const response = await SettingsApi.getUsers();
             console.log("usr data ,", response.users)
-            setUsers(response.users || []);
+            
+            const raw = Array.isArray(response?.users)
+                ? response.users
+                : Array.isArray(response)
+                ? response
+                : [];
+            
+            // Filter to show only level one users
+            const level1 = raw.filter((u) => isLevelOne(u));
+
+            // Remove duplicates
+            const seen = new Set();
+            const deduped = [];
+            for (const u of level1) {
+                const key = (u?.id ?? '').toString();
+                if (!key) continue;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    deduped.push(u);
+                }
+            }
+            setUsers(deduped);
         } catch (error) {
             console.error('Error fetching users:', error);
         } finally {
@@ -250,7 +288,7 @@ const MenuManagement = () => {
                                     <i className="fas fa-search user-dropdown__search-icon"></i>
                                     <input
                                         type="text"
-                                        placeholder={selectedUser ? selectedUser.id : "Type to search users..."}
+                                        placeholder={selectedUser ? selectedUser.id : "Search areas..."}
                                         value={dropdownSearch}
                                         onChange={(e) => {
                                             setDropdownSearch(e.target.value);
@@ -297,15 +335,14 @@ const MenuManagement = () => {
                                                     onClick={() => handleUserSelect(user)}
                                                 >
                                                     <div className="user-option">
-                                                        <div className="user-option__avatar">
-                                                            {user.id?.charAt(0).toUpperCase() || 'U'}
-                                                        </div>
                                                         <div className="user-option__info">
                                                             <div className="user-option__name">{user.id}</div>
                                                         </div>
-                                                        <div className="user-option__action">
-                                                            <i className="fas fa-arrow-right"></i>
-                                                        </div>
+                                                        {selectedUser?.id === user.id && (
+                                                            <div className="user-option__selected">
+                                                                <i className="fas fa-check"></i>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             ))}

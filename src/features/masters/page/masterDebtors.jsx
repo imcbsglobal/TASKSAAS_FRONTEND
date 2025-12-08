@@ -58,7 +58,8 @@ const MasterDebtors = () => {
   }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedArea, setSelectedArea] = useState(""); // New state for area filter
+  const [selectedArea, setSelectedArea] = useState(""); // Area filter
+  const [balanceFilter, setBalanceFilter] = useState("all"); // New state for balance filter
   const [areaSearchTerm, setAreaSearchTerm] = useState(""); // Search within area dropdown
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
   const [pageSize, setPageSize] = useState(20);
@@ -101,13 +102,18 @@ const MasterDebtors = () => {
       result = result.filter(d => d.area === selectedArea);
     }
     
+    // Apply balance filter
+    if (balanceFilter === "greater_than_1") {
+      result = result.filter(d => (d.balance || 0) > 1);
+    }
+    
     // Sort alphabetically by name
     return result.sort((a, b) => {
       const nameA = (a.name || "").toString().toLowerCase();
       const nameB = (b.name || "").toString().toLowerCase();
       return nameA.localeCompare(nameB);
     });
-  }, [data, searchTerm, selectedArea]);
+  }, [data, searchTerm, selectedArea, balanceFilter]);
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -133,6 +139,7 @@ const MasterDebtors = () => {
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedArea("");
+    setBalanceFilter("all");
     setAreaSearchTerm("");
     setPage(1);
   };
@@ -286,7 +293,25 @@ const MasterDebtors = () => {
                     </div>
                   </div>
 
-                  {(searchTerm || selectedArea) && (
+                  <div className="md-filter-item md-filter-balance">
+                    <label htmlFor="balance-filter">Filter by Balance</label>
+                    <select
+                      id="balance-filter"
+                      className="md-balance-select"
+                      value={balanceFilter}
+                      onChange={(e) => {
+                        setBalanceFilter(e.target.value);
+                        setPage(1);
+                      }}
+                    >
+                      <option value="all">All Users</option>
+                      <option value="greater_than_1">Balance &gt; ₹1</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="md-stats">
+                  {(searchTerm || selectedArea || balanceFilter !== "all") && (
                     <button
                       type="button"
                       className="md-clear-filters-btn"
@@ -295,9 +320,7 @@ const MasterDebtors = () => {
                       Clear All Filters
                     </button>
                   )}
-                </div>
-
-                <div className="md-stats">
+                  
                   <div className="md-rows-selector">
                     <label htmlFor="rows-select">Rows:</label>
                     <select
@@ -349,7 +372,15 @@ const MasterDebtors = () => {
                           <td data-label="place">{row.place || "-"}</td>
                           <td data-label="phone">{row.phone || "-"}</td>
                           <td data-label="area">{row.area || "-"}</td>
-                          <td data-label="balance">₹{row.balance?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          <td
+                            data-label="balance"
+                            style={{ fontWeight: "bold", fontSize: "16px" }}
+                          >
+                            {row.balance?.toLocaleString('en-IN', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </td>
                         </tr>
                       ))
                     )}
@@ -358,43 +389,42 @@ const MasterDebtors = () => {
               </div>
 
               <div className="md-pagination" role="navigation" aria-label="Pagination">
-  <button 
-    className="md-page-btn" 
-    onClick={() => changePage(1)} 
-    disabled={page === 1 || total === 0}
-  >
-    First
-  </button>
+                <button 
+                  className="md-page-btn" 
+                  onClick={() => changePage(1)} 
+                  disabled={page === 1 || total === 0}
+                >
+                  First
+                </button>
 
-  <button 
-    className="md-page-btn" 
-    onClick={() => changePage(page - 1)} 
-    disabled={page === 1 || total === 0}
-  >
-    Prev
-  </button>
+                <button 
+                  className="md-page-btn" 
+                  onClick={() => changePage(page - 1)} 
+                  disabled={page === 1 || total === 0}
+                >
+                  Prev
+                </button>
 
-  <div className="md-page-info">
-    {total === 0 ? "No records" : `Page ${page} of ${totalPages}`}
-  </div>
+                <div className="md-page-info">
+                  {total === 0 ? "No records" : `Page ${page} of ${totalPages}`}
+                </div>
 
-  <button 
-    className="md-page-btn" 
-    onClick={() => changePage(page + 1)} 
-    disabled={page === totalPages || total === 0}
-  >
-    Next
-  </button>
+                <button 
+                  className="md-page-btn" 
+                  onClick={() => changePage(page + 1)} 
+                  disabled={page === totalPages || total === 0}
+                >
+                  Next
+                </button>
 
-  <button 
-    className="md-page-btn" 
-    onClick={() => changePage(totalPages)} 
-    disabled={page === totalPages || total === 0}
-  >
-    Last
-  </button>
-</div>
-
+                <button 
+                  className="md-page-btn" 
+                  onClick={() => changePage(totalPages)} 
+                  disabled={page === totalPages || total === 0}
+                >
+                  Last
+                </button>
+              </div>
             </>
           )}
         </div>

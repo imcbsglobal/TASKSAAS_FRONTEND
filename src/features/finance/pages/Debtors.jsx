@@ -114,7 +114,8 @@ const Debtors = () => {
                 const account = allData.find(acc => acc.code === accountCode);
                 const openingBalance = parseFloat(account?.opening_balance || 0);
                 
-                // Calculate current balance
+                // FIXED: Calculate current balance exactly like LedgerPage
+                // Current balance = opening + total debit - total credit
                 const currentBalance = openingBalance + totals.debit - totals.credit;
 
                 // Cache the result
@@ -146,7 +147,7 @@ const Debtors = () => {
         }
 
         return null;
-    }, [allData]);
+    }, [allData, loadingBalances]);
 
     // Function to load balances for a range of accounts
     const loadBalancesForRange = useCallback((startIndex, endIndex) => {
@@ -165,10 +166,10 @@ const Debtors = () => {
             // Mark as loaded
             loadedIndicesRef.current.add(actualIndex);
             
-            // Reduced delay for faster loading - 50ms between requests
+            // Faster loading - 20ms between requests (reduced from 50ms)
             setTimeout(() => {
                 fetchBalance(account.code);
-            }, index * 50); // 50ms between each request (faster)
+            }, index * 20);
         });
     }, [filteredData, loadingBalances, fetchBalance]);
 
@@ -207,8 +208,8 @@ const Debtors = () => {
 
         // Reduced debounce for faster initial loading
         loadBalanceTimeoutRef.current = setTimeout(() => {
-            // Load balances for first 30 visible accounts (increased from 20)
-            loadBalancesForRange(0, 30);
+            // Load ALL balances for all accounts
+            loadBalancesForRange(0, filteredData.length);
         }, 100); // 100ms debounce (faster)
 
         return () => {
@@ -313,20 +314,15 @@ const Debtors = () => {
         }
 
         if (!cached) {
-            return null; // Don't show anything if not loaded yet
+            return <span className="dbt-balance-placeholder">--</span>;
         }
 
         const balance = cached.balance;
         
-        // Only show if balance is not zero
-        if (balance === 0 || Math.abs(balance) < 0.01) {
-            return null;
-        }
-
+        // Show balance always (even if zero) - with proper sign
         return (
             <span className={`dbt-balance-amount ${balance >= 0 ? 'dbt-balance-positive' : 'dbt-balance-negative'}`}>
-                ₹{formatCurrency(Math.abs(balance))}
-                <span className="dbt-balance-type"> {balance >= 0 ? 'Dr' : 'Cr'}</span>
+                {formatCurrency(balance)}
             </span>
         );
     };
@@ -488,10 +484,10 @@ const Debtors = () => {
                                                                                 account.place}
                                                                         </div>
                                                                     )}
-                                                                    {/* Balance Display - Only shows non-zero balances */}
-                                                                    <div className="dbt-dropdown-item-balance">
-                                                                        {renderBalance(account.code)}
-                                                                    </div>
+                                                                </div>
+                                                                {/* Balance Display - Always shows */}
+                                                                <div className="dbt-dropdown-item-balance">
+                                                                    {renderBalance(account.code)}
                                                                 </div>
                                                                 <button
                                                                     className="dbt-show-btn"
@@ -561,15 +557,13 @@ const Debtors = () => {
                                                         </span>
                                                     </p>
                                                 )}
-                                                {/* Balance in selected account section - only if non-zero */}
-                                                {renderBalance(selectedAccount.code) && (
-                                                    <p>
-                                                        <span className="label">Balance:</span>
-                                                        <span className="value">
-                                                            {renderBalance(selectedAccount.code)}
-                                                        </span>
-                                                    </p>
-                                                )}
+                                                {/* Balance in selected account section - always show */}
+                                                <p>
+                                                    <span className="label">Balance:</span>
+                                                    <span className="value">
+                                                        {renderBalance(selectedAccount.code)}
+                                                    </span>
+                                                </p>
                                             </div>
 
                                             <p className="dbt-hint">

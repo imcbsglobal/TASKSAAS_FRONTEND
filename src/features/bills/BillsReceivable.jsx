@@ -50,7 +50,7 @@ const BillsReceivable = () => {
 
       setAccounts(sortedAccounts);
 
-      // FIXED: Actually call fetchInvoiceBalances after fetching debtors
+      // Fetch invoice balances after fetching debtors
       if (sortedAccounts.length > 0) {
         fetchInvoiceBalances(sortedAccounts, token);
       }
@@ -138,6 +138,7 @@ const BillsReceivable = () => {
     );
   };
 
+  // Text search filter
   const filteredData = useMemo(() => {
     if (!searchTerm.trim()) return accounts;
 
@@ -150,6 +151,15 @@ const BillsReceivable = () => {
         (item.area || '').toLowerCase().includes(search)
     );
   }, [searchTerm, accounts]);
+
+  // 🔥 Only keep accounts whose balance > 1
+  const filteredByBalance = useMemo(() => {
+    return filteredData.filter((acc) => {
+      const info = invoiceBalances[acc.code];
+      if (!info || info.loading || typeof info.balance !== 'number') return false;
+      return info.balance > 1;
+    });
+  }, [filteredData, invoiceBalances]);
 
   const handleSelectAccount = (account) => {
     setSelectedAccount(account);
@@ -174,7 +184,7 @@ const BillsReceivable = () => {
     if (!amount && amount !== 0) return '0.00';
     return parseFloat(amount).toLocaleString('en-IN', {
       minimumFractionDigits: 2,
-      maximumFractionDigints: 2
+      maximumFractionDigits: 2
     });
   };
 
@@ -281,17 +291,18 @@ const BillsReceivable = () => {
 
                   {/* Options List */}
                   <div className="bills-dropdown-list">
-                    {filteredData.length === 0 ? (
+                    {filteredByBalance.length === 0 ? (
                       <div className="bills-dropdown-empty">
                         {searchTerm
-                          ? `No accounts found matching "${searchTerm}"`
-                          : 'No accounts available'}
+                          ? `No accounts with balance > 1 matching "${searchTerm}"`
+                          : 'No accounts with receivable balance > 1'}
                       </div>
                     ) : (
-                      filteredData.map((account) => {
+                      filteredByBalance.map((account) => {
                         const balanceInfo = invoiceBalances[account.code] || {};
                         const isLoading = balanceInfo.loading;
-                        const hasBalance = typeof balanceInfo.balance === 'number';
+                        const hasBalance =
+                          typeof balanceInfo.balance === 'number';
                         const balance = hasBalance ? balanceInfo.balance : 0;
 
                         return (
@@ -318,7 +329,7 @@ const BillsReceivable = () => {
                                   </div>
                                 ) : hasBalance ? (
                                   <div className="bills-dropdown-item-balance-show">
-                                    ₹{formatCurrency(balance)}
+                                    {formatCurrency(balance)}
                                   </div>
                                 ) : (
                                   <div className="bills-dropdown-item-balance-show">

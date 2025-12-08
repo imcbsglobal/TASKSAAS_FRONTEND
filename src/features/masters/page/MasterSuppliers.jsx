@@ -349,7 +349,7 @@ const MasterSuppliers = () => {
                           <td data-label="place">{row.place || "-"}</td>
                           <td data-label="phone">{row.phone || "-"}</td>
                           <td data-label="area">{row.area || "-"}</td>
-                          <td data-label="balance">₹{row.balance?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          <td data-label="balance">{row.balance?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         </tr>
                       ))
                     )}

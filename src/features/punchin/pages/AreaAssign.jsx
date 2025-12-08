@@ -1,61 +1,55 @@
+// REQUIRED so your icons actually appear
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
 import { SettingsApi } from '../../settings/services/settingService';
 import { PunchAPI } from '../services/punchService';
 import './AreaAssign.scss';
 
 const AreaAssign = () => {
-  const navigate = useNavigate();
-
-  // Step + data state
-  const [step, setStep] = useState(1); // 1 = pick user, 2 = assign areas
-  const [users, setUsers] = useState([]); // will contain only Level 1 users (deduped)
+  const [users, setUsers] = useState([]);
   const [areas, setAreas] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedAreas, setSelectedAreas] = useState([]);
-
-  // UI state
+  const [assignments, setAssignments] = useState({});
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [dropdownSearch, setDropdownSearch] = useState('');
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
+  const [searchUser, setSearchUser] = useState('');
   const [searchArea, setSearchArea] = useState('');
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
 
-  const dropdownRef = useRef(null);
-  const listRef = useRef(null);
+  const userDropdownRef = useRef(null);
+  const areaDropdownRef = useRef(null);
 
   useEffect(() => {
-    fetchUsers();
+    loadInitialData();
   }, []);
 
-  // Close dropdown on outside click / Escape
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (isDropdownOpen && dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsDropdownOpen(false);
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
+        setUserDropdownOpen(false);
+      }
+      if (areaDropdownRef.current && !areaDropdownRef.current.contains(e.target)) {
+        setAreaDropdownOpen(false);
       }
     };
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') setIsDropdownOpen(false);
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEsc);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEsc);
-    };
-  }, [isDropdownOpen]);
 
-  // Helper: detect "Level 1" stored in user.role or numeric user.level
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const isLevelOne = (user) => {
     if (!user) return false;
-    // numeric level field
+
     if (user.level !== undefined && user.level !== null) {
       const n = Number(user.level);
       if (!isNaN(n) && n === 1) return true;
     }
-    // string role like "Level 1", "level1", "1"
+
     const roleStr = (user.role ?? '').toString().trim().toLowerCase();
     if (!roleStr) return false;
     if (roleStr === '1') return true;
@@ -63,17 +57,17 @@ const AreaAssign = () => {
     return false;
   };
 
-  // Fetch users, filter to Level 1, dedupe by id
   const fetchUsers = async () => {
     try {
       setLoading(true);
       const response = await SettingsApi.getUsers();
-      const raw = Array.isArray(response?.users) ? response.users : Array.isArray(response) ? response : [];
+      const raw = Array.isArray(response?.users)
+        ? response.users
+        : Array.isArray(response)
+        ? response
+        : [];
+      const level1 = raw.filter((u) => isLevelOne(u));
 
-      // Keep only level 1
-      const level1 = raw.filter(u => isLevelOne(u));
-
-      // Dedupe by id (first occurrence kept)
       const seen = new Set();
       const deduped = [];
       for (const u of level1) {
@@ -84,335 +78,552 @@ const AreaAssign = () => {
           deduped.push(u);
         }
       }
-
       setUsers(deduped);
+      return deduped;
     } catch (err) {
       console.error('fetchUsers', err);
       toast.error('Failed to fetch users');
-      setUsers([]);
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch areas
   const fetchAreas = async () => {
     try {
-      setLoading(true);
       const res = await PunchAPI.getAreas();
-      const list = (res?.areas || [])
-        .filter(a => a != null)
-        .map(a => ({ id: a, name: a }));
+      const list = (res?.areas || []).filter((a) => a != null);
       setAreas(list);
     } catch (err) {
       console.error('fetchAreas', err);
       toast.error('Failed to fetch areas');
-      setAreas([]);
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Fetch user assigned areas
-  const fetchUserAreas = async (userId) => {
+  const fetchAllAssignments = async (userList) => {
     try {
-      setLoading(true);
-      const res = await PunchAPI.getUserAreas(userId);
-      setSelectedAreas(res?.areas || []);
+      const usersToFetch = userList || users;
+      if (usersToFetch.length === 0) return;
+
+      const assignmentPromises = usersToFetch.map(user =>
+        PunchAPI.getUserAreas(user.id)
+          .then(res => ({ userId: user.id, areas: res?.areas || [] }))
+          .catch(() => ({ userId: user.id, areas: [] }))
+      );
+
+      const results = await Promise.all(assignmentPromises);
+
+      const newAssignments = {};
+      results.forEach(result => {
+        if (result.areas.length > 0) {
+          newAssignments[result.userId] = result.areas;
+        }
+      });
+
+      setAssignments(newAssignments);
     } catch (err) {
-      console.error('fetchUserAreas', err);
-      setSelectedAreas([]);
+      console.error('fetchAllAssignments', err);
+    }
+  };
+
+  const loadInitialData = async () => {
+    setLoading(true);
+    try {
+      const fetchedUsers = await fetchUsers();
+      await fetchAreas();
+      await fetchAllAssignments(fetchedUsers);
+    } catch (err) {
+      console.error('loadInitialData', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Select user -> goto step 2
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      const fetchedUsers = await fetchUsers();
+      await fetchAreas();
+      await fetchAllAssignments(fetchedUsers);
+      toast.success('Data refreshed successfully');
+    } catch (err) {
+      console.error('handleRefresh', err);
+      toast.error('Failed to refresh data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUserSelect = async (user) => {
     setSelectedUser(user);
-    setIsDropdownOpen(false);
-    setDropdownSearch('');
-    setStep(2);
-    await fetchAreas();
-    await fetchUserAreas(user.id);
-  };
+    setUserDropdownOpen(false);
+    setSearchUser('');
 
-  const handleBackToUsers = () => {
-    setStep(1);
-    setSelectedUser(null);
-    setSelectedAreas([]);
-    setSearchArea('');
-  };
-
-  // Area toggles
-  const handleAreaToggle = (id) => {
-    setSelectedAreas(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
-  };
-  const handleSelectAll = () => setSelectedAreas(filteredAreas.map(a => a.id));
-  const handleDeselectAll = () => setSelectedAreas([]);
-
-  // Save assignments
-  const handleSaveAssignments = async () => {
-    if (!selectedUser) {
-      toast.error('Please select a user first');
-      return;
-    }
-    if (selectedAreas.length === 0) {
-      toast.error('Please select at least one area');
-      return;
-    }
-    try {
-      setSaving(true);
-      await PunchAPI.updateUserAreas(selectedUser.id, selectedAreas);
-      toast.success('Assignments saved');
-      handleBackToUsers();
-    } catch (err) {
-      console.error('save', err);
-      toast.error('Failed to save assignments');
-    } finally {
-      setSaving(false);
+    // Fetch user areas if not already loaded
+    if (!assignments[user.id]) {
+      try {
+        const res = await PunchAPI.getUserAreas(user.id);
+        setAssignments((prev) => ({
+          ...prev,
+          [user.id]: res?.areas || [],
+        }));
+      } catch (err) {
+        console.error('fetchUserAreas', err);
+      }
     }
   };
 
-  // Filter users for dropdown: search by id / accountcode / client_id
-  const filteredDropdownUsers = useMemo(() => {
-    const q = (dropdownSearch ?? '').toString().trim().toLowerCase();
-    if (!q) return users;
-    return users.filter(u => {
-      const candidates = [
-        u.id?.toString(),
-        u.accountcode?.toString(),
-        u.client_id?.toString()
-      ].filter(Boolean);
-      return candidates.some(s => s.toLowerCase().includes(q));
+  const toggleAreaSelection = (area) => {
+    setSelectedAreas((prev) => {
+      if (prev.includes(area)) {
+        return prev.filter((a) => a !== area);
+      }
+      return [...prev, area];
     });
-  }, [users, dropdownSearch]);
+  };
 
-  // Filter areas
+  const handleAddAreas = async () => {
+    if (!selectedUser || selectedAreas.length === 0) return;
+
+    const userAreas = assignments[selectedUser.id] || [];
+    const newAreas = selectedAreas.filter((area) => !userAreas.includes(area));
+
+    if (newAreas.length === 0) {
+      toast.warning('All selected areas are already assigned');
+      return;
+    }
+
+    const updatedAreas = [...userAreas, ...newAreas];
+
+    try {
+      await PunchAPI.updateUserAreas(selectedUser.id, updatedAreas);
+      setAssignments((prev) => ({
+        ...prev,
+        [selectedUser.id]: updatedAreas,
+      }));
+      setSelectedAreas([]);
+      setAreaDropdownOpen(false);
+      setSearchArea('');
+      toast.success(`${newAreas.length} area(s) assigned successfully`);
+    } catch (err) {
+      console.error('Error adding areas', err);
+      toast.error('Failed to assign areas');
+    }
+  };
+
+  const handleDeleteAllAssignments = async (userId) => {
+    const user = users.find((u) => u.id === userId);
+    const userName = user?.name || user?.accountcode || userId;
+
+    if (!window.confirm(`Delete all area assignments for ${userName}?`)) return;
+
+    try {
+      await PunchAPI.updateUserAreas(userId, []);
+      setAssignments((prev) => ({
+        ...prev,
+        [userId]: [],
+      }));
+      toast.success('All assignments deleted successfully');
+    } catch (err) {
+      console.error('Error deleting assignments', err);
+      toast.error('Failed to delete assignments');
+    }
+  };
+
+  const handleEditAssignments = (userId) => {
+    const user = users.find((u) => u.id === userId);
+    setEditingUser({
+      id: userId,
+      name: user?.name || user?.accountcode || userId,
+      areas: assignments[userId] || [],
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleDeleteFromModal = async (area) => {
+    if (!editingUser) return;
+
+    const updatedAreas = editingUser.areas.filter((a) => a !== area);
+
+    try {
+      await PunchAPI.updateUserAreas(editingUser.id, updatedAreas);
+      setAssignments((prev) => ({
+        ...prev,
+        [editingUser.id]: updatedAreas,
+      }));
+      setEditingUser((prev) => ({
+        ...prev,
+        areas: updatedAreas,
+      }));
+      toast.success('Area removed successfully');
+    } catch (err) {
+      console.error('Error removing area', err);
+      toast.error('Failed to remove area');
+    }
+  };
+
+  const filteredUsers = useMemo(() => {
+    const q = searchUser.toLowerCase().trim();
+    if (!q) return users;
+    return users.filter(
+      (u) =>
+        u.id?.toLowerCase().includes(q) ||
+        u.name?.toLowerCase().includes(q) ||
+        u.accountcode?.toLowerCase().includes(q)
+    );
+  }, [users, searchUser]);
+
   const filteredAreas = useMemo(() => {
-    const q = (searchArea ?? '').toString().trim().toLowerCase();
+    const q = searchArea.toLowerCase().trim();
     if (!q) return areas;
-    return areas.filter(a => (a.name ?? '').toLowerCase().includes(q) || (a.id ?? '').toString().toLowerCase().includes(q));
+    return areas.filter((a) => a.toLowerCase().includes(q));
   }, [areas, searchArea]);
 
-  // Stats
-  const stats = {
-    totalUsers: users.length,
-    totalAreas: areas.length,
-    selectedAreas: selectedAreas.length,
-    assignmentProgress: areas.length ? Math.round((selectedAreas.length / areas.length) * 100) : 0
-  };
+  const getUsersWithAssignments = useMemo(() => {
+    return users
+      .filter((user) => (assignments[user.id] || []).length > 0)
+      .map((user) => ({
+        ...user,
+        areas: assignments[user.id] || [],
+      }));
+  }, [users, assignments]);
 
   return (
     <div className="all-body">
       <div className="area-assign-page">
         {/* Header */}
-        <div className="area-assign__header">
-          <div className="area-assign__header-content">
-            <div className="header-top">
-              <div className="header-tit">
-                <h1 className="area-assign__title">
-                  <i className="fas fa-map-marked-alt" />
-                  Area Assignment
-                </h1>
-                <p className="area-assign__subtitle">
-                  {step === 1 ? 'Step 1: Select a user' : `Step 2: Assign areas to ${selectedUser?.id}`}
-                </p>
-              </div>
+        <div className="page-header">
+          <div className="header-content">
+            <div>
+              <h1 className="header-title">Area Assignment</h1>
+              <p className="header-subtitle">Assign and manage area access for Level 1 users</p>
             </div>
+            <button type="button" onClick={handleRefresh} disabled={loading} className="header-refresh-btn">
+              <i className="fas fa-sync-alt" />
+              <span>Refresh</span>
+            </button>
           </div>
 
-          <div className="step-indicator">
-            <div className={`step-indicator__item ${step >= 1 ? 'step-indicator__item--active' : ''}`}>
-              <div className="step-indicator__circle">{step > 1 ? <i className="fas fa-check" /> : '1'}</div>
-              <span className="step-indicator__label">Select User</span>
-            </div>
-            <div className="step-indicator__line" />
-            <div className={`step-indicator__item ${step >= 2 ? 'step-indicator__item--active' : ''}`}>
-              <div className="step-indicator__circle">2</div>
-              <span className="step-indicator__label">Assign Areas</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="area-assign__content">
-          {/* STEP 1 - user selection */}
-          {step === 1 && (
-            <div className="area-assign__step area-assign__step--users">
-              <div className="step-panel">
-                <div className="panel-header">
-                  <h2 className="panel-header__title">
-                    <i className="fas fa-users" />
-                    Select User to Assign Areas
-                  </h2>
-                  <p className="panel-header__subtitle">Choose a Level 1 user from the dropdown to start assigning areas</p>
-                </div>
-
-                <div className="panel-content">
-                  <div className="user-selection-container" style={{ alignItems: 'flex-start', gap: 18 }}>
-                    <div className="user-dropdown-wrapper" style={{ width: '100%', maxWidth: 700 }}>
-                      <label className="user-dropdown-label">
-                        <i className="fas fa-user" />
-                        Select User
-                      </label>
-
-                      <div className={`user-dropdown ${isDropdownOpen ? 'user-dropdown--open' : ''}`} ref={dropdownRef} style={{ position: 'relative' }}>
-                        <div className="user-dropdown__trigger">
-                          <div className="user-dropdown__input-wrapper">
-                            <i className="fas fa-search user-dropdown__search-icon" />
-                            <input
-                              type="text"
-                              placeholder="Type to search users..."
-                              value={dropdownSearch}
-                              onChange={(e) => {
-                                setDropdownSearch(e.target.value);
-                                if (!isDropdownOpen) setIsDropdownOpen(true);
-                                if (listRef.current) listRef.current.scrollTop = 0;
-                              }}
-                              onFocus={() => setIsDropdownOpen(true)}
-                              className="user-dropdown__input"
-                              style={{ padding: '10px 6px', fontSize: 15 }}
-                            />
-                            <i
-                              className={`fas fa-chevron-down user-dropdown__arrow ${isDropdownOpen ? 'user-dropdown__arrow--up' : ''}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setIsDropdownOpen(!isDropdownOpen);
-                              }}
-                            />
-                          </div>
-                        </div>
-
-                        {isDropdownOpen && (
-                          <div className="user-dropdown__menu" style={{ maxHeight: 360 }}>
-                            {loading ? (
-                              <div className="user-dropdown__loading"><div className="spinner-small" /> <span>Loading users...</span></div>
-                            ) : filteredDropdownUsers.length === 0 ? (
-                              <div className="user-dropdown__empty"><i className="fas fa-user-slash" /> <span>{dropdownSearch ? 'No users found' : 'No users available'}</span></div>
-                            ) : (
-                              <div className="user-dropdown__options" ref={listRef} style={{ overflowY: 'auto', maxHeight: 340 }}>
-                                {/* SIMPLE: show only the user's id (name). No avatar, no secondary text. */}
-                                {filteredDropdownUsers.map((user) => (
-                                  <div
-                                    key={user.id ?? Math.random()}
-                                    className="user-dropdown__option"
-                                    onClick={() => handleUserSelect(user)}
-                                    style={{
-                                      padding: '12px 16px',
-                                      fontSize: 15,
-                                      fontWeight: 600,
-                                      cursor: 'pointer',
-                                      borderBottom: '1px solid rgba(0,0,0,0.04)'
-                                    }}
-                                  >
-                                    {user.id}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Instructions (kept minimal) */}
-                    <div className="selection-instructions" style={{ minWidth: 220 }}>
-                      <div className="instruction-card">
-                        <div className="instruction-card__icon"><i className="fas fa-info-circle" /></div>
-                        <div className="instruction-card__content">
-                          <h3>How to select a user:</h3>
-                          <ul>
-                            <li>Only Level 1 users are listed.</li>
-                            <li>Type a name to filter the list.</li>
-                            <li>Click a name to assign areas.</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          {loading && (
+            <div className="header-loading">
+              <span className="spinner" />
+              <span>Loading...</span>
             </div>
           )}
+        </div>
 
-          {/* STEP 2 - area assignment */}
-          {step === 2 && (
-            <div className="area-assign__step area-assign__step--areas">
-              <div className="step-panel">
-                <div className="panel-header">
-                  <div className="panel-header__left" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <button className="btn btn--icon" onClick={handleBackToUsers} title="Back to user selection"><i className="fas fa-arrow-left" /></button>
-                    <div>
-                      <h2 className="panel-header__title"><i className="fas fa-map-pin" /> Assign Areas to {selectedUser?.id}</h2>
-                      <p className="panel-header__subtitle">Select areas that this user can access for punch-in</p>
-                    </div>
-                  </div>
-                </div>
+        {/* Assignment Controls */}
+        <div className="assignment-controls">
+          <h2 className="controls-title">
+            <span>Add New Assignment</span>
+          </h2>
 
-                <div className="panel-toolbar">
-                  <div className="panel-toolbar__search"><i className="fas fa-search" /><input className="search-input" value={searchArea} onChange={e => setSearchArea(e.target.value)} placeholder="Search areas by name..." /></div>
-                  <div className="panel-toolbar__actions">
-                    <button className="btn btn--secondary btn--sm" onClick={handleSelectAll} disabled={filteredAreas.length === 0}><i className="fas fa-check-double" /> Select All</button>
-                    <button className="btn btn--secondary btn--sm" onClick={handleDeselectAll} disabled={selectedAreas.length === 0}><i className="fas fa-times" /> Clear All</button>
-                  </div>
-                </div>
-
-                {selectedAreas.length > 0 && (
-                  <div className="progress-bar">
-                    <div className="progress-bar__track"><div className="progress-bar__fill" style={{ width: `${stats.assignmentProgress}%` }} /></div>
-                    <span className="progress-bar__label">{stats.selectedAreas} of {stats.totalAreas} areas selected ({stats.assignmentProgress}%)</span>
-                  </div>
+          <div className="controls-grid">
+            {/* User Dropdown */}
+            <div className="dropdown-wrapper" ref={userDropdownRef}>
+              <label className="dropdown-label">Select User</label>
+              <div className="dropdown-container" onClick={() => setUserDropdownOpen(true)}>
+                <input
+                  type="text"
+                  placeholder="Select user"
+                  value={
+                    selectedUser
+                      ? selectedUser.name || selectedUser.accountcode || selectedUser.id
+                      : ''
+                  }
+                  readOnly
+                  className="dropdown-input"
+                />
+                {selectedUser && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedUser(null);
+                      setSearchUser('');
+                      setSelectedAreas([]);
+                    }}
+                    className="dropdown-clear"
+                  >
+                    <i className="fas fa-times" />
+                  </button>
                 )}
-
-                <div className="panel-content">
-                  {loading ? (
-                    <div className="loading-state"><div className="spinner" /><p>Loading areas...</p></div>
-                  ) : filteredAreas.length === 0 ? (
-                    <div className="empty-state"><i className="fas fa-map-marker-slash" /><p>No areas found</p></div>
-                  ) : (
-                    <div className="area-list">
-                      {filteredAreas.map(area => (
-                        <div key={area.id} className={`area-card ${selectedAreas.includes(area.id) ? 'area-card--selected' : ''}`} onClick={() => handleAreaToggle(area.id)}>
-                          <div className="area-card__checkbox">
-                            <input type="checkbox" checked={selectedAreas.includes(area.id)} onChange={() => {}} onClick={(e) => e.stopPropagation()} />
-                            <span className="checkbox-custom" />
-                          </div>
-
-                          <div className="area-card__content">
-                            <h3 className="area-card__name"><i className="fas fa-map-marker-alt" />{area.name}</h3>
-                            <p className="area-card__code"><i className="fas fa-code" /> Code: {area.id}</p>
-                          </div>
-
-                          {selectedAreas.includes(area.id) && <div className="area-card__badge"><i className="fas fa-check" /></div>}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer with actions */}
-        {step === 2 && (
-          <div className="area-assign__footer">
-            <div className="area-assign__footer-content">
-              <div className="footer-info">
-                <p className="footer-info__text"><strong>{selectedAreas.length}</strong> area(s) selected for <strong>{selectedUser?.id}</strong></p>
-                {selectedAreas.length > 0 && <p className="footer-info__hint"><i className="fas fa-info-circle" /> Click "Save Assignments" to apply changes</p>}
-              </div>
-              <div className="footer-actions">
-                <button className="btn btn--secondary" onClick={handleBackToUsers} disabled={saving}><i className="fas fa-arrow-left" /> Back</button>
-                <button className="btn btn--primary" onClick={handleSaveAssignments} disabled={saving || selectedAreas.length === 0}>
-                  {saving ? <><div className="btn-spinner" /> Saving...</> : <><i className="fas fa-save" /> Save Assignments ({selectedAreas.length})</>}
+                <button
+                  type="button"
+                  className="dropdown-arrow"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setUserDropdownOpen((prev) => !prev);
+                  }}
+                >
+                  <i className="fas fa-chevron-down" />
                 </button>
               </div>
+
+              {userDropdownOpen && (
+                <div className="dropdown-menu">
+                  <div className="dropdown-search-wrapper">
+                    <div className="dropdown-search">
+                      <i className="fas fa-search" />
+                      <input
+                        type="text"
+                        placeholder="Search users..."
+                        value={searchUser}
+                        onChange={(e) => setSearchUser(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="dropdown-items">
+                    {filteredUsers.length === 0 ? (
+                      <div className="dropdown-empty">No users found</div>
+                    ) : (
+                      filteredUsers.map((user) => (
+                        <div
+                          key={user.id}
+                          onClick={() => handleUserSelect(user)}
+                          className={`dropdown-item ${
+                            selectedUser?.id === user.id ? 'dropdown-item-selected' : ''
+                          }`}
+                        >
+                          <div className="dropdown-item-main">
+                            {user.name || user.accountcode || user.id}
+                          </div>
+                          <i className="fas fa-check dropdown-item-checkmark" />
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Areas Dropdown */}
+            <div className="dropdown-wrapper" ref={areaDropdownRef}>
+              <label className="dropdown-label">Select Areas</label>
+              <div
+                className={`dropdown-container ${!selectedUser ? 'dropdown-disabled' : ''}`}
+                onClick={() => selectedUser && setAreaDropdownOpen(true)}
+              >
+                <input
+                  type="text"
+                  placeholder={
+                    selectedUser
+                      ? selectedAreas.length > 0
+                        ? `${selectedAreas.length} area(s) selected`
+                        : 'Select areas'
+                      : 'Select user first'
+                  }
+                  readOnly
+                  disabled={!selectedUser}
+                  className="dropdown-input"
+                />
+
+                {selectedAreas.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedAreas([]);
+                    }}
+                    className="dropdown-clear"
+                  >
+                    <i className="fas fa-times" />
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  className="dropdown-arrow"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (selectedUser) setAreaDropdownOpen((prev) => !prev);
+                  }}
+                >
+                  <i className="fas fa-chevron-down" />
+                </button>
+              </div>
+
+              {areaDropdownOpen && selectedUser && (
+                <div className="dropdown-menu">
+                  <div className="dropdown-search-wrapper">
+                    <div className="dropdown-search">
+                      <i className="fas fa-search" />
+                      <input
+                        type="text"
+                        placeholder="Search areas..."
+                        value={searchArea}
+                        onChange={(e) => setSearchArea(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="dropdown-items">
+                    {filteredAreas.length === 0 ? (
+                      <div className="dropdown-empty">No areas found</div>
+                    ) : (
+                      filteredAreas.map((area) => (
+                        <div
+                          key={area}
+                          onClick={() => toggleAreaSelection(area)}
+                          className={`dropdown-item dropdown-item-single ${
+                            selectedAreas.includes(area) ? 'dropdown-item-selected' : ''
+                          }`}
+                        >
+                          <span className="dropdown-item-main">{area}</span>
+                          <i className="fas fa-check dropdown-item-checkmark" />
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Add Assignment Button */}
+            <div className="add-button-wrapper">
+              <button
+                type="button"
+                onClick={handleAddAreas}
+                disabled={!selectedUser || selectedAreas.length === 0}
+                className="btn-add"
+              >
+                <i className="fas fa-plus" />
+                <span>Add Assignment</span>
+              </button>
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Assignments Table */}
+        <div className="assignments-table-section">
+          <h2 className="table-section-title">
+            <span>Current Assignments</span>
+          </h2>
+
+          {getUsersWithAssignments.length === 0 ? (
+            <div className="table-empty-state">
+              <i className="fas fa-inbox" />
+              <p>No assignments yet</p>
+              <span>Start by assigning areas to users above</span>
+            </div>
+          ) : (
+            <div className="table-wrapper">
+              <table className="assignments-table">
+                <thead>
+                  <tr>
+                    <th>S.NO</th>
+                    <th>USER NAME</th>
+                    <th>ASSIGNED AREAS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {getUsersWithAssignments.map((user, index) => (
+                    <tr key={user.id}>
+                      <td>{index + 1}</td>
+
+                      <td className="user-name-cell">
+                        {user.name || user.accountcode || user.id}
+                      </td>
+
+                      <td>
+                        <div className="areas-badges">
+                          {user.areas.slice(0, 3).map((area, idx) => (
+                            <span key={idx} className="area-badge">
+                              {area}
+                            </span>
+                          ))}
+                          {user.areas.length > 3 && (
+                            <span className="area-badge-more">
+                              +{user.areas.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      <td>
+                        <div className="action-buttons">
+                          <button
+                            type="button"
+                            onClick={() => handleEditAssignments(user.id)}
+                            className="btn-action btn-edit"
+                            title="Edit assignments"
+                          >
+                            <i className="fas fa-edit" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAllAssignments(user.id)}
+                            className="btn-action btn-delete"
+                            title="Delete all assignments"
+                          >
+                            <i className="fas fa-trash-alt" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+
+              </table>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Edit Modal */}
+      {editModalOpen && editingUser && (
+        <div className="modal-overlay" onClick={() => setEditModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Edit Assignments - {editingUser.name}</h3>
+              <button type="button" className="modal-close" onClick={() => setEditModalOpen(false)}>
+                <i className="fas fa-times" />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {editingUser.areas.length === 0 ? (
+                <div className="modal-empty">
+                  <i className="fas fa-inbox" />
+                  <p>No areas assigned</p>
+                </div>
+              ) : (
+                <div className="modal-areas">
+                  {editingUser.areas.map((area, idx) => (
+                    <div key={idx} className="modal-area-item">
+                      <span className="modal-area-name">
+                        <i className="fas fa-map-marker-alt" />
+                        {area}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteFromModal(area)}
+                        className="modal-delete-btn"
+                        title="Remove area"
+                      >
+                        <i className="fas fa-trash-alt" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button type="button" onClick={() => setEditModalOpen(false)} className="btn-modal-close">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

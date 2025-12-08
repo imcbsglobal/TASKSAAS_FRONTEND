@@ -425,27 +425,26 @@
   }
 }
 
-/* Balance Amount - Red Pill Style */
+/* Balance Placeholder */
+.dbt-balance-placeholder {
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Balance Amount - Red Color Only, No Background */
 .dbt-balance-amount {
   font-weight: 700;
   font-size: 13px;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 3px 8px;
-  border-radius: 5px;
+  color: #dc2626;
 }
 
 .dbt-balance-positive {
   color: #dc2626;
-  background: rgba(220, 38, 38, 0.08);
-  border: 1px solid rgba(220, 38, 38, 0.15);
 }
 
 .dbt-balance-negative {
-  color: #16a34a;
-  background: rgba(22, 163, 74, 0.08);
-  border: 1px solid rgba(22, 163, 74, 0.15);
+  color: #dc2626;
 }
 
 .dbt-balance-type {
