@@ -63,6 +63,7 @@ const MasterSuppliers = () => {
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
   const [pageSize, setPageSize] = useState(20);
   const [page, setPage] = useState(1);
+  const [balanceFilter, setBalanceFilter] = useState("all"); // NEW
 
   // Get unique areas from data
   const uniqueAreas = useMemo(() => {
@@ -100,6 +101,11 @@ const MasterSuppliers = () => {
     if (selectedArea) {
       result = result.filter(d => d.area === selectedArea);
     }
+
+    // Apply balance filter (All Users / Balance > 0)
+    if (balanceFilter === "positive") {
+      result = result.filter(d => Number(d.balance) > 0);
+    }
     
     // Sort alphabetically by name
     return result.sort((a, b) => {
@@ -107,7 +113,7 @@ const MasterSuppliers = () => {
       const nameB = (b.name || "").toString().toLowerCase();
       return nameA.localeCompare(nameB);
     });
-  }, [data, searchTerm, selectedArea]);
+  }, [data, searchTerm, selectedArea, balanceFilter]);
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -134,6 +140,7 @@ const MasterSuppliers = () => {
     setSearchTerm("");
     setSelectedArea("");
     setAreaSearchTerm("");
+    setBalanceFilter("all"); // reset balance filter
     setPage(1);
   };
 
@@ -286,7 +293,23 @@ const MasterSuppliers = () => {
                     </div>
                   </div>
 
-                  {(searchTerm || selectedArea) && (
+                  {/* Balance Filter */}
+                  <div className="ms-filter-item ms-filter-balance">
+                    <label>Balance</label>
+                    <select
+                      value={balanceFilter}
+                      onChange={(e) => {
+                        setBalanceFilter(e.target.value);
+                        setPage(1);
+                      }}
+                      className="ms-balance-select"
+                    >
+                      <option value="all">All Users</option>
+                      <option value="positive">Balance &gt; 0</option>
+                    </select>
+                  </div>
+
+                  {(searchTerm || selectedArea || balanceFilter !== "all") && (
                     <button
                       type="button"
                       className="ms-clear-filters-btn"
@@ -349,7 +372,12 @@ const MasterSuppliers = () => {
                           <td data-label="place">{row.place || "-"}</td>
                           <td data-label="phone">{row.phone || "-"}</td>
                           <td data-label="area">{row.area || "-"}</td>
-                          <td data-label="balance">{row.balance?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          <td data-label="balance">
+                            {row.balance?.toLocaleString('en-IN', { 
+                              minimumFractionDigits: 2, 
+                              maximumFractionDigits: 2 
+                            })}
+                          </td>
                         </tr>
                       ))
                     )}
