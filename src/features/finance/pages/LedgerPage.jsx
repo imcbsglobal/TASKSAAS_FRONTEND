@@ -280,25 +280,25 @@ const LedgerPage = () => {
                             <div className="ldg-summary-card">
                                 <div className="ldg-summary-label">Opening Balance</div>
                                 <div className={`ldg-summary-value ${openingBalance < 0 ? 'negative' : ''}`}>
-                                    ₹{formatCurrency(openingBalance)}
+                                    {formatCurrency(openingBalance)}
                                 </div>
                             </div>
                             <div className="ldg-summary-card ldg-summary-debit">
                                 <div className="ldg-summary-label">Total Debit</div>
                                 <div className="ldg-summary-value">
-                                    ₹{formatCurrency(totalDebit)}
+                                    {formatCurrency(totalDebit)}
                                 </div>
                             </div>
                             <div className="ldg-summary-card ldg-summary-credit">
                                 <div className="ldg-summary-label">Total Credit</div>
                                 <div className="ldg-summary-value">
-                                    ₹{formatCurrency(totalCredit)}
+                                    {formatCurrency(totalCredit)}
                                 </div>
                             </div>
                             <div className="ldg-summary-card ldg-summary-balance">
                                 <div className="ldg-summary-label">Current Balance</div>
                                 <div className={`ldg-summary-value ${currentBalance < 0 ? 'negative' : ''}`}>
-                                    ₹{formatCurrency(currentBalance)}
+                                    {formatCurrency(currentBalance)}
                                 </div>
                             </div>
                         </div>
@@ -412,7 +412,7 @@ const LedgerPage = () => {
                                                     <td className={`ldg-col-amount ldg-total ${
                                                         finalBalance < 0 ? 'negative' : 'positive'
                                                     }`}>
-                                                        ₹{formatCurrency(finalBalance)}
+                                                        {formatCurrency(finalBalance)}
                                                     </td>
                                                 </tr>
                                             </tfoot>

@@ -137,16 +137,16 @@ const InvoicePage = () => {
                                 </div>
                                 <div className="inv-summary-card inv-summary-nettotal">
                                     <div className="inv-summary-label">Total Amount</div>
-                                    <div className="inv-summary-value">₹{formatCurrency(totals.netTotal)}</div>
+                                    <div className="inv-summary-value">{formatCurrency(totals.netTotal)}</div>
                                 </div>
                                 <div className="inv-summary-card inv-summary-paid">
                                     <div className="inv-summary-label">Total Paid</div>
-                                    <div className="inv-summary-value">₹{formatCurrency(totals.paid)}</div>
+                                    <div className="inv-summary-value">{formatCurrency(totals.paid)}</div>
                                 </div>
                                 <div className="inv-summary-card inv-summary-balance">
                                     <div className="inv-summary-label">Balance Due</div>
                                     <div className={`inv-summary-value ${totalBalance >= 0 ? 'positive' : 'negative'}`}>
-                                        ₹{formatCurrency(Math.abs(totalBalance))}
+                                        {formatCurrency(Math.abs(totalBalance))}
                                     </div>
                                 </div>
                             </div>
@@ -218,15 +218,15 @@ const InvoicePage = () => {
                                                                     </span>
                                                                 </td>
                                                                 <td data-label="Net Total" className="inv-col-amount inv-amount-nettotal">
-                                                                    ₹{formatCurrency(invoice.nettotal)}
+                                                                    {formatCurrency(invoice.nettotal)}
                                                                 </td>
                                                                 <td data-label="Paid" className="inv-col-amount inv-amount-paid">
-                                                                    ₹{formatCurrency(invoice.paid)}
+                                                                    {formatCurrency(invoice.paid)}
                                                                 </td>
                                                                 <td data-label="Balance" className={`inv-col-amount inv-balance ${
                                                                     balance >= 0 ? 'positive' : 'negative'
                                                                 }`}>
-                                                                    ₹{formatCurrency(Math.abs(balance))}
+                                                                    {formatCurrency(Math.abs(balance))}
                                                                 </td>
                                                             </tr>
                                                         );
@@ -236,15 +236,15 @@ const InvoicePage = () => {
                                                     <tr className="inv-totals-row">
                                                         <td colSpan="4" className="inv-totals-label">Total</td>
                                                         <td className="inv-col-amount inv-amount-nettotal inv-total" data-label="Net Total">
-                                                            ₹{formatCurrency(totals.netTotal)}
+                                                            {formatCurrency(totals.netTotal)}
                                                         </td>
                                                         <td className="inv-col-amount inv-amount-paid inv-total" data-label="Paid">
-                                                            ₹{formatCurrency(totals.paid)}
+                                                            {formatCurrency(totals.paid)}
                                                         </td>
                                                         <td className={`inv-col-amount inv-total ${
                                                             totalBalance >= 0 ? 'positive' : 'negative'
                                                         }`} data-label="Balance">
-                                                            ₹{formatCurrency(Math.abs(totalBalance))}
+                                                            {formatCurrency(Math.abs(totalBalance))}
                                                         </td>
                                                     </tr>
                                                 </tfoot>

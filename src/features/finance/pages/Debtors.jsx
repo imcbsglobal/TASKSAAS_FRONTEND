@@ -4,6 +4,23 @@ import axios from 'axios';
 import API_BASE_URL from '../../../services/api';
 import '../styles/Debtors.scss';
 
+// Debounce hook
+const useDebounce = (value, delay) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
+};
+
 const Debtors = () => {
     const navigate = useNavigate();
 
@@ -15,14 +32,20 @@ const Debtors = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState(null);
 
+    // Debounced search
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
     // Balance caching system
     const [balanceCache, setBalanceCache] = useState({});
     const [loadingBalances, setLoadingBalances] = useState(new Set());
     const balanceCacheRef = useRef({});
     const abortControllersRef = useRef({});
-    const loadBalanceTimeoutRef = useRef(null);
+
+    // Virtualization states
+    const [visibleRange, setVisibleRange] = useState({ start: 0, end: 20 });
     const dropdownListRef = useRef(null);
-    const loadedIndicesRef = useRef(new Set());
+    const itemHeight = 80; // Approximate height of each dropdown item
+    const overscan = 5; // Extra items to render outside visible area
 
     // ----------------- EFFECTS -----------------
 
@@ -34,16 +57,13 @@ const Debtors = () => {
             Object.values(abortControllersRef.current).forEach(controller => {
                 controller.abort();
             });
-            if (loadBalanceTimeoutRef.current) {
-                clearTimeout(loadBalanceTimeoutRef.current);
-            }
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Update filtered data with debounced search
     useEffect(() => {
-        if (searchTerm.trim()) {
-            const search = searchTerm.toLowerCase();
+        if (debouncedSearchTerm.trim()) {
+            const search = debouncedSearchTerm.toLowerCase();
             const filtered = allData.filter(item =>
                 (item.name || '').toLowerCase().includes(search) ||
                 (item.code || '').toLowerCase().includes(search) ||
@@ -54,7 +74,40 @@ const Debtors = () => {
         } else {
             setFilteredData(allData);
         }
-    }, [searchTerm, allData]);
+        // Reset visible range when filter changes
+        setVisibleRange({ start: 0, end: 20 });
+    }, [debouncedSearchTerm, allData]);
+
+    // Handle scroll for virtualization
+    const handleScroll = useCallback(() => {
+        if (!dropdownListRef.current) return;
+        
+        const scrollTop = dropdownListRef.current.scrollTop;
+        const clientHeight = dropdownListRef.current.clientHeight;
+        
+        const visibleStart = Math.floor(scrollTop / itemHeight);
+        const visibleEnd = Math.ceil((scrollTop + clientHeight) / itemHeight);
+        
+        const start = Math.max(0, visibleStart - overscan);
+        const end = Math.min(filteredData.length, visibleEnd + overscan);
+        
+        setVisibleRange({ start, end });
+        
+        // Load balances only for visible items
+        for (let i = start; i < end; i++) {
+            const account = filteredData[i];
+            if (account && !balanceCacheRef.current[account.code] && !loadingBalances.has(account.code)) {
+                fetchBalance(account.code);
+            }
+        }
+    }, [filteredData, itemHeight, overscan, loadingBalances]);
+
+    // Initial load when dropdown opens
+    useEffect(() => {
+        if (isOpen && filteredData.length > 0) {
+            handleScroll();
+        }
+    }, [isOpen, filteredData, handleScroll]);
 
     // Fetch balance for a specific account
     const fetchBalance = useCallback(async (accountCode) => {
@@ -114,8 +167,7 @@ const Debtors = () => {
                 const account = allData.find(acc => acc.code === accountCode);
                 const openingBalance = parseFloat(account?.opening_balance || 0);
                 
-                // FIXED: Calculate current balance exactly like LedgerPage
-                // Current balance = opening + total debit - total credit
+                // Calculate current balance
                 const currentBalance = openingBalance + totals.debit - totals.credit;
 
                 // Cache the result
@@ -128,8 +180,6 @@ const Debtors = () => {
 
                 balanceCacheRef.current[accountCode] = balanceData;
                 setBalanceCache(prev => ({ ...prev, [accountCode]: balanceData }));
-
-                console.log(`Balance loaded for ${accountCode}:`, balanceData);
 
                 return balanceData;
             }
@@ -148,76 +198,6 @@ const Debtors = () => {
 
         return null;
     }, [allData, loadingBalances]);
-
-    // Function to load balances for a range of accounts
-    const loadBalancesForRange = useCallback((startIndex, endIndex) => {
-        const accountsToLoad = filteredData.slice(startIndex, endIndex);
-        
-        accountsToLoad.forEach((account, index) => {
-            const actualIndex = startIndex + index;
-            
-            // Skip if already loaded or loading
-            if (loadedIndicesRef.current.has(actualIndex) || 
-                balanceCacheRef.current[account.code] || 
-                loadingBalances.has(account.code)) {
-                return;
-            }
-
-            // Mark as loaded
-            loadedIndicesRef.current.add(actualIndex);
-            
-            // Faster loading - 20ms between requests (reduced from 50ms)
-            setTimeout(() => {
-                fetchBalance(account.code);
-            }, index * 20);
-        });
-    }, [filteredData, loadingBalances, fetchBalance]);
-
-    // Handle scroll to load more balances
-    const handleScroll = useCallback((e) => {
-        const element = e.target;
-        const scrollTop = element.scrollTop;
-        const scrollHeight = element.scrollHeight;
-        const clientHeight = element.clientHeight;
-
-        // Check if scrolled near bottom (within 300px for earlier loading)
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 300;
-
-        if (isNearBottom) {
-            // Calculate which accounts are now visible
-            const loadedCount = loadedIndicesRef.current.size;
-            const nextBatch = Math.min(loadedCount + 20, filteredData.length); // Load 20 at a time
-            
-            if (loadedCount < nextBatch) {
-                loadBalancesForRange(loadedCount, nextBatch);
-            }
-        }
-    }, [filteredData.length, loadBalancesForRange]);
-
-    // Load balances for visible accounts when dropdown opens
-    useEffect(() => {
-        if (!isOpen || filteredData.length === 0) return;
-
-        // Clear existing timeout
-        if (loadBalanceTimeoutRef.current) {
-            clearTimeout(loadBalanceTimeoutRef.current);
-        }
-
-        // Reset loaded indices when dropdown opens with new search
-        loadedIndicesRef.current.clear();
-
-        // Reduced debounce for faster initial loading
-        loadBalanceTimeoutRef.current = setTimeout(() => {
-            // Load ALL balances for all accounts
-            loadBalancesForRange(0, filteredData.length);
-        }, 100); // 100ms debounce (faster)
-
-        return () => {
-            if (loadBalanceTimeoutRef.current) {
-                clearTimeout(loadBalanceTimeoutRef.current);
-            }
-        };
-    }, [isOpen, filteredData, loadBalancesForRange]);
 
     // ----------------- API CALLS -----------------
 
@@ -319,13 +299,17 @@ const Debtors = () => {
 
         const balance = cached.balance;
         
-        // Show balance always (even if zero) - with proper sign
         return (
             <span className={`dbt-balance-amount ${balance >= 0 ? 'dbt-balance-positive' : 'dbt-balance-negative'}`}>
                 {formatCurrency(balance)}
             </span>
         );
     };
+
+    // Calculate virtualization values
+    const visibleAccounts = filteredData.slice(visibleRange.start, visibleRange.end);
+    const offsetY = visibleRange.start * itemHeight;
+    const totalHeight = filteredData.length * itemHeight;
 
     // ----------------- RENDER -----------------
 
@@ -424,87 +408,74 @@ const Debtors = () => {
                                                     type="text"
                                                     placeholder="Search by name, code, or place..."
                                                     value={searchTerm}
-                                                    onChange={e =>
-                                                        setSearchTerm(
-                                                            e.target.value
-                                                        )
-                                                    }
+                                                    onChange={e => setSearchTerm(e.target.value)}
                                                     className="dbt-dropdown-search-input"
+                                                    autoFocus
                                                 />
                                                 {searchTerm && (
                                                     <button
                                                         className="dbt-search-clear"
-                                                        onClick={() =>
-                                                            setSearchTerm('')
-                                                        }
+                                                        onClick={() => setSearchTerm('')}
                                                     >
                                                         ✕
                                                     </button>
                                                 )}
                                             </div>
 
-                                            {/* Options */}
-                                            <div 
-                                                className="dbt-dropdown-list"
-                                                ref={dropdownListRef}
-                                                onScroll={handleScroll}
-                                            >
-                                                {filteredData.length === 0 ? (
-                                                    <div className="dbt-dropdown-empty">
-                                                        {searchTerm
-                                                            ? `No accounts found matching "${searchTerm}"`
-                                                            : 'No accounts available'}
-                                                    </div>
-                                                ) : (
-                                                    filteredData.map(account => (
-                                                        <div
-                                                            key={
-                                                                account.code ||
-                                                                account.id
-                                                            }
-                                                            className="dbt-dropdown-item"
-                                                            onClick={() =>
-                                                                handleSelectAccount(
-                                                                    account
-                                                                )
-                                                            }
-                                                        >
-                                                            <div className="dbt-dropdown-item-main">
-                                                                <div className="dbt-dropdown-item-info">
-                                                                    <div className="dbt-dropdown-item-name">
-                                                                        {
-                                                                            account.name
-                                                                        }
-                                                                    </div>
-                                                                    {(account.area ||
-                                                                        account.place) && (
-                                                                        <div className="dbt-dropdown-item-place">
-                                                                            📍{' '}
-                                                                            {account.area ||
-                                                                                account.place}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                                {/* Balance Display - Always shows */}
-                                                                <div className="dbt-dropdown-item-balance">
-                                                                    {renderBalance(account.code)}
-                                                                </div>
-                                                                <button
-                                                                    className="dbt-show-btn"
-                                                                    onClick={e => {
-                                                                        e.stopPropagation();
-                                                                        handleShowLedger(
-                                                                            account
-                                                                        );
-                                                                    }}
+                                            {/* Virtualized Options List */}
+                                            {filteredData.length === 0 ? (
+                                                <div className="dbt-dropdown-empty">
+                                                    {searchTerm
+                                                        ? `No accounts found matching "${searchTerm}"`
+                                                        : 'No accounts available'}
+                                                </div>
+                                            ) : (
+                                                <div 
+                                                    className="dbt-dropdown-list"
+                                                    ref={dropdownListRef}
+                                                    onScroll={handleScroll}
+                                                    style={{ maxHeight: '400px', overflow: 'auto' }}
+                                                >
+                                                    {/* Virtual scrolling container */}
+                                                    <div style={{ height: totalHeight, position: 'relative' }}>
+                                                        <div style={{ transform: `translateY(${offsetY}px)` }}>
+                                                            {visibleAccounts.map((account) => (
+                                                                <div
+                                                                    key={account.code || account.id}
+                                                                    className="dbt-dropdown-item"
+                                                                    onClick={() => handleSelectAccount(account)}
+                                                                    style={{ minHeight: `${itemHeight}px` }}
                                                                 >
-                                                                    Show
-                                                                </button>
-                                                            </div>
+                                                                    <div className="dbt-dropdown-item-main">
+                                                                        <div className="dbt-dropdown-item-info">
+                                                                            <div className="dbt-dropdown-item-name">
+                                                                                {account.name}
+                                                                            </div>
+                                                                            {(account.area || account.place) && (
+                                                                                <div className="dbt-dropdown-item-place">
+                                                                                    📍 {account.area || account.place}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="dbt-dropdown-item-balance">
+                                                                            {renderBalance(account.code)}
+                                                                        </div>
+                                                                        <button
+                                                                            className="dbt-show-btn"
+                                                                            onClick={e => {
+                                                                                e.stopPropagation();
+                                                                                handleShowLedger(account);
+                                                                            }}
+                                                                        >
+                                                                            Show
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                    ))
-                                                )}
-                                            </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -557,7 +528,6 @@ const Debtors = () => {
                                                         </span>
                                                     </p>
                                                 )}
-                                                {/* Balance in selected account section - always show */}
                                                 <p>
                                                     <span className="label">Balance:</span>
                                                     <span className="value">

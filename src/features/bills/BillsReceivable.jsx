@@ -1,8 +1,25 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../../services/api';
 import './BillsReceivable.scss';
+
+// Debounce hook
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 const BillsReceivable = () => {
   const navigate = useNavigate();
@@ -13,18 +30,37 @@ const BillsReceivable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Debounced search
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
   // Map of accountCode -> { balance: number, loading: boolean, error?: string }
   const [invoiceBalances, setInvoiceBalances] = useState({});
+  const invoiceBalancesRef = useRef({});
+  const abortControllersRef = useRef({});
+
+  // Virtualization states
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 20 });
+  const dropdownListRef = useRef(null);
+  const itemHeight = 80;
+  const overscan = 5;
 
   // Fetch debtors from API
   useEffect(() => {
     fetchDebtors();
+    
+    // Cleanup on unmount
+    return () => {
+      Object.values(abortControllersRef.current).forEach(controller => {
+        controller.abort();
+      });
+    };
   }, []);
 
   const fetchDebtors = async () => {
     setLoading(true);
     setError(null);
-    setInvoiceBalances({}); // reset invoice balances on refresh
+    setInvoiceBalances({});
+    invoiceBalancesRef.current = {};
 
     try {
       const token = localStorage.getItem('token');
@@ -50,11 +86,6 @@ const BillsReceivable = () => {
 
       setAccounts(sortedAccounts);
 
-      // Fetch invoice balances after fetching debtors
-      if (sortedAccounts.length > 0) {
-        fetchInvoiceBalances(sortedAccounts, token);
-      }
-
     } catch (err) {
       setError(
         err.response?.data?.message || err.message || 'Failed to fetch debtors'
@@ -65,84 +96,101 @@ const BillsReceivable = () => {
     }
   };
 
-  const fetchInvoiceBalances = async (accountsList, tokenFromDebtors) => {
-    const token = tokenFromDebtors || localStorage.getItem('token');
-    if (!token) {
-      console.error('No authentication token found for invoice balances');
-      return;
+  // Fetch invoice balance for a single account
+  const fetchInvoiceBalance = useCallback(async (accountCode) => {
+    // Check cache first
+    if (invoiceBalancesRef.current[accountCode] && 
+        !invoiceBalancesRef.current[accountCode].loading) {
+      return invoiceBalancesRef.current[accountCode];
     }
 
-    // Mark all balances as loading initially
-    setInvoiceBalances((prev) => {
-      const updated = { ...prev };
-      accountsList.forEach((acc) => {
-        if (!acc.code) return;
-        updated[acc.code] = {
-          ...(updated[acc.code] || {}),
-          loading: true
-        };
-      });
-      return updated;
-    });
+    // Check if already loading
+    if (invoiceBalancesRef.current[accountCode]?.loading) {
+      return null;
+    }
 
-    const headers = {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    };
+    try {
+      // Mark as loading
+      setInvoiceBalances(prev => ({
+        ...prev,
+        [accountCode]: { loading: true, balance: 0 }
+      }));
+      invoiceBalancesRef.current[accountCode] = { loading: true, balance: 0 };
 
-    await Promise.allSettled(
-      accountsList.map(async (account) => {
-        if (!account.code) return;
+      // Create abort controller for this request
+      const controller = new AbortController();
+      abortControllersRef.current[accountCode] = controller;
 
-        try {
-          const res = await axios.get(
-            `${API_BASE_URL}/get-invoice-details/?account_code=${account.code}`,
-            { headers }
-          );
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
 
-          let balance = 0;
-          if (res.data.success && Array.isArray(res.data.data)) {
-            const totals = res.data.data.reduce(
-              (acc, invoice) => {
-                acc.netTotal += parseFloat(invoice.nettotal || 0);
-                acc.paid += parseFloat(invoice.paid || 0);
-                return acc;
-              },
-              { netTotal: 0, paid: 0 }
-            );
-            balance = totals.netTotal - totals.paid;
-          }
-
-          setInvoiceBalances((prev) => ({
-            ...prev,
-            [account.code]: {
-              balance,
-              loading: false
-            }
-          }));
-        } catch (err) {
-          console.error(
-            `Failed to fetch invoice details for account ${account.code}`,
-            err
-          );
-          setInvoiceBalances((prev) => ({
-            ...prev,
-            [account.code]: {
-              balance: 0,
-              loading: false,
-              error: 'Failed to fetch invoice balance'
-            }
-          }));
+      const res = await axios.get(
+        `${API_BASE_URL}/get-invoice-details/?account_code=${accountCode}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          signal: controller.signal
         }
-      })
-    );
-  };
+      );
+
+      let balance = 0;
+      if (res.data.success && Array.isArray(res.data.data)) {
+        const totals = res.data.data.reduce(
+          (acc, invoice) => {
+            acc.netTotal += parseFloat(invoice.nettotal || 0);
+            acc.paid += parseFloat(invoice.paid || 0);
+            return acc;
+          },
+          { netTotal: 0, paid: 0 }
+        );
+        balance = totals.netTotal - totals.paid;
+      }
+
+      const balanceData = { balance, loading: false };
+      
+      setInvoiceBalances(prev => ({
+        ...prev,
+        [accountCode]: balanceData
+      }));
+      invoiceBalancesRef.current[accountCode] = balanceData;
+
+      return balanceData;
+
+    } catch (err) {
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+        console.error(
+          `Failed to fetch invoice details for account ${accountCode}`,
+          err
+        );
+        
+        const errorData = {
+          balance: 0,
+          loading: false,
+          error: 'Failed to fetch invoice balance'
+        };
+        
+        setInvoiceBalances(prev => ({
+          ...prev,
+          [accountCode]: errorData
+        }));
+        invoiceBalancesRef.current[accountCode] = errorData;
+      }
+    } finally {
+      delete abortControllersRef.current[accountCode];
+    }
+
+    return null;
+  }, []);
 
   // Text search filter
   const filteredData = useMemo(() => {
-    if (!searchTerm.trim()) return accounts;
+    if (!debouncedSearchTerm.trim()) return accounts;
 
-    const search = searchTerm.toLowerCase();
+    const search = debouncedSearchTerm.toLowerCase();
     return accounts.filter(
       (item) =>
         (item.name || '').toLowerCase().includes(search) ||
@@ -150,20 +198,79 @@ const BillsReceivable = () => {
         (item.place || '').toLowerCase().includes(search) ||
         (item.area || '').toLowerCase().includes(search)
     );
-  }, [searchTerm, accounts]);
+  }, [debouncedSearchTerm, accounts]);
 
-  // 🔥 Only keep accounts whose balance > 1
+  // Only keep accounts whose balance > 1
   const filteredByBalance = useMemo(() => {
     return filteredData.filter((acc) => {
       const info = invoiceBalances[acc.code];
-      if (!info || info.loading || typeof info.balance !== 'number') return false;
+      if (!info || info.loading || typeof info.balance !== 'number') {
+        // Include accounts that haven't been loaded yet
+        return true;
+      }
       return info.balance > 1;
     });
   }, [filteredData, invoiceBalances]);
 
+  // Handle scroll for virtualization
+  const handleScroll = useCallback(() => {
+    if (!dropdownListRef.current) return;
+    
+    const scrollTop = dropdownListRef.current.scrollTop;
+    const clientHeight = dropdownListRef.current.clientHeight;
+    
+    const visibleStart = Math.floor(scrollTop / itemHeight);
+    const visibleEnd = Math.ceil((scrollTop + clientHeight) / itemHeight);
+    
+    const start = Math.max(0, visibleStart - overscan);
+    const end = Math.min(filteredByBalance.length, visibleEnd + overscan);
+    
+    setVisibleRange({ start, end });
+    
+    // Load balances only for visible items
+    for (let i = start; i < end; i++) {
+      const account = filteredByBalance[i];
+      if (account && !invoiceBalancesRef.current[account.code]) {
+        fetchInvoiceBalance(account.code);
+      }
+    }
+  }, [filteredByBalance, itemHeight, overscan, fetchInvoiceBalance]);
+
+  // Initial load when dropdown opens
+  useEffect(() => {
+    if (isOpen && filteredByBalance.length > 0) {
+      // Reset visible range
+      setVisibleRange({ start: 0, end: 20 });
+      // Load initial balances
+      handleScroll();
+    }
+  }, [isOpen, filteredByBalance.length]);
+
+  // Filter out accounts with balance <= 1 after they've been loaded
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    // After balances are loaded, we need to re-filter
+    // This will cause accounts with balance <= 1 to be removed from the list
+    const allLoaded = filteredByBalance.every(acc => {
+      const info = invoiceBalances[acc.code];
+      return info && !info.loading;
+    });
+
+    if (allLoaded) {
+      // Trigger a re-render to update the filtered list
+      setVisibleRange(prev => ({ ...prev }));
+    }
+  }, [invoiceBalances, isOpen, filteredByBalance]);
+
   const handleSelectAccount = (account) => {
     setSelectedAccount(account);
     setIsOpen(false);
+    
+    // Fetch balance for selected account if not cached
+    if (!invoiceBalancesRef.current[account.code]) {
+      fetchInvoiceBalance(account.code);
+    }
   };
 
   const handleShowInvoice = (account) => {
@@ -187,6 +294,11 @@ const BillsReceivable = () => {
       maximumFractionDigits: 2
     });
   };
+
+  // Calculate virtualization values
+  const visibleAccounts = filteredByBalance.slice(visibleRange.start, visibleRange.end);
+  const offsetY = visibleRange.start * itemHeight;
+  const totalHeight = filteredByBalance.length * itemHeight;
 
   return (
     <div className="bills-page">
@@ -278,6 +390,7 @@ const BillsReceivable = () => {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="bills-dropdown-search-input"
+                      autoFocus
                     />
                     {searchTerm && (
                       <button
@@ -289,70 +402,85 @@ const BillsReceivable = () => {
                     )}
                   </div>
 
-                  {/* Options List */}
-                  <div className="bills-dropdown-list">
-                    {filteredByBalance.length === 0 ? (
-                      <div className="bills-dropdown-empty">
-                        {searchTerm
-                          ? `No accounts with balance > 1 matching "${searchTerm}"`
-                          : 'No accounts with receivable balance > 1'}
-                      </div>
-                    ) : (
-                      filteredByBalance.map((account) => {
-                        const balanceInfo = invoiceBalances[account.code] || {};
-                        const isLoading = balanceInfo.loading;
-                        const hasBalance =
-                          typeof balanceInfo.balance === 'number';
-                        const balance = hasBalance ? balanceInfo.balance : 0;
+                  {/* Virtualized Options List */}
+                  {filteredByBalance.length === 0 ? (
+                    <div className="bills-dropdown-empty">
+                      {searchTerm
+                        ? `No accounts with balance > 1 matching "${searchTerm}"`
+                        : 'No accounts with receivable balance > 1'}
+                    </div>
+                  ) : (
+                    <div 
+                      className="bills-dropdown-list"
+                      ref={dropdownListRef}
+                      onScroll={handleScroll}
+                      style={{ maxHeight: '400px', overflow: 'auto' }}
+                    >
+                      {/* Virtual scrolling container */}
+                      <div style={{ height: totalHeight, position: 'relative' }}>
+                        <div style={{ transform: `translateY(${offsetY}px)` }}>
+                          {visibleAccounts.map((account) => {
+                            const balanceInfo = invoiceBalances[account.code] || {};
+                            const isLoading = balanceInfo.loading;
+                            const hasBalance = typeof balanceInfo.balance === 'number';
+                            const balance = hasBalance ? balanceInfo.balance : 0;
 
-                        return (
-                          <div
-                            key={account.code || account.id}
-                            className="bills-dropdown-item"
-                            onClick={() => handleSelectAccount(account)}
-                          >
-                            <div className="bills-dropdown-item-main">
-                              <div className="bills-dropdown-item-info">
-                                <div className="bills-dropdown-item-name">
-                                  {account.name}
+                            // Hide accounts with balance <= 1 once loaded
+                            if (!isLoading && hasBalance && balance <= 1) {
+                              return null;
+                            }
+
+                            return (
+                              <div
+                                key={account.code || account.id}
+                                className="bills-dropdown-item"
+                                onClick={() => handleSelectAccount(account)}
+                                style={{ minHeight: `${itemHeight}px` }}
+                              >
+                                <div className="bills-dropdown-item-main">
+                                  <div className="bills-dropdown-item-info">
+                                    <div className="bills-dropdown-item-name">
+                                      {account.name}
+                                    </div>
+                                    {account.area && (
+                                      <div className="bills-dropdown-item-place">
+                                        📍 {account.area}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="bills-dropdown-item-right">
+                                    {isLoading ? (
+                                      <div className="bills-dropdown-item-balance-show">
+                                        Loading...
+                                      </div>
+                                    ) : hasBalance ? (
+                                      <div className="bills-dropdown-item-balance-show">
+                                        {formatCurrency(balance)}
+                                      </div>
+                                    ) : (
+                                      <div className="bills-dropdown-item-balance-show">
+                                        --
+                                      </div>
+                                    )}
+
+                                    <button
+                                      className="bills-show-btn"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleShowInvoice(account);
+                                      }}
+                                    >
+                                      Show
+                                    </button>
+                                  </div>
                                 </div>
-                                {account.area && (
-                                  <div className="bills-dropdown-item-place">
-                                    📍 {account.area}
-                                  </div>
-                                )}
                               </div>
-                              <div className="bills-dropdown-item-right">
-                                {isLoading ? (
-                                  <div className="bills-dropdown-item-balance-show">
-                                    Loading...
-                                  </div>
-                                ) : hasBalance ? (
-                                  <div className="bills-dropdown-item-balance-show">
-                                    {formatCurrency(balance)}
-                                  </div>
-                                ) : (
-                                  <div className="bills-dropdown-item-balance-show">
-                                    --
-                                  </div>
-                                )}
-
-                                <button
-                                  className="bills-show-btn"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleShowInvoice(account);
-                                  }}
-                                >
-                                  Show
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -400,8 +528,7 @@ const BillsReceivable = () => {
                       <span className="label">Balance:</span>
                       <span className="value">
                         {(() => {
-                          const info =
-                            invoiceBalances[selectedAccount.code] || null;
+                          const info = invoiceBalances[selectedAccount.code] || null;
                           const isLoading = !info || info.loading;
                           const bal =
                             !isLoading && typeof info.balance === 'number'
