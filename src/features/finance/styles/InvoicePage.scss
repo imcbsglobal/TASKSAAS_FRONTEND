@@ -450,25 +450,27 @@
     text-align: right;
     font-family: 'Courier New', monospace;
     font-weight: 600;
+    color: #000000 !important;
 
     &.inv-amount-nettotal {
-      color: #dc2626;
+      color: #000000 !important;
     }
 
     &.inv-amount-paid {
-      color: #16a34a;
+      color: #000000 !important;
     }
 
     &.inv-balance {
       font-weight: 700;
       font-size: 15px;
+      color: #000000 !important;
 
       &.positive {
-        color: #16a34a;
+        color: #000000 !important;
       }
 
       &.negative {
-        color: #dc2626;
+        color: #000000 !important;
       }
     }
   }
@@ -565,21 +567,23 @@
   &.inv-total {
     font-size: 16px;
     font-family: 'Courier New', monospace;
+    color: #000000 !important;
+    font-weight: 700;
 
     &.inv-amount-nettotal {
-      color: #dc2626;
+      color: #000000 !important;
     }
 
     &.inv-amount-paid {
-      color: #16a34a;
+      color: #000000 !important;
     }
 
     &.positive {
-      color: #16a34a;
+      color: #000000 !important;
     }
 
     &.negative {
-      color: #dc2626;
+      color: #000000 !important;
     }
   }
 }
