@@ -3,7 +3,6 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
-import { SettingsApi } from '../../settings/services/settingService';
 import { PunchAPI } from '../services/punchService';
 import './AreaAssign.scss';
 
@@ -60,17 +59,44 @@ const AreaAssign = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await SettingsApi.getUsers();
-      const raw = Array.isArray(response?.users)
-        ? response.users
-        : Array.isArray(response)
-        ? response
-        : [];
-      const level1 = raw.filter((u) => isLevelOne(u));
+      
+      // Get authentication token
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      
+      // Direct API call
+      const response = await fetch('https://tasksas.com/api/users_api/list/', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      // Based on API structure: { success: true, users: [...] }
+      let users = [];
+      if (result.users && Array.isArray(result.users)) {
+        users = result.users;
+      } else if (Array.isArray(result)) {
+        users = result;
+      }
+      
+      // Filter to only include Level 1 users
+      const level1Users = users.filter(user => {
+        if (!user.role) return false;
+        const roleLower = user.role.toLowerCase().trim();
+        return roleLower === 'level 1';
+      });
 
+      // Remove duplicates
       const seen = new Set();
       const deduped = [];
-      for (const u of level1) {
+      for (const u of level1Users) {
         const key = (u?.id ?? '').toString();
         if (!key) continue;
         if (!seen.has(key)) {
@@ -78,11 +104,12 @@ const AreaAssign = () => {
           deduped.push(u);
         }
       }
+      
       setUsers(deduped);
       return deduped;
     } catch (err) {
-      console.error('fetchUsers', err);
-      toast.error('Failed to fetch users');
+      console.error('fetchUsers error:', err);
+      toast.error(`Failed to fetch users: ${err.message}`);
       return [];
     } finally {
       setLoading(false);
