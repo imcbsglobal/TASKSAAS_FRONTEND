@@ -203,7 +203,7 @@
   transform: rotate(180deg);
 }
 
-/* Dropdown Menu */
+/* Dropdown Menu - FIXED */
 .bills-dropdown-menu {
   position: absolute;
   z-index: 100;
@@ -213,9 +213,12 @@
   border-radius: 8px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   border: 1px solid #e5e7eb;
-  max-height: 400px;
-  overflow: hidden;
+  /* REMOVED: max-height: 400px; */
+  /* CHANGED: overflow: hidden -> overflow: visible */
+  overflow: visible;
   animation: dropdownOpen 0.15s ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes dropdownOpen {
@@ -237,6 +240,7 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  border-radius: 8px 8px 0 0;
 }
 
 .bills-dropdown-search-input {
@@ -297,12 +301,13 @@
   color: #ef4444;
 }
 
-/* Dropdown List */
+/* Dropdown List - FIXED */
 .bills-dropdown-list {
   overflow-y: auto;
-  max-height: 320px;
+  max-height: 500px; /* Increased from 320px */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f1f5f9;
+  flex: 1;
 }
 
 .bills-dropdown-list::-webkit-scrollbar {
@@ -384,6 +389,32 @@
 .bills-dropdown-item-balance-show {
   color: #dc2626;
   font-weight: 600;
+  min-width: 100px;
+  text-align: right;
+}
+
+.bills-balance-loading {
+  color: #6b7280;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.bills-balance-placeholder {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.bills-balance-amount {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.bills-balance-positive {
+  color: #dc2626;
+}
+
+.bills-balance-negative {
+  color: #059669;
 }
 
 .bills-balance-type {
@@ -659,6 +690,7 @@
 .inv-invoice-table thead th {
   text-transform: none;
 }
+
 /* ============================
    BALANCE (should be red)
 ============================= */

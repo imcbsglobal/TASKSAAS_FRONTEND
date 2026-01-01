@@ -28,6 +28,7 @@ const Debtors = () => {
     const [filteredData, setFilteredData] = useState([]);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedArea, setSelectedArea] = useState('');
     const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState(null);
@@ -44,8 +45,8 @@ const Debtors = () => {
     // Virtualization states
     const [visibleRange, setVisibleRange] = useState({ start: 0, end: 20 });
     const dropdownListRef = useRef(null);
-    const itemHeight = 80; // Approximate height of each dropdown item
-    const overscan = 5; // Extra items to render outside visible area
+    const itemHeight = 80;
+    const overscan = 5;
 
     // ----------------- EFFECTS -----------------
 
@@ -60,23 +61,38 @@ const Debtors = () => {
         };
     }, []);
 
-    // Update filtered data with debounced search
+    // Get unique areas from all data
+    const uniqueAreas = React.useMemo(() => {
+        const areas = allData
+            .map(d => d.area)
+            .filter(area => area && area.trim() !== "");
+        return [...new Set(areas)].sort();
+    }, [allData]);
+
+    // Update filtered data with debounced search and area filter
     useEffect(() => {
+        let filtered = allData;
+
+        // Apply search filter
         if (debouncedSearchTerm.trim()) {
             const search = debouncedSearchTerm.toLowerCase();
-            const filtered = allData.filter(item =>
+            filtered = filtered.filter(item =>
                 (item.name || '').toLowerCase().includes(search) ||
                 (item.code || '').toLowerCase().includes(search) ||
                 (item.place || '').toLowerCase().includes(search) ||
                 (item.area || '').toLowerCase().includes(search)
             );
-            setFilteredData(filtered);
-        } else {
-            setFilteredData(allData);
         }
+
+        // Apply area filter
+        if (selectedArea) {
+            filtered = filtered.filter(item => item.area === selectedArea);
+        }
+
+        setFilteredData(filtered);
         // Reset visible range when filter changes
         setVisibleRange({ start: 0, end: 20 });
-    }, [debouncedSearchTerm, allData]);
+    }, [debouncedSearchTerm, selectedArea, allData]);
 
     // Handle scroll for virtualization
     const handleScroll = useCallback(() => {
@@ -275,6 +291,11 @@ const Debtors = () => {
         setSearchTerm('');
     };
 
+    const clearFilters = () => {
+        setSearchTerm('');
+        setSelectedArea('');
+    };
+
     // ----------------- HELPERS -----------------
 
     const formatCurrency = (amount) => {
@@ -351,6 +372,36 @@ const Debtors = () => {
                     {/* Main content */}
                     {!loading && !error && (
                         <>
+                            {/* Filter Section */}
+                            <div className="dbt-filter-section">
+                                <div className="dbt-filter-controls">
+                                    <div className="dbt-filter-item">
+                                        <label className="dbt-filter-label">Filter by Area</label>
+                                        <select
+                                            className="dbt-area-select"
+                                            value={selectedArea}
+                                            onChange={(e) => setSelectedArea(e.target.value)}
+                                        >
+                                            <option value="">All Areas</option>
+                                            {uniqueAreas.map(area => (
+                                                <option key={area} value={area}>
+                                                    {area}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    {(searchTerm || selectedArea) && (
+                                        <button
+                                            type="button"
+                                            className="dbt-clear-filters-btn"
+                                            onClick={clearFilters}
+                                        >
+                                            Clear Filters
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Dropdown Section */}
                             <div className="dbt-dropdown-section">
                                 <label className="dbt-dropdown-label">
@@ -425,8 +476,8 @@ const Debtors = () => {
                                             {/* Virtualized Options List */}
                                             {filteredData.length === 0 ? (
                                                 <div className="dbt-dropdown-empty">
-                                                    {searchTerm
-                                                        ? `No accounts found matching "${searchTerm}"`
+                                                    {searchTerm || selectedArea
+                                                        ? `No accounts found`
                                                         : 'No accounts available'}
                                                 </div>
                                             ) : (
@@ -563,7 +614,7 @@ const Debtors = () => {
                                         <span className="highlight">
                                             {allData.length}
                                         </span>
-                                        {searchTerm &&
+                                        {(searchTerm || selectedArea) &&
                                             filteredData.length !==
                                                 allData.length && (
                                                 <>

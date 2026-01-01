@@ -11,7 +11,9 @@ import {
   FaChevronDown,
   FaChevronRight,
   FaUserFriends,
-  FaTruck
+  FaTruck,
+  FaFileAlt,
+  FaChartBar
 } from 'react-icons/fa';
 
 // Material icons
@@ -42,14 +44,14 @@ export const MENU_CONFIG = [
         route: '/masters/debtors',
         order: 1
     },
-    {
-        id: 'master-suppliers',
-        type: MENU_TYPES.SIMPLE,
-        label: 'Suppliers',
-        icon: FaTruck,
-        route: '/masters/suppliers',
-        order: 2
-    },
+    // {
+    //     id: 'master-suppliers',
+    //     type: MENU_TYPES.SIMPLE,
+    //     label: 'Suppliers',
+    //     icon: FaTruck,
+    //     route: '/masters/suppliers',
+    //     order: 2
+    // },
     {
         id: 'debtors',
         type: MENU_TYPES.SIMPLE,
@@ -60,7 +62,7 @@ export const MENU_CONFIG = [
     },
 
     // -------------------------------
-    // ✅ NEW MENU ITEM YOU REQUESTED
+    // Bills Receivable
     // -------------------------------
     {
         id: 'bills-receivable',
@@ -70,7 +72,30 @@ export const MENU_CONFIG = [
         route: '/bills/receivable',
         order: 3.5
     },
+
     // -------------------------------
+    // Reports (Simple Menu Item)
+    // -------------------------------
+    {
+        id: 'reports',
+        type: MENU_TYPES.SIMPLE,
+        label: 'Reports',
+        icon: FaFileAlt,
+        route: '/reports',
+        order: 3.7
+    },
+
+    // -------------------------------
+    // Collection Report (Simple Menu Item)
+    // -------------------------------
+    {
+        id: 'collection-report',
+        type: MENU_TYPES.SIMPLE,
+        label: 'Collection Report',
+        icon: FaChartBar,
+        route: '/reports/collection',
+        order: 3.8
+    },
 
     {
         id: 'area-assign',

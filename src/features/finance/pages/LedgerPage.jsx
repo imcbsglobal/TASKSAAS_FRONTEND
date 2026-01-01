@@ -347,8 +347,8 @@ const LedgerPage = () => {
                                                     <th className="ldg-col-no">No</th>
                                                     <th className="ldg-col-date">Date</th>
                                                     <th className="ldg-col-particulars">Particulars</th>
-                                                    <th className="ldg-col-voucher">Voucher No</th>
                                                     <th className="ldg-col-mode">Mode</th>
+                                                    <th className="ldg-col-voucher">Voucher No</th>
                                                     <th className="ldg-col-amount">Debit</th>
                                                     <th className="ldg-col-amount">Credit</th>
                                                     <th className="ldg-col-amount">Balance</th>
@@ -371,13 +371,13 @@ const LedgerPage = () => {
                                                                 </div>
                                                             )}
                                                         </td>
-                                                        <td data-label="Voucher" className="ldg-col-voucher">
-                                                            {entry.voucher_no || 'N/A'}
-                                                        </td>
                                                         <td data-label="Mode" className="ldg-col-mode">
                                                             <span className={`ldg-mode-badge ldg-mode-${(entry.entry_mode || '').toLowerCase()}`}>
                                                                 {entry.entry_mode || 'N/A'}
                                                             </span>
+                                                        </td>
+                                                        <td data-label="Voucher" className="ldg-col-voucher">
+                                                            {entry.voucher_no || 'N/A'}
                                                         </td>
                                                         <td data-label="Debit" className="ldg-col-amount ldg-amount-debit">
                                                             {entry.debit && parseFloat(entry.debit) !== 0

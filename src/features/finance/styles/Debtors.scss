@@ -1,4 +1,4 @@
-/* Debtors.scss — Clean Compact Dropdown Design */
+/* Debtors.scss — Clean Compact Dropdown Design with Larger Dropdown */
 
 :root {
   --dbt-page-bg: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
@@ -172,28 +172,28 @@
   width: 100%;
 }
 
-/* Dropdown Button - Compact Style */
+/* Dropdown Button - Colorful Blue Style */
 .dbt-dropdown-button {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: #ffffff;
-  border: 2px solid #cbd5e1;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 2px solid #3b82f6;
   border-radius: 8px;
   font-size: 14px;
-  font-weight: 500;
-  color: #334155;
+  font-weight: 600;
+  color: #1e40af;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
 }
 
 .dbt-dropdown-button:hover:not(:disabled) {
-  border-color: #3b82f6;
-  background: #f8fafc;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.06);
+  border-color: #2563eb;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
 }
 
 .dbt-dropdown-button:disabled {
@@ -206,24 +206,24 @@
   align-items: center;
   gap: 6px;
   flex: 1;
-  color: #1e293b;
+  color: #1e40af;
 }
 
 .dbt-dropdown-separator {
-  color: #94a3b8;
+  color: #60a5fa;
   margin: 0 4px;
   font-size: 12px;
 }
 
 .dbt-dropdown-place {
-  color: #64748b;
+  color: #3b82f6;
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .dbt-dropdown-arrow {
   font-size: 10px;
-  color: #64748b;
+  color: #2563eb;
   transition: transform 0.2s ease;
   font-weight: bold;
 }
@@ -232,7 +232,7 @@
   transform: rotate(180deg);
 }
 
-/* Dropdown Menu - Compact Clean Style */
+/* Dropdown Menu - LARGER SIZE */
 .dbt-dropdown-menu {
   position: absolute;
   z-index: 50;
@@ -242,7 +242,7 @@
   border-radius: 10px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
-  max-height: 420px;
+  max-height: 600px; /* INCREASED from 420px */
   overflow: hidden;
   animation: dropdownSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -325,10 +325,10 @@
   transform: translateY(-50%) scale(1.15);
 }
 
-/* Dropdown List - Compact */
+/* Dropdown List - LARGER SIZE */
 .dbt-dropdown-list {
   overflow-y: auto;
-  max-height: 350px;
+  max-height: 540px; /* INCREASED from 350px - leaves room for search bar */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f8fafc;
 }
@@ -662,6 +662,15 @@
     width: 100%;
     margin-top: 6px;
   }
+  
+  /* Adjust dropdown height for mobile */
+  .dbt-dropdown-menu {
+    max-height: 500px;
+  }
+  
+  .dbt-dropdown-list {
+    max-height: 440px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -706,5 +715,87 @@
 
   .dbt-dropdown-item {
     padding: 10px 14px;
+  }
+  
+  /* Further adjust dropdown for small screens */
+  .dbt-dropdown-menu {
+    max-height: 450px;
+  }
+  
+  .dbt-dropdown-list {
+    max-height: 390px;
+  }
+}
+
+/* Filter Section */
+.dbt-filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .dbt-filter-controls {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+
+    .dbt-filter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .dbt-filter-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #475569;
+        letter-spacing: 0.2px;
+      }
+
+      .dbt-area-select {
+        min-width: 180px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 2px solid #3b82f6;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        font-size: 14px;
+        color: #1e40af;
+        font-weight: 600;
+        transition: all 0.15s ease;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+
+        &:hover {
+          border-color: #2563eb;
+          background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+          box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        &:focus {
+          outline: none;
+          border-color: #2563eb;
+          background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+      }
+    }
+
+    .dbt-clear-filters-btn {
+      padding: 10px 20px;
+      background: #dc2626;
+      border: none;
+      color: #ffffff;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+      white-space: nowrap;
+
+      &:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+      }
+    }
   }
 }

@@ -364,6 +364,7 @@
   letter-spacing: 0.5px;
   margin-bottom: 8px;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  text-align: left;
 }
 
 .ldg-summary-value {
@@ -371,6 +372,7 @@
   font-weight: 800;
   color: #1e40af;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  text-align: right;
 }
 
 /* Loading State */
@@ -510,21 +512,22 @@
 
   &.ldg-col-no {
     width: 60px;
-    text-align: center;
+    text-align: right;
   }
 
   &.ldg-col-date {
     width: 120px;
-  }
-
-  &.ldg-col-voucher {
-    width: 120px;
-    text-align: center;
+    text-align: right;
   }
 
   &.ldg-col-mode {
     width: 100px;
-    text-align: center;
+    text-align: right;
+  }
+
+  &.ldg-col-voucher {
+    width: 120px;
+    text-align: right;
   }
 
   &.ldg-col-amount {
@@ -534,6 +537,7 @@
 
   &.ldg-col-particulars {
     min-width: 250px;
+    text-align: left;
   }
 }
 
@@ -554,7 +558,7 @@
   }
 
   &.ldg-col-no {
-    text-align: center;
+    text-align: right;
     font-weight: 600;
     color: #94a3b8;
   }
@@ -562,16 +566,17 @@
   &.ldg-col-date {
     font-weight: 600;
     color: #475569;
-  }
-
-  &.ldg-col-voucher {
-    text-align: center;
-    color: #6366f1;
-    font-weight: 600;
+    text-align: right;
   }
 
   &.ldg-col-mode {
-    text-align: center;
+    text-align: right;
+  }
+
+  &.ldg-col-voucher {
+    text-align: right;
+    color: #6366f1;
+    font-weight: 600;
   }
 
   &.ldg-col-amount {
@@ -605,6 +610,7 @@
     line-height: 1.6;
     word-wrap: break-word;
     padding: 12px;
+    text-align: left;
   }
 }
 
@@ -701,6 +707,7 @@
 
   &.ldg-total {
     font-size: 16px;
+    text-align: right;
 
     &.ldg-amount-debit {
       color: #000000;

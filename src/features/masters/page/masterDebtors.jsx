@@ -59,7 +59,7 @@ const MasterDebtors = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArea, setSelectedArea] = useState(""); // Area filter
-  const [balanceFilter, setBalanceFilter] = useState("all"); // New state for balance filter
+  const [balanceFilter, setBalanceFilter] = useState("greater_than_1"); // Default to balance only
   const [areaSearchTerm, setAreaSearchTerm] = useState(""); // Search within area dropdown
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
   const [pageSize, setPageSize] = useState(20);
@@ -304,22 +304,22 @@ const MasterDebtors = () => {
                         setPage(1);
                       }}
                     >
-                      <option value="all">All Users</option>
-                      <option value="greater_than_1">Balance &gt; ₹1</option>
+                      <option value="all">All Customers</option>
+                      <option value="greater_than_1">Balance Only</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="md-stats">
-                  {(searchTerm || selectedArea || balanceFilter !== "all") && (
-                    <button
-                      type="button"
-                      className="md-clear-filters-btn"
-                      onClick={clearFilters}
-                    >
-                      Clear All Filters
-                    </button>
-                  )}
+                  {(searchTerm || selectedArea) && (
+  <button
+    type="button"
+    className="md-clear-filters-btn"
+    onClick={clearFilters}
+  >
+    Clear All Filters
+  </button>
+)}
                   
                   <div className="md-rows-selector">
                     <label htmlFor="rows-select">Rows:</label>

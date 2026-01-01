@@ -7,29 +7,24 @@ import Navbar from '../components/layout/Navbar';
 import Debtors from '../features/finance/pages/Debtors';
 import LedgerPage from '../features/finance/pages/LedgerPage';
 import InvoicePage from '../features/finance/pages/InvoicePage';
-// import BankBook from "../features/finance/pages/BankBook";
-// import CashBook from "../features/finance/pages/CashBook";
-// import CashBookLedger from "../features/finance/pages/CashBookLedger";
-// import BankBookLedger from "../features/finance/pages/BankBookLedger";
 import NotFound from '../components/ui/NotFound';
-// import LocationCapture from '../features/punchin/pages/LocationRecords';
+
 import StoreLocationCapture from '../features/punchin/pages/StoreLocationCapture';
 import LocationRecords from '../features/punchin/pages/LocationRecords';
 import PunchinRecords from '../features/punchin/pages/PunchinRecords';
 import PunchInCapture from '../features/punchin/pages/PunchInCapture';
-import MasterPage from '../features/settings/pages/MasterPage';
+
 import MenuManagement from '../features/settings/pages/MenuManagement';
 import MasterDebtors from '../features/masters/page/masterDebtors';
 import MasterSuppliers from '../features/masters/page/MasterSuppliers';
 import MasterUsers from '../features/masters/page/MasterUsers';
 
 import BillsReceivable from '../features/bills/BillsReceivable';
+import Reports from '../features/NewReport/Report';
+import CollectionReport from '../features/NewReport/CollectionReport';
 
 import { AreaAssign } from '../features/punchin';
 import AreaAssignTableView from '../features/punchin/pages/AreaAssignTableView';
-import { SiKfc } from 'react-icons/si';
-import { TbAdFilled } from 'react-icons/tb';
-import { LuFastForward } from 'react-icons/lu';
 
 const AppLayout = () => {
     const location = useLocation();
@@ -87,7 +82,15 @@ const AppLayout = () => {
                     }
                 />
 
-                {/* NEW: Bills Receivable invoice route */}
+                {/* Bills Receivable */}
+                <Route
+                    path="/bills/receivable"
+                    element={
+                        <ProtectedRoute>
+                            <BillsReceivable />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route
                     path="/bills/receivable/invoice/:accountCode"
                     element={
@@ -97,11 +100,20 @@ const AppLayout = () => {
                     }
                 />
 
+                {/* Reports */}
                 <Route
-                    path="/bills/receivable"
+                    path="/reports"
                     element={
                         <ProtectedRoute>
-                            <BillsReceivable />
+                            <Reports />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/reports/collection"
+                    element={
+                        <ProtectedRoute>
+                            <CollectionReport />
                         </ProtectedRoute>
                     }
                 />
@@ -116,7 +128,7 @@ const AppLayout = () => {
                 <Route path="/area-assign" element={<AreaAssign />} />
                 <Route path="/masters/area-table" element={<AreaAssignTableView />} />
 
-                {/* Masters group with nested routes */}
+                {/* Masters */}
                 <Route path="/masters">
                     <Route
                         index
@@ -152,7 +164,7 @@ const AppLayout = () => {
                     />
                 </Route>
 
-                {/* 404 fallback */}
+                {/* 404 */}
                 <Route path="/*" element={<NotFound />} />
             </Routes>
         </>
