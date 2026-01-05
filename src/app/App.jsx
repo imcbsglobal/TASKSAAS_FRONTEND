@@ -16,7 +16,7 @@ import PunchInCapture from '../features/punchin/pages/PunchInCapture';
 
 import MenuManagement from '../features/settings/pages/MenuManagement';
 import MasterDebtors from '../features/masters/page/masterDebtors';
-import MasterSuppliers from '../features/masters/page/MasterSuppliers';
+import MasterSuppliers from '../features/masters/page/OrderReport';
 import MasterUsers from '../features/masters/page/MasterUsers';
 
 import BillsReceivable from '../features/bills/BillsReceivable';

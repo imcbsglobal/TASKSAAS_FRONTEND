@@ -4,6 +4,7 @@ import './CollectionReport.scss';
 const CollectionReport = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMode, setSelectedMode] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('');
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
     const [rowsPerPage, setRowsPerPage] = useState(20);
@@ -43,8 +44,30 @@ const CollectionReport = () => {
             const result = await response.json();
             
             console.log('API Response - Total records:', result.data?.length || 0);
+            console.log('Full API Response:', result);
             
             if (result.success && Array.isArray(result.data)) {
+                // Log all cheque entries to debug
+                const chequeEntries = result.data.filter(item => 
+                    item.type && item.type.toLowerCase() === 'cheque'
+                );
+                console.log('=== CHEQUE ENTRIES DEBUG ===');
+                console.log('Total Cheque Entries:', chequeEntries.length);
+                chequeEntries.forEach((item, index) => {
+                    console.log(`Cheque ${index + 1}:`, {
+                        id: item.id,
+                        code: item.code,
+                        name: item.name,
+                        type: item.type,
+                        cheque_number: item.cheque_number,
+                        cheque_no: item.cheque_no,
+                        chequeNumber: item.chequeNumber,
+                        chequeNo: item.chequeNo,
+                        allKeys: Object.keys(item)
+                    });
+                });
+                console.log('=== END CHEQUE DEBUG ===');
+                
                 const transformedData = result.data.map((item) => ({
                     id: item.id,
                     code: item.code || 'N/A',
@@ -53,8 +76,10 @@ const CollectionReport = () => {
                     phone: item.phone || '-',
                     amount: parseFloat(item.amount) || 0,
                     type: item.type || 'Cash',
+                    cheque_number: item.cheque_number || item.cheque_no || item.chequeNumber || item.chequeNo || '',
                     created_date: item.created_date || 'N/A',
                     created_time: item.created_time || '-',
+                    created_by: item.created_by || '-', // Placeholder for future API field
                     status: item.status || '-'
                 }));
                 setCollectionData(transformedData);
@@ -84,12 +109,13 @@ const CollectionReport = () => {
     const clearAllFilters = () => {
         setSearchTerm('');
         setSelectedMode('');
+        setSelectedStatus('');
         setFromDate('');
         setToDate('');
         setPage(1);
     };
 
-    const hasActiveFilters = searchTerm || selectedMode || fromDate || toDate;
+    const hasActiveFilters = searchTerm || selectedMode || selectedStatus || fromDate || toDate;
 
     const filteredData = useMemo(() => {
         let result = collectionData;
@@ -108,6 +134,10 @@ const CollectionReport = () => {
             result = result.filter(d => d.type === selectedMode);
         }
 
+        if (selectedStatus) {
+            result = result.filter(d => d.status === selectedStatus);
+        }
+
         if (fromDate) {
             result = result.filter(d => d.created_date >= fromDate);
         }
@@ -117,7 +147,7 @@ const CollectionReport = () => {
         }
         
         return result;
-    }, [searchTerm, selectedMode, fromDate, toDate, collectionData]);
+    }, [searchTerm, selectedMode, selectedStatus, fromDate, toDate, collectionData]);
 
     const total = filteredData.length;
     const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
@@ -137,6 +167,12 @@ const CollectionReport = () => {
     const uniqueModes = useMemo(() => {
         const modes = collectionData.map(d => d.type).filter(type => type && type.trim() !== "");
         return [...new Set(modes)].sort();
+    }, [collectionData]);
+
+    // Get unique statuses from data
+    const uniqueStatuses = useMemo(() => {
+        const statuses = collectionData.map(d => d.status).filter(status => status && status.trim() !== "" && status !== "-");
+        return [...new Set(statuses)].sort();
     }, [collectionData]);
 
     return (
@@ -252,6 +288,21 @@ const CollectionReport = () => {
                                                 ))}
                                             </select>
                                         </div>
+
+                                        <div className="cr-filter-item">
+                                            <label htmlFor="status-filter">Status</label>
+                                            <select
+                                                id="status-filter"
+                                                value={selectedStatus}
+                                                onChange={(e) => setSelectedStatus(e.target.value)}
+                                                className="cr-select-input"
+                                            >
+                                                <option value="">All Statuses</option>
+                                                {uniqueStatuses.map(status => (
+                                                    <option key={status} value={status}>{status}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
 
                                     {hasActiveFilters && (
@@ -291,28 +342,29 @@ const CollectionReport = () => {
                                 <table className="cr-collection-table">
                                     <thead>
                                         <tr>
-                                            <th>ID</th>
+                                            <th>SNO</th>
                                             <th>Code</th>
+                                            <th>Created Date & Time</th>
+                                            <th>Created By</th>
                                             <th>Name</th>
                                             <th>Place</th>
                                             <th>Phone</th>
                                             <th>Type</th>
                                             <th className="right">Amount</th>
-                                            <th>Created Date</th>
-                                            <th>Created Time</th>
                                             <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {displayedData.length > 0 ? (
-                                            displayedData.map((row) => (
+                                            displayedData.map((row, index) => (
                                                 <tr key={row.id}>
                                                     <td>
                                                         <span style={{ 
                                                             fontWeight: '700',
-                                                            color: '#1e40af'
+                                                            fontSize: '14px',
+                                                            color: '#64748b'
                                                         }}>
-                                                            {row.id}
+                                                            {(page - 1) * rowsPerPage + index + 1}
                                                         </span>
                                                     </td>
                                                     <td>
@@ -323,6 +375,33 @@ const CollectionReport = () => {
                                                             color: '#334155'
                                                         }}>
                                                             {row.code}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                            <span style={{ 
+                                                                fontSize: '13px',
+                                                                fontWeight: '500',
+                                                                color: '#334155'
+                                                            }}>
+                                                                {row.created_date}
+                                                            </span>
+                                                            <span style={{ 
+                                                                fontFamily: 'monospace', 
+                                                                fontSize: '12px',
+                                                                color: '#64748b'
+                                                            }}>
+                                                                {row.created_time}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span style={{ 
+                                                            fontSize: '13px',
+                                                            color: '#64748b',
+                                                            fontStyle: 'italic'
+                                                        }}>
+                                                            {row.created_by}
                                                         </span>
                                                     </td>
                                                     <td>
@@ -342,26 +421,28 @@ const CollectionReport = () => {
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <span style={{ 
-                                                            fontSize: '13px',
-                                                            fontWeight: '600',
-                                                            color: '#334155'
-                                                        }}>
-                                                            {row.type}
-                                                        </span>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                            <span style={{ 
+                                                                fontSize: '13px',
+                                                                fontWeight: '600',
+                                                                color: '#334155'
+                                                            }}>
+                                                                {row.type}
+                                                            </span>
+                                                            {row.type && row.type.toLowerCase() === 'cheque' && row.cheque_number && (
+                                                                <span style={{
+                                                                    fontSize: '11px',
+                                                                    color: '#64748b',
+                                                                    fontFamily: 'monospace',
+                                                                    fontWeight: '500'
+                                                                }}>
+                                                                    Ch. No: {row.cheque_number}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                     <td className="right">
                                                         {row.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </td>
-                                                    <td>{row.created_date}</td>
-                                                    <td>
-                                                        <span style={{ 
-                                                            fontFamily: 'monospace', 
-                                                            fontSize: '12px',
-                                                            color: '#64748b'
-                                                        }}>
-                                                            {row.created_time}
-                                                        </span>
                                                     </td>
                                                     <td>
                                                         <span className={`cr-status-badge ${

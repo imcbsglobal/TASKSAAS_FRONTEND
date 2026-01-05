@@ -406,6 +406,13 @@ const Report = () => {
         if (selectedBrand) result = result.filter(d => d.brand === selectedBrand);
         if (selectedCategory) result = result.filter(d => d.product === selectedCategory);
         
+        // Sort by name alphabetically
+        result.sort((a, b) => {
+            const nameA = (a.name || '').toLowerCase();
+            const nameB = (b.name || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+        
         return result;
     }, [searchTerm, selectedBrand, selectedCategory, reportData]);
 
@@ -568,7 +575,7 @@ const Report = () => {
                                         </div>
 
                                         <div className="md-filter-item md-filter-area">
-                                            <label>Filter by Category</label>
+                                            <label>Filter by Product</label>
                                             <div className="md-area-dropdown-container" ref={categoryDropdownRef}>
                                                 <button
                                                     type="button"
@@ -576,7 +583,7 @@ const Report = () => {
                                                     onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
                                                 >
                                                     <span className="md-area-selected">
-                                                        {selectedCategory || "All Categories"}
+                                                        {selectedCategory || "All Products"}
                                                     </span>
                                                     <span className="md-area-arrow">{isCategoryDropdownOpen ? "▲" : "▼"}</span>
                                                 </button>
@@ -587,7 +594,7 @@ const Report = () => {
                                                             <span className="md-area-search-icon">🔍</span>
                                                             <input
                                                                 type="text"
-                                                                placeholder="Search categories..."
+                                                                placeholder="Search products..."
                                                                 value={categorySearchTerm}
                                                                 onChange={(e) => setCategorySearchTerm(e.target.value)}
                                                                 className="md-area-search-input"
@@ -600,7 +607,7 @@ const Report = () => {
                                                                 className={`md-area-option ${!selectedCategory ? 'active' : ''}`}
                                                                 onClick={() => handleCategorySelect("")}
                                                             >
-                                                                All Categories
+                                                                All Products
                                                                 {!selectedCategory && <span className="md-check">✓</span>}
                                                             </div>
                                                             
@@ -617,7 +624,7 @@ const Report = () => {
                                                                 ))
                                                             ) : (
                                                                 <div className="md-area-no-results">
-                                                                    No categories found
+                                                                    No products found
                                                                 </div>
                                                             )}
                                                         </div>

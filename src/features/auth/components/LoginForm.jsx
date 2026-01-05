@@ -14,6 +14,8 @@ const LoginForm = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [loginType, setLoginType] = useState('personal');
+    const [showPassword, setShowPassword] = useState(false);
+    const [isHoveringEye, setIsHoveringEye] = useState(false);
     const navigate = useNavigate();
 
     const dispatch = useDispatch()
@@ -34,7 +36,7 @@ const LoginForm = () => {
 
             if (response.data.success) {
                 const user = response.data.user;
-                const token = response.data.token; // Get the token from response
+                const token = response.data.token;
 
                 if (loginType === 'personal' && user.role === 'Admin') {
                     setError('Admin users must use Corporate Login');
@@ -48,16 +50,10 @@ const LoginForm = () => {
                     return;
                 }
 
-
-
-                // Store both user data and token
                 localStorage.setItem('user', JSON.stringify(user));
-                localStorage.setItem('token', token); // Store token separately
+                localStorage.setItem('token', token);
                
-                //set user into Redux store
                 dispatch(login(user))
-
-
 
                 if (user.role === 'Admin') {
                     navigate('/dashboard/admin');
@@ -80,8 +76,38 @@ const LoginForm = () => {
         setAccountCode('');
     };
 
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
+    // Inline styles
+    const passwordWrapperStyle = {
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center'
+    };
+
+    const passwordInputStyle = {
+        width: '100%',
+        paddingRight: '3rem'
+    };
+
+    const eyeButtonStyle = {
+        position: 'absolute',
+        right: '0.75rem',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '0.5rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: isHoveringEye ? '#2563eb' : '#666',
+        transition: 'color 0.3s ease'
+    };
+
     return (
-        <div className="login-form-container">
+        <>
             <div className="login-toggle">
                 <button
                     type="button"
@@ -115,7 +141,7 @@ const LoginForm = () => {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="username">Username</label>
+                    <label htmlFor="username">Username or Email</label>
                     <input
                         type="text"
                         id="username"
@@ -127,13 +153,36 @@ const LoginForm = () => {
 
                 <div className="form-group">
                     <label htmlFor="password">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+                    <div style={passwordWrapperStyle}>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            style={passwordInputStyle}
+                        />
+                        <button
+                            type="button"
+                            style={eyeButtonStyle}
+                            onClick={togglePasswordVisibility}
+                            onMouseEnter={() => setIsHoveringEye(true)}
+                            onMouseLeave={() => setIsHoveringEye(false)}
+                            aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                            {showPassword ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 <div className="form-group">
@@ -150,10 +199,10 @@ const LoginForm = () => {
                 </div>
 
                 <button type="submit" disabled={loading}>
-                    {loading ? 'Logging in...' : `${loginType === 'personal' ? 'Personal' : 'Corporate'} Login`}
+                    {loading ? 'Logging in...' : 'Log in'}
                 </button>
             </form>
-        </div>
+        </>
     );
 };
 

@@ -44,14 +44,14 @@ export const MENU_CONFIG = [
         route: '/masters/debtors',
         order: 1
     },
-    // {
-    //     id: 'master-suppliers',
-    //     type: MENU_TYPES.SIMPLE,
-    //     label: 'Suppliers',
-    //     icon: FaTruck,
-    //     route: '/masters/suppliers',
-    //     order: 2
-    // },
+    {
+        id: 'master-suppliers',
+        type: MENU_TYPES.SIMPLE,
+        label: 'Order Reports',
+        icon: FaTruck,
+        route: '/masters/suppliers',
+        order: 2
+    },
     {
         id: 'debtors',
         type: MENU_TYPES.SIMPLE,

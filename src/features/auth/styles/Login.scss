@@ -1,81 +1,212 @@
 .login-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f5fbff, #fef8f6); // subtle light blue to soft orange tint
-    padding: 1rem .8rem;
-    background-repeat: no-repeat;
-    background-size: cover;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
 }
 
+// Left side - Midnight blue welcome section with vibrant glowing gradient blobs
+.login-welcome {
+    flex: 1; // 50% width
+    background: linear-gradient(135deg, #0c1e3d 0%, #1e3a5f 50%, #2c5282 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    color: white;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 0 120px rgba(30, 58, 95, 0.5);
+
+    // Animated glowing gradient blobs - Enhanced vibrant glow
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px) brightness(1.5) saturate(1.6);
+        opacity: 0.9;
+        animation: float 20s ease-in-out infinite, glow 3s ease-in-out infinite;
+        box-shadow: 0 0 140px rgba(59, 130, 246, 1), 
+                    0 0 260px rgba(37, 99, 235, 0.9),
+                    0 0 400px rgba(29, 78, 216, 0.7),
+                    inset 0 0 120px rgba(96, 165, 250, 0.8);
+    }
+
+    &::before {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 1) 0%, rgba(37, 99, 235, 0.95) 35%, rgba(29, 78, 216, 0.8) 70%, transparent 100%);
+        top: 15%;
+        right: -120px;
+        animation-delay: 0s;
+    }
+
+    &::after {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(96, 165, 250, 1) 0%, rgba(59, 130, 246, 0.95) 35%, rgba(37, 99, 235, 0.7) 70%, transparent 100%);
+        bottom: 8%;
+        left: -80px;
+        animation-delay: 5s;
+    }
+
+    // Additional glowing floating blobs - Enhanced vibrancy
+    .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px) brightness(1.4) saturate(1.5);
+        opacity: 0.8;
+        animation: float 15s ease-in-out infinite, glow 4s ease-in-out infinite;
+        box-shadow: 0 0 100px rgba(96, 165, 250, 0.9), 
+                    0 0 180px rgba(59, 130, 246, 0.7),
+                    0 0 260px rgba(37, 99, 235, 0.5);
+
+        &.blob-1 {
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(147, 197, 253, 1) 0%, rgba(96, 165, 250, 0.95) 40%, rgba(59, 130, 246, 0.6) 70%, transparent 90%);
+            top: 45%;
+            left: 8%;
+            animation-delay: 3s;
+        }
+
+        &.blob-2 {
+            width: 260px;
+            height: 260px;
+            background: radial-gradient(circle, rgba(96, 165, 250, 1) 0%, rgba(59, 130, 246, 0.95) 40%, rgba(37, 99, 235, 0.6) 70%, transparent 90%);
+            bottom: 18%;
+            right: 18%;
+            animation-delay: 7s;
+        }
+
+        &.blob-3 {
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 1) 0%, rgba(37, 99, 235, 0.95) 40%, rgba(29, 78, 216, 0.6) 70%, transparent 90%);
+            top: 12%;
+            left: 28%;
+            animation-delay: 10s;
+        }
+    }
+
+    .welcome-content {
+        position: relative;
+        z-index: 2;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 100%;
+    }
+
+    h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+        text-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 40px rgba(59, 130, 246, 0.3);
+    }
+
+    p {
+        font-size: 1.25rem;
+        max-width: 500px;
+        line-height: 1.6;
+        opacity: 0.95;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .welcome-footer {
+        position: relative;
+        z-index: 2;
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+    }
+    25% {
+        transform: translate(30px, -30px) scale(1.1);
+    }
+    50% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+    75% {
+        transform: translate(20px, 30px) scale(1.05);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        filter: blur(80px) brightness(1.4) saturate(1.5);
+        opacity: 0.8;
+    }
+    50% {
+        filter: blur(100px) brightness(1.7) saturate(1.9);
+        opacity: 1;
+    }
+}
+
+// Right side - Login form section
 .login-card {
+    flex: 1; // 50% width
     background: #ffffff;
-    padding: 1rem 2.5rem;
-    border-radius: 18px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-    width: 100%;
-    max-width: 480px;
-    text-align: center;
-    border-top: 6px solid #00B2FF; // Logo blue
-    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 2rem; // Increased top/bottom padding
+    overflow-y: auto;
+
+    h2 {
+        font-size: 1.75rem; // Reduced from 2rem
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1.5rem; // Reduced from 2rem
+        text-align: center;
+        width: 100%;
+        max-width: 420px; // Reduced from 480px
+    }
 }
 
 .login-logo {
-    max-width: 100px;
-    margin: 0 auto 2rem auto;
-    display: block;
-    animation: pulseLogo 3s ease-in-out infinite;
+    max-width: 100px; // Reduced from 120px
+    margin-bottom: 1.5rem; // Reduced from 2rem
 }
 
-// Logo pulse animation
-@keyframes pulseLogo {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.1); // Scales up to 110%
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-.login-form-container {
-    width: 100%;
-}
-
-// Login Type Toggle Styles - matching the original clean style
+// Login Type Toggle Styles
 .login-toggle {
     display: flex;
-    background-color: #f8f9fa;
-    border-radius: 6px;
-    padding: 3px;
-    margin-bottom: 2rem;
-    border: 1px solid #ccc;
+    gap: 0.75rem; // Reduced from 1rem
+    margin-bottom: 1.5rem; // Reduced from 2rem
+    width: 100%;
+    max-width: 420px; // Reduced from 480px
 
     .toggle-btn {
         flex: 1;
-        padding: 0.7rem 1rem;
-        border: none;
-        background: transparent;
+        padding: 0.75rem 1.25rem; // Reduced padding
+        border: 1px solid #e0e0e0;
+        background: white;
         color: #666;
-        font-weight: 600;
-        font-size: 0.95rem;
-        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.95rem; // Reduced from 1rem
+        border-radius: 6px;
         cursor: pointer;
-        transition: background-color 0.3s ease, color 0.3s ease;
+        transition: all 0.3s ease;
 
         &:hover {
-            color: #333;
+            border-color: #3b82f6;
+            color: #2563eb;
         }
 
         &.active {
-            background-color: #F25C05;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
             color: white;
+            border-color: #2563eb;
         }
     }
 }
@@ -83,91 +214,196 @@
 .login-form {
     display: flex;
     flex-direction: column;
-    // gap: 1.5rem;
-    gap: 0.5rem;
-    
-
-    h2 {
-        margin-bottom: 0.5rem;
-        color: #F25C05; // Logo orange
-        font-size: 2rem;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-    }
+    gap: 1rem; // Reduced from 1.25rem
+    width: 100%;
+    max-width: 420px; // Reduced from 480px
 
     .error-message {
         color: #dc3545;
-        padding: 0.75rem;
+        padding: 0.75rem; // Reduced from 0.85rem
         background-color: #f8d7da;
         border: 1px solid #f5c6cb;
-        border-radius: 4px;
-        font-size: 0.95rem;
+        border-radius: 6px;
+        font-size: 0.9rem; // Reduced from 0.95rem
+        text-align: center;
     }
 
     .form-group {
         text-align: left;
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.4rem; // Reduced from 0.5rem
 
         label {
-            font-weight: 600;
-            color: #333;
-            font-size: 0.95rem;
+            font-weight: 500;
+            color: #555;
+            font-size: 0.9rem; // Reduced from 0.95rem
         }
 
         input {
-            padding: 0.7rem;
-            border: 1px solid #ccc;
+            padding: 0.8rem 0.9rem; // Reduced padding
+            border: 1px solid #e0e0e0;
             border-radius: 6px;
-            font-size: 1rem;
-            transition: border 0.3s, box-shadow 0.3s;
+            font-size: 0.95rem; // Reduced from 1rem
+            transition: all 0.3s;
+            background-color: #f5f7fa;
+
+            &::placeholder {
+                color: #999;
+            }
 
             &:focus {
-                border-color: #F25C05;
-                box-shadow: 0 0 0 4px rgba(242, 92, 5, 0.15);
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
                 outline: none;
+                background-color: white;
             }
         }
     }
 
-    button {
-        margin-block: .7rem ;
-        padding: 0.85rem;
-        background-color: #F25C05;
+    button[type="submit"] {
+        margin-top: 0.5rem; // Reduced from 0.75rem
+        padding: 0.9rem; // Reduced from 1rem
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
         color: #fff;
         border: none;
         border-radius: 6px;
-        font-size: 1rem;
+        font-size: 1rem; // Reduced from 1.05rem
         font-weight: 600;
         cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s;
+        transition: all 0.3s ease;
 
         &:hover {
-            background-color: #d14e04;
-            transform: scale(1.02);
+            background: linear-gradient(135deg, #1e40af, #2563eb);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        &:active {
+            transform: translateY(0);
         }
 
         &:disabled {
-            background-color: #cccccc;
+            background-color: #95a5a6;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+    }
+}
+
+// Responsive Design
+@media (max-width: 968px) {
+    .login-container {
+        flex-direction: column;
+    }
+
+    .login-welcome {
+        min-height: 35vh;
+        padding: 2rem 1.5rem;
+
+        &::before,
+        &::after {
+            width: 280px;
+            height: 280px;
+        }
+
+        .blob {
+            &.blob-1 {
+                width: 180px;
+                height: 180px;
+            }
+
+            &.blob-2 {
+                width: 140px;
+                height: 140px;
+            }
+
+            &.blob-3 {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        p {
+            font-size: 1.1rem;
+        }
+    }
+
+    .login-card {
+        min-height: 65vh;
+        padding: 2rem 1.5rem;
+
+        h2 {
+            font-size: 1.75rem;
         }
     }
 }
 
 @media (max-width: 500px) {
+    .login-welcome {
+        min-height: 30vh;
+        padding: 1.5rem 1rem;
+
+        &::before,
+        &::after {
+            width: 200px;
+            height: 200px;
+        }
+
+        .blob {
+            display: none; // Hide extra blobs on mobile
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        p {
+            font-size: 1rem;
+        }
+    }
+
     .login-card {
-        padding: 2rem 1.5rem;
+        padding: 1.5rem 1rem;
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
     }
 
     .login-logo {
-        max-width: 80px; // Adjust logo size on mobile
+        max-width: 100px;
+        margin-bottom: 1.5rem;
     }
 
     .login-toggle {
+        gap: 0.75rem;
+
         .toggle-btn {
-            padding: 0.6rem 0.8rem;
-            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+        }
+    }
+
+    .login-form {
+        gap: 1rem;
+
+        .form-group {
+            input {
+                padding: 0.8rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        button[type="submit"] {
+            padding: 0.9rem;
+            font-size: 1rem;
         }
     }
 }
