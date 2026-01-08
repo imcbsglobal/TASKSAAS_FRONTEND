@@ -6,7 +6,7 @@ const OrderReport = () => {
   const [selectedArea, setSelectedArea] = useState("");
   const [areaSearchTerm, setAreaSearchTerm] = useState("");
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
   
   // Modal state
@@ -89,6 +89,7 @@ const OrderReport = () => {
         order.customer_name?.toLowerCase().includes(search) ||
         order.customer_code?.toLowerCase().includes(search) ||
         order.area?.toLowerCase().includes(search) ||
+        order.username?.toLowerCase().includes(search) ||
         order.items?.some(item => 
           item.product_name?.toLowerCase().includes(search)
         )
@@ -137,7 +138,7 @@ const OrderReport = () => {
     setSearchTerm("");
     setSelectedArea("");
     setAreaSearchTerm("");
-    setPageSize(20);
+    setPageSize(10);
     setPage(1);
   };
 
@@ -267,7 +268,7 @@ const OrderReport = () => {
                       <input
                         id="or-search"
                         type="search"
-                        placeholder="Search by order no, customer, product or area..."
+                        placeholder="Search by order no, customer, username, product or area..."
                         value={searchTerm}
                         onChange={(e) => {
                           setSearchTerm(e.target.value);
@@ -380,7 +381,7 @@ const OrderReport = () => {
               <div className="or-table-wrap" role="region" aria-label="Orders table">
                 <table className="or-orders-table" role="table" aria-describedby="or-desc">
                   <caption id="or-desc" style={{ display: "none" }}>
-                    Columns: serial no, order no, date & time, customer code, customer name, area, payment type, product name, price, quantity, amount, details button
+                    Columns: serial no, order no, date & time, customer code, customer name, username, area, payment type, details button
                   </caption>
 
                   <thead>
@@ -390,12 +391,9 @@ const OrderReport = () => {
                       <th scope="col">Date & Time</th>
                       <th scope="col">Customer Code</th>
                       <th scope="col">Customer Name</th>
+                      <th scope="col">Username</th>
                       <th scope="col">Area</th>
                       <th scope="col">Payment Type</th>
-                      <th scope="col">Product Name</th>
-                      <th scope="col">Price</th>
-                      <th scope="col">Qty</th>
-                      <th scope="col">Amount</th>
                       <th scope="col">Details</th>
                     </tr>
                   </thead>
@@ -419,12 +417,9 @@ const OrderReport = () => {
                           </td>
                           <td className="or-customer-code">{order.customer_code || "-"}</td>
                           <td className="or-customer-name">{order.customer_name}</td>
+                          <td className="or-username">{order.username || "-"}</td>
                           <td className="or-area">{order.area || "-"}</td>
                           <td>{order.payment_type || "-"}</td>
-                          <td className="or-product-name">{order.item.product_name}</td>
-                          <td className="or-price">{formatCurrency(order.item.price)}</td>
-                          <td className="or-qty">{order.item.quantity}</td>
-                          <td className="or-amount">{formatCurrency(order.item.amount)}</td>
                           <td className="or-details-cell">
                             <button 
                               className="or-details-btn"
@@ -439,7 +434,7 @@ const OrderReport = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="12" className="or-no-data">
+                        <td colSpan="9" className="or-no-data">
                           {searchTerm || selectedArea
                             ? "No orders found matching your filters."
                             : "No orders available."}
@@ -492,47 +487,38 @@ const OrderReport = () => {
             </div>
             
             <div className="or-modal-body">
-              <div className="or-detail-grid">
-                <div className="or-detail-item">
-                  <label>Order No</label>
-                  <div className="or-detail-value or-detail-highlight">{selectedOrderDetails.order_id}</div>
-                </div>
-                
-                <div className="or-detail-item">
-                  <label>Item Code</label>
-                  <div className="or-detail-value or-detail-code">{selectedOrderDetails.item.item_code || "-"}</div>
-                </div>
-                
-                <div className="or-detail-item">
-                  <label>Barcode</label>
-                  <div className="or-detail-value or-detail-code">{selectedOrderDetails.item.barcode || "-"}</div>
-                </div>
-                
-                <div className="or-detail-item">
-                  <label>Username</label>
-                  <div className="or-detail-value">{selectedOrderDetails.username || "-"}</div>
-                </div>
-                
-                <div className="or-detail-item or-detail-full">
-                  <label>Product Name</label>
-                  <div className="or-detail-value or-detail-product">{selectedOrderDetails.item.product_name}</div>
-                </div>
-                
-                <div className="or-detail-item">
-                  <label>Customer</label>
-                  <div className="or-detail-value">{selectedOrderDetails.customer_name}</div>
-                </div>
-                
-                <div className="or-detail-item">
-                  <label>Area</label>
-                  <div className="or-detail-value">{selectedOrderDetails.area || "-"}</div>
-                </div>
-                
-                <div className="or-detail-item or-detail-full">
-                  <label>Remark</label>
-                  <div className="or-detail-value">{selectedOrderDetails.remark || "-"}</div>
-                </div>
-              </div>
+              <table className="or-modal-table">
+                <tbody>
+                  <tr>
+                    <td className="or-modal-label">Product Name</td>
+                    <td className="or-modal-value">{selectedOrderDetails.item.product_name}</td>
+                  </tr>
+                  <tr>
+                    <td className="or-modal-label">Item Code</td>
+                    <td className="or-modal-value">{selectedOrderDetails.item.item_code || "-"}</td>
+                  </tr>
+                  <tr>
+                    <td className="or-modal-label">Barcode</td>
+                    <td className="or-modal-value">{selectedOrderDetails.item.barcode || "-"}</td>
+                  </tr>
+                  <tr>
+                    <td className="or-modal-label">Price</td>
+                    <td className="or-modal-value">{formatCurrency(selectedOrderDetails.item.price)}</td>
+                  </tr>
+                  <tr>
+                    <td className="or-modal-label">Quantity</td>
+                    <td className="or-modal-value">{selectedOrderDetails.item.quantity}</td>
+                  </tr>
+                  <tr>
+                    <td className="or-modal-label">Amount</td>
+                    <td className="or-modal-value">{formatCurrency(selectedOrderDetails.item.amount)}</td>
+                  </tr>
+                  <tr>
+                    <td className="or-modal-label">Remark</td>
+                    <td className="or-modal-value">{selectedOrderDetails.remark || "-"}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

@@ -44,45 +44,26 @@ export const MENU_CONFIG = [
         route: '/masters/debtors',
         order: 1
     },
-    {
-        id: 'master-suppliers',
-        type: MENU_TYPES.SIMPLE,
-        label: 'Order Reports',
-        icon: FaTruck,
-        route: '/masters/suppliers',
-        order: 2
-    },
-    {
-        id: 'debtors',
-        type: MENU_TYPES.SIMPLE,
-        label: 'Statements',
-        icon: FaMoneyBillWave,
-        route: '/debtors',
-        order: 3
-    },
-
-    // -------------------------------
-    // Bills Receivable
-    // -------------------------------
-    {
-        id: 'bills-receivable',
-        type: MENU_TYPES.SIMPLE,
-        label: 'Bills Receivable',
-        icon: FaMoneyBillWave,
-        route: '/bills/receivable',
-        order: 3.5
-    },
-
+    
     // -------------------------------
     // Reports (Simple Menu Item)
     // -------------------------------
     {
         id: 'reports',
         type: MENU_TYPES.SIMPLE,
-        label: 'Reports',
+        label: 'Product Details',
         icon: FaFileAlt,
         route: '/reports',
-        order: 3.7
+        order: 2
+    },
+    
+    {
+        id: 'master-suppliers',
+        type: MENU_TYPES.SIMPLE,
+        label: 'Order Reports',
+        icon: FaTruck,
+        route: '/masters/suppliers',
+        order: 3
     },
 
     // -------------------------------
@@ -94,8 +75,29 @@ export const MENU_CONFIG = [
         label: 'Collection Report',
         icon: FaChartBar,
         route: '/reports/collection',
-        order: 3.8
+        order: 4
     },
+    
+    {
+        id: 'debtors',
+        type: MENU_TYPES.SIMPLE,
+        label: 'Statements',
+        icon: FaMoneyBillWave,
+        route: '/debtors',
+        order: 5
+    },
+
+    // -------------------------------
+    // Bills Receivable
+    // -------------------------------
+    // {
+    //     id: 'bills-receivable',
+    //     type: MENU_TYPES.SIMPLE,
+    //     label: 'Bills Receivable',
+    //     icon: FaMoneyBillWave,
+    //     route: '/bills/receivable',
+    //     order: 3.5
+    // },
 
     {
         id: 'area-assign',
@@ -103,14 +105,14 @@ export const MENU_CONFIG = [
         label: 'Area Assign',
         icon: RiUserLocationLine,
         route: '/area-assign',
-        order: 4
+        order: 6
     },
     {
         id: 'punch-in',
         type: MENU_TYPES.DROPDOWN,
         label: 'Punch In',
         icon: FaFingerprint,
-        order: 5,
+        order: 7,
         children: [
             {
                 id: 'location-capture',
@@ -132,7 +134,7 @@ export const MENU_CONFIG = [
         label: 'Masters',
         icon: FaUniversity,
         route: '/masters',
-        order: 6,
+        order: 8,
         children: [
             {
                 id: 'users',
@@ -153,7 +155,7 @@ export const MENU_CONFIG = [
         label: 'Settings',
         type: MENU_TYPES.DROPDOWN,
         icon: FaCog,
-        order: 7,
+        order: 9,
         children: [
             {
                 id: 'user-menu',

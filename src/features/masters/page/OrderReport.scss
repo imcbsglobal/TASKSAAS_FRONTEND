@@ -1,4 +1,4 @@
-/* OrderReport.scss — Enhanced & Beautiful with Blue Theme + Modal */
+/* OrderReport.scss — Enhanced & Beautiful with Blue Theme + Modal Table */
 
 :root {
   --or-page-bg: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
@@ -418,54 +418,6 @@
   font-style: italic;
 }
 
-.or-area-count {
-  padding: 8px 16px;
-  border-top: 1px solid #e5e7eb;
-  font-size: 12px;
-  color: #64748b;
-  text-align: center;
-  background: #f9fafb;
-  border-radius: 0 0 8px 8px;
-}
-
-/* Status Filter */
-.or-filter-status {
-  min-width: 200px;
-}
-
-.or-status-select {
-  width: 100%;
-  height: 44px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 2px solid #e5e7eb;
-  background: #ffffff;
-  color: #1f2937;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  box-sizing: border-box;
-  transition: all 0.2s ease;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #64748b 50%), 
-                    linear-gradient(135deg, #64748b 50%, transparent 50%);
-  background-position: calc(100% - 18px) 18px, calc(100% - 12px) 18px;
-  background-size: 6px 6px, 6px 6px;
-  background-repeat: no-repeat;
-}
-
-.or-status-select:hover {
-  border-color: #cbd5e1;
-}
-
-.or-status-select:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-}
-
 /* Clear All Filters Button */
 .or-clear-filters-btn {
   height: 44px;
@@ -553,7 +505,7 @@
   width: 100%;
   border-collapse: collapse;
   border-spacing: 0;
-  min-width: 1800px;
+  min-width: 1200px;
   font-size: 14px;
 }
 
@@ -589,7 +541,7 @@
   border-bottom-right-radius: 10px;
 }
 
-/* Column width specifications - UPDATED WITH MODAL */
+/* Column width specifications - UPDATED FOR 8 COLUMNS */
 .or-orders-table {
   th, td {
     white-space: nowrap;
@@ -606,12 +558,7 @@
     &:nth-child(5) { min-width: 220px; width: 220px; } /* Customer Name */
     &:nth-child(6) { min-width: 170px; width: 170px; } /* Area */
     &:nth-child(7) { min-width: 160px; width: 160px; } /* Payment Type */
-    &:nth-child(8) { min-width: 280px; width: 280px; } /* Product Name */
-    &:nth-child(9) { min-width: 140px; width: 140px; } /* Price */
-    &:nth-child(10) { min-width: 100px; width: 100px; text-align: center; } /* Qty */
-    &:nth-child(11) { min-width: 150px; width: 150px; } /* Amount */
-    &:nth-child(12) { min-width: 200px; width: 200px; } /* Remark */
-    &:nth-child(13) { min-width: 140px; width: 140px; text-align: center; } /* Details Button */
+    &:nth-child(8) { min-width: 140px; width: 140px; text-align: center; } /* Details Button */
   }
 }
 
@@ -682,46 +629,6 @@
   color: #475569;
 }
 
-.or-product-name {
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.or-barcode {
-  font-family: 'Courier New', monospace;
-  color: #64748b;
-  font-size: 13px;
-}
-
-.or-price {
-  font-weight: 700;
-  color: #059669;
-  text-align: right !important;
-  font-variant-numeric: tabular-nums;
-}
-
-.or-qty {
-  font-weight: 700;
-  color: #2563eb;
-  text-align: center !important;
-}
-
-.or-amount {
-  font-weight: 700;
-  color: #059669;
-  text-align: right !important;
-  font-variant-numeric: tabular-nums;
-  font-size: 15px;
-}
-
-.or-remark {
-  color: #64748b;
-  font-style: italic;
-  max-width: 200px;
-  white-space: normal;
-  word-wrap: break-word;
-}
-
 /* Details Button */
 .or-details-cell {
   text-align: center !important;
@@ -755,42 +662,6 @@
 
 .or-details-icon {
   font-size: 16px;
-}
-
-/* Status Badges */
-.or-status-badge {
-  display: inline-block;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-.status-completed {
-  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-  color: #166534;
-  border: 1px solid #86efac;
-}
-
-.status-pending {
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-  color: #92400e;
-  border: 1px solid #fcd34d;
-}
-
-.status-processing {
-  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-  color: #1e40af;
-  border: 1px solid #93c5fd;
-}
-
-.status-cancelled {
-  background: linear-gradient(135deg, #fee2e2, #fecaca);
-  color: #991b1b;
-  border: 1px solid #fca5a5;
 }
 
 /* Empty state */
@@ -947,89 +818,82 @@
 /* Modal Body */
 .or-modal-body {
   padding: 32px;
+  background: linear-gradient(135deg, rgba(255, 250, 245, 0.5), rgba(254, 243, 235, 0.4));
 }
 
-.or-detail-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+/* Modal Table */
+.or-modal-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-.or-detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.or-modal-table tbody tr {
+  transition: all 0.2s ease;
 }
 
-.or-detail-item.or-detail-full {
-  grid-column: 1 / -1;
+.or-modal-table tbody tr:hover {
+  background: rgba(251, 207, 232, 0.15);
 }
 
-.or-detail-item label {
-  font-size: 12px;
+.or-modal-label {
+  padding: 16px 20px;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: #64748b;
+  color: #6b5b5b;
+  background: linear-gradient(135deg, rgba(254, 240, 230, 0.6), rgba(253, 230, 215, 0.5));
+  border-right: 3px solid rgba(251, 207, 232, 0.3);
+  border-bottom: 1px solid rgba(254, 215, 215, 0.4);
+  width: 35%;
+  vertical-align: middle;
 }
 
-.or-detail-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1e293b;
-  padding: 14px 18px;
-  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-  border-radius: 10px;
-  border: 2px solid #e2e8f0;
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  transition: all 0.3s ease;
-}
-
-.or-detail-value:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.or-detail-highlight {
-  background: linear-gradient(135deg, rgba(30, 64, 175, 0.08), rgba(59, 130, 246, 0.08));
-  border-color: rgba(37, 99, 235, 0.3);
-  color: #1e40af;
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.or-detail-code {
-  font-family: 'Courier New', monospace;
+.or-modal-value {
+  padding: 16px 20px;
   font-size: 15px;
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-  border-color: #fbbf24;
-  color: #92400e;
+  font-weight: 600;
+  color: #2d2d2d;
+  background: linear-gradient(135deg, rgba(255, 252, 248, 0.8), rgba(255, 255, 255, 0.9));
+  border-bottom: 1px solid rgba(254, 215, 215, 0.4);
+  vertical-align: middle;
+}
+.or-modal-table tbody tr:first-child .or-modal-label {
+  border-top-left-radius: 10px;
 }
 
-.or-detail-product {
-  font-weight: 700;
-  color: #0f172a;
+.or-modal-table tbody tr:first-child .or-modal-value {
+  border-top-right-radius: 10px;
+}
+
+.or-modal-table tbody tr:last-child .or-modal-label {
+  border-bottom-left-radius: 10px;
+  border-bottom: none;
+}
+
+.or-modal-table tbody tr:last-child .or-modal-value {
+  border-bottom-right-radius: 10px;
+  border-bottom: none;
+}
+
+/* Special styling for specific modal rows */
+/* Special styling for specific modal rows */
+.or-modal-table tbody tr:nth-child(1) .or-modal-value {
+  font-weight: 800;
+  color: #1e40af;
   font-size: 17px;
 }
 
-.or-detail-qty {
-  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-  border-color: #3b82f6;
-  color: #1e40af;
-  font-weight: 700;
-  font-size: 20px;
-  justify-content: center;
+.or-modal-table tbody tr:nth-child(2) .or-modal-value,
+.or-modal-table tbody tr:nth-child(3) .or-modal-value {
+  font-family: 'Courier New', monospace;
 }
 
-.or-detail-amount {
-  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-  border-color: #10b981;
-  color: #065f46;
-  font-weight: 700;
-  font-size: 20px;
-  justify-content: flex-end;
+.or-modal-table tbody tr:nth-child(7) .or-modal-value {
+  color: #64748b;
+  font-style: italic;
+  font-weight: 500;
 }
 
 /* Modal Responsive */
@@ -1052,14 +916,19 @@
     padding: 24px 20px;
   }
 
-  .or-detail-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .or-modal-table {
+    font-size: 13px;
   }
 
-  .or-detail-value {
-    font-size: 15px;
+  .or-modal-label {
     padding: 12px 14px;
+    font-size: 11px;
+    width: 40%;
+  }
+
+  .or-modal-value {
+    padding: 12px 14px;
+    font-size: 14px;
   }
 }
 
@@ -1129,11 +998,6 @@
     width: 100%;
   }
 
-  .or-filter-status {
-    width: 100%;
-    min-width: 100%;
-  }
-
   .or-clear-filters-btn {
     width: 100%;
   }
@@ -1143,7 +1007,7 @@
   }
 
   .or-orders-table {
-    min-width: 1600px;
+    min-width: 1100px;
     font-size: 13px;
   }
 }
@@ -1188,7 +1052,7 @@
   }
 
   .or-orders-table {
-    min-width: 1500px;
+    min-width: 1000px;
     font-size: 12px;
   }
 
@@ -1267,7 +1131,7 @@
   }
 
   .or-orders-table {
-    min-width: 1400px;
+    min-width: 900px;
     font-size: 12px;
   }
 
