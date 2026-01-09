@@ -227,9 +227,9 @@ const AreaAssignTableView = () => {
                     <table className="styled-table">
                         <thead>
                             <tr>
-                                <th>NO</th>
-                                <th>AREA</th>
-                                <th>USER NAME</th>
+                                <th>No</th>
+                                <th>Area</th>
+                                <th>User Name</th>
                             </tr>
                         </thead>
 

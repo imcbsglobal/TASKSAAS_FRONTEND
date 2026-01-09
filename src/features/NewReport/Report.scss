@@ -669,11 +669,11 @@
 /* Status Badges */
 .status-badge {
   padding: 6px 12px;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   border-radius: 6px;
   white-space: nowrap;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.5px;
 }
 
@@ -858,7 +858,7 @@
   font-size: 12px;
   font-weight: 600;
   color: #64748b;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.5px;
 }
 
@@ -891,7 +891,7 @@
   text-align: left;
   font-size: 12px;
   font-weight: 700;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.5px;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -954,7 +954,7 @@
   font-size: 13px;
   font-weight: 600;
   color: #64748b;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.5px;
 }
 
@@ -998,7 +998,7 @@
   padding: 16px 20px;
   text-align: left;
   font-size: 13px;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.5px;
   border-right: 1px solid rgba(255, 255, 255, 0.3);
   position: relative;

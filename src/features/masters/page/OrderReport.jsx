@@ -156,9 +156,11 @@ const OrderReport = () => {
     setIsAreaDropdownOpen(!isAreaDropdownOpen);
   };
 
-  // Open modal with order details
+  // Open modal with order details - find all items with same order_id
   const openDetailsModal = (order) => {
-    setSelectedOrderDetails(order);
+    // Find the full order with all items
+    const fullOrder = orders.find(o => o.order_id === order.order_id);
+    setSelectedOrderDetails(fullOrder);
     setIsModalOpen(true);
   };
 
@@ -487,38 +489,63 @@ const OrderReport = () => {
             </div>
             
             <div className="or-modal-body">
-              <table className="or-modal-table">
-                <tbody>
-                  <tr>
-                    <td className="or-modal-label">Product Name</td>
-                    <td className="or-modal-value">{selectedOrderDetails.item.product_name}</td>
-                  </tr>
-                  <tr>
-                    <td className="or-modal-label">Item Code</td>
-                    <td className="or-modal-value">{selectedOrderDetails.item.item_code || "-"}</td>
-                  </tr>
-                  <tr>
-                    <td className="or-modal-label">Barcode</td>
-                    <td className="or-modal-value">{selectedOrderDetails.item.barcode || "-"}</td>
-                  </tr>
-                  <tr>
-                    <td className="or-modal-label">Price</td>
-                    <td className="or-modal-value">{formatCurrency(selectedOrderDetails.item.price)}</td>
-                  </tr>
-                  <tr>
-                    <td className="or-modal-label">Quantity</td>
-                    <td className="or-modal-value">{selectedOrderDetails.item.quantity}</td>
-                  </tr>
-                  <tr>
-                    <td className="or-modal-label">Amount</td>
-                    <td className="or-modal-value">{formatCurrency(selectedOrderDetails.item.amount)}</td>
-                  </tr>
-                  <tr>
-                    <td className="or-modal-label">Remark</td>
-                    <td className="or-modal-value">{selectedOrderDetails.remark || "-"}</td>
-                  </tr>
-                </tbody>
-              </table>
+              {/* Order Info Section */}
+<div className="or-modal-info-section">
+  <div className="or-modal-info-grid">
+    <div className="or-modal-info-item">
+      <span className="or-modal-info-label">Order No:</span>
+      <span className="or-modal-info-value">{selectedOrderDetails.order_id}</span>
+    </div>
+    <div className="or-modal-info-item">
+      <span className="or-modal-info-label">Customer:</span>
+      <span className="or-modal-info-value">{selectedOrderDetails.customer_name}</span>
+    </div>
+  </div>
+</div>
+
+              {/* Items Table */}
+              <div className="or-modal-items-section">
+                <h3 className="or-modal-section-title">
+                  Order Items ({selectedOrderDetails.items.length})
+                </h3>
+                
+                <div className="or-modal-table-wrap">
+                  <table className="or-modal-items-table">
+                    <thead>
+                      <tr>
+                        <th>No</th>
+                        <th>Product Name</th>
+                        <th>Item Code</th>
+                        <th>Barcode</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedOrderDetails.items.map((item, index) => (
+                        <tr key={index}>
+                          <td className="text-center">{index + 1}</td>
+                          <td className="or-product-name">{item.product_name}</td>
+                          <td className="or-item-code">{item.item_code || "-"}</td>
+                          <td className="or-barcode">{item.barcode || "-"}</td>
+                          <td className="or-price">{formatCurrency(item.price)}</td>
+                          <td className="text-center">{item.quantity}</td>
+                          <td className="or-amount">{formatCurrency(item.amount)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="or-modal-total-row">
+                        <td colSpan="6" className="or-total-label">Total Order Amount:</td>
+                        <td className="or-total-amount">
+                          {formatCurrency(selectedOrderDetails.items.reduce((sum, item) => sum + (item.amount || 0), 0))}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>

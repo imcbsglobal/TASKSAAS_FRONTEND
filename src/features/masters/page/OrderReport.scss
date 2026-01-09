@@ -520,7 +520,7 @@
   padding: 18px 24px;
   text-align: left;
   font-size: 13px;
-  text-transform: uppercase;
+  text-transform: none; 
   letter-spacing: 0.5px;
   border-right: 1px solid rgba(255, 255, 255, 0.3);
   position: relative;
@@ -752,7 +752,7 @@
   background: white;
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 700px;
+  max-width: 1200px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -818,46 +818,298 @@
 /* Modal Body */
 .or-modal-body {
   padding: 32px;
-  background: linear-gradient(135deg, rgba(255, 250, 245, 0.5), rgba(254, 243, 235, 0.4));
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.5), rgba(219, 234, 254, 0.3));
 }
 
-/* Modal Table */
-.or-modal-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+/* Modal Info Section */
+.or-modal-info-section {
+  margin-bottom: 32px;
 }
 
-.or-modal-table tbody tr {
+.or-modal-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.or-modal-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+  border-radius: 12px;
+  border: 2px solid rgba(59, 130, 246, 0.1);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
   transition: all 0.2s ease;
 }
 
-.or-modal-table tbody tr:hover {
-  background: rgba(251, 207, 232, 0.15);
+.or-modal-info-item:hover {
+  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+  transform: translateY(-2px);
 }
 
-.or-modal-label {
-  padding: 16px 20px;
-  font-size: 13px;
+.or-modal-info-label {
+  font-size: 12px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: #6b5b5b;
-  background: linear-gradient(135deg, rgba(254, 240, 230, 0.6), rgba(253, 230, 215, 0.5));
-  border-right: 3px solid rgba(251, 207, 232, 0.3);
-  border-bottom: 1px solid rgba(254, 215, 215, 0.4);
-  width: 35%;
-  vertical-align: middle;
+  text-transform: none;
+
+  letter-spacing: 0.5px;
+  color: #64748b;
 }
 
-.or-modal-value {
-  padding: 16px 20px;
+.or-modal-info-value {
   font-size: 15px;
   font-weight: 600;
-  color: #2d2d2d;
-  background: linear-gradient(135deg, rgba(255, 252, 248, 0.8), rgba(255, 255, 255, 0.9));
-  border-bottom: 1px solid rgba(254, 215, 215, 0.4);
-  vertical-align: middle;
+  color: #1e293b;
+}
+
+.or-modal-remark {
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(254, 252, 232, 0.6), rgba(254, 249, 195, 0.4));
+  border-radius: 12px;
+  border: 2px solid rgba(250, 204, 21, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Modal Items Section */
+.or-modal-items-section {
+  margin-top: 24px;
+}
+
+.or-modal-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e40af;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(90deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+  border-image-slice: 1;
+}
+
+/* Modal Items Table */
+.or-modal-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.1);
+}
+
+.or-modal-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 600px;
+}
+
+.or-modal-items-table thead {
+  background: linear-gradient(90deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+  color: white;
+}
+
+.or-modal-items-table thead th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.or-modal-items-table thead th:last-child {
+  border-right: none;
+}
+
+.or-modal-items-table tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+  color: #334155;
+  font-weight: 500;
+}
+
+.or-modal-items-table tbody tr:hover td {
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.or-modal-items-table tbody tr:nth-child(even) td {
+  background: rgba(37, 99, 235, 0.03);
+}
+
+.or-modal-items-table tbody tr:nth-child(even):hover td {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.or-modal-items-table .text-center {
+  text-align: center;
+}
+
+.or-product-name {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.or-item-code,
+.or-barcode {
+  font-family: 'Courier New', monospace;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.or-price,
+.or-amount {
+  font-weight: 600;
+  color: #059669;
+  text-align: right;
+}
+
+/* Modal Table Footer (Total) */
+.or-modal-items-table tfoot {
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.08), rgba(59, 130, 246, 0.08));
+  font-weight: 700;
+}
+
+.or-modal-total-row td {
+  padding: 16px;
+  border-top: 3px solid #2563eb;
+  font-size: 15px;
+}
+
+.or-total-label {
+  text-align: right;
+  color: #1e40af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.or-total-amount {
+  color: #059669;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: right;
+}
+
+/* Modal Items Section */
+.or-modal-items-section {
+  margin-top: 24px;
+}
+
+.or-modal-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e40af;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(90deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+  border-image-slice: 1;
+}
+
+/* Modal Items Table */
+.or-modal-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.1);
+}
+
+.or-modal-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 600px;
+}
+
+.or-modal-items-table thead {
+  background: linear-gradient(90deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+  color: white;
+}
+
+.or-modal-items-table thead th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.or-modal-items-table thead th:last-child {
+  border-right: none;
+}
+
+.or-modal-items-table tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+  color: #334155;
+  font-weight: 500;
+}
+
+.or-modal-items-table tbody tr:hover td {
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.or-modal-items-table tbody tr:nth-child(even) td {
+  background: rgba(37, 99, 235, 0.03);
+}
+
+.or-modal-items-table tbody tr:nth-child(even):hover td {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.or-modal-items-table .text-center {
+  text-align: center;
+}
+
+.or-product-name {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.or-item-code,
+.or-barcode {
+  font-family: 'Courier New', monospace;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.or-price,
+.or-amount {
+  font-weight: 600;
+  color: #059669;
+  text-align: right;
+}
+
+/* Modal Table Footer (Total) */
+.or-modal-items-table tfoot {
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.08), rgba(59, 130, 246, 0.08));
+  font-weight: 700;
+}
+
+.or-modal-total-row td {
+  padding: 16px;
+  border-top: 3px solid #2563eb;
+  font-size: 15px;
+}
+
+.or-total-label {
+  text-align: right;
+  color: #1e40af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.or-total-amount {
+  color: #059669;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: right;
 }
 .or-modal-table tbody tr:first-child .or-modal-label {
   border-top-left-radius: 10px;
