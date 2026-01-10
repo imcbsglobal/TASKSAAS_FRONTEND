@@ -8,7 +8,7 @@ const MasterUsers = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
-  const pageSize = 20;
+  const pageSize = 10;
   const [page, setPage] = useState(1);
 
   // API function

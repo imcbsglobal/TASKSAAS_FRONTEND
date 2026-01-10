@@ -62,7 +62,7 @@ const MasterDebtors = () => {
   const [balanceFilter, setBalanceFilter] = useState("greater_than_1"); // Default to balance only
   const [areaSearchTerm, setAreaSearchTerm] = useState(""); // Search within area dropdown
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
 
   // Get unique areas from data
