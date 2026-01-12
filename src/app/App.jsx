@@ -25,6 +25,7 @@ import CollectionReport from '../features/NewReport/CollectionReport';
 
 import { AreaAssign } from '../features/punchin';
 import AreaAssignTableView from '../features/punchin/pages/AreaAssignTableView';
+import Options from '../features/settings/pages/Options';
 
 const AppLayout = () => {
     const location = useLocation();
@@ -129,43 +130,55 @@ const AppLayout = () => {
                 <Route path="/masters/area-table" element={<AreaAssignTableView />} />
 
                 {/* Masters */}
-                <Route path="/masters">
-                    <Route
-                        index
-                        element={
-                            <ProtectedRoute>
-                                <MenuManagement />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="users"
-                        element={
-                            <ProtectedRoute>
-                                <MasterUsers />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="debtors"
-                        element={
-                            <ProtectedRoute>
-                                <MasterDebtors />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="suppliers"
-                        element={
-                            <ProtectedRoute>
-                                <MasterSuppliers />
-                            </ProtectedRoute>
-                        }
-                    />
-                </Route>
+                {/* Masters */}
+<Route path="/masters">
+    <Route
+        index
+        element={
+            <ProtectedRoute>
+                <MenuManagement />
+            </ProtectedRoute>
+        }
+    />
+    <Route
+        path="users"
+        element={
+            <ProtectedRoute>
+                <MasterUsers />
+            </ProtectedRoute>
+        }
+    />
+    <Route
+        path="debtors"
+        element={
+            <ProtectedRoute>
+                <MasterDebtors />
+            </ProtectedRoute>
+        }
+    />
+    <Route
+            path="suppliers"
+            element={
+                <ProtectedRoute>
+                    <MasterSuppliers />
+                </ProtectedRoute>
+            }
+        />
+    </Route>
 
-                {/* 404 */}
-                <Route path="/*" element={<NotFound />} />
+    {/* Settings → Options */}
+    <Route
+        path="/settings/options"
+        element={
+            <ProtectedRoute>
+                <Options />
+            </ProtectedRoute>
+        }
+    />
+
+    {/* 404 */}
+    <Route path="/*" element={<NotFound />} />
+
             </Routes>
         </>
     );

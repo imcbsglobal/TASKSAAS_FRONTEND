@@ -168,6 +168,12 @@ export const MENU_CONFIG = [
                 label: 'Company Info',
                 icon: FaBuilding,
                 route: '/dashboard/user'
+            },
+            {
+                id: 'settings-options',
+                label: 'Options',
+                icon: FaCog,
+                route: '/settings/options'
             }
         ]
     }

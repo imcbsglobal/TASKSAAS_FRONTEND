@@ -11,7 +11,7 @@ import {
     getMenuItemsByAllowedIds,
     getMenuItemsByAllowedRoutes
 } from '../../constants/menuConfig';
-
+import { NavLink } from 'react-router-dom';
 /**
  * Navbar Component - Scalable Navigation with Secure Menu ID-Based Access
  * 
@@ -50,9 +50,12 @@ const Navbar = () => {
     const dispatch = useDispatch();
 
     // Get menu items based on user's allowed menu IDs (Secure approach)
-    const menuItems = user?.allowedMenuIds?.length
-        ? getMenuItemsByAllowedIds(user.allowedMenuIds)
-        : getMenuItemsByAllowedIds(["company"]);
+    const menuItems =
+        user?.role?.toLowerCase() === "admin"
+            ? MENU_CONFIG
+            : user?.allowedMenuIds?.length
+                ? getMenuItemsByAllowedIds(user.allowedMenuIds)
+                : [];
 
     // Check if device is mobile
     useEffect(() => {
