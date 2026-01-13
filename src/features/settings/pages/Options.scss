@@ -385,3 +385,12 @@ select:focus-visible {
     color: #1e293b;
   }
 }
+select option {
+  padding: 8px 12px;
+  font-weight: 500;
+}
+
+select option::selection {
+  background: #3b82f6;
+  color: white;
+}

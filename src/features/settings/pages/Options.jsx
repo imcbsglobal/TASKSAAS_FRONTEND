@@ -148,7 +148,7 @@ const Options = () => {
             >
               {users.map((u) => (
                 <option key={u.id} value={u.id}>
-                  {u.username}
+                  {u.username} {u.role ? `(${u.role})` : ""}
                 </option>
               ))}
             </select>
