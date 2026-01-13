@@ -6,50 +6,39 @@ const Options = () => {
   const [loading, setLoading] = useState(true);
 
   const [clientId, setClientId] = useState("");
+
   const [orderRateEditable, setOrderRateEditable] = useState(false);
+  const [readPriceCategory, setReadPriceCategory] = useState(false); // ✅ FIX
 
   const [priceCodes, setPriceCodes] = useState([]);
-  const [defaultPriceCodes, setDefaultPriceCodes] = useState([]);
+  const [defaultPriceCode, setDefaultPriceCode] = useState("");
 
-  const [roles, setRoles] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const [protectedPrices, setProtectedPrices] = useState({});
-  const [selectedRole, setSelectedRole] = useState("");
 
   useEffect(() => {
     getSettingsOptions()
       .then((data) => {
-        console.log("OPTIONS API:", data);
-
         setClientId(data.client_id);
         setOrderRateEditable(Boolean(data.order_rate_editable));
-        setDefaultPriceCodes(data.default_price_codes || []);
-        setProtectedPrices(data.protected_price_categories || {});
+        setReadPriceCategory(Boolean(data.read_price_category));
+
         setPriceCodes(data.price_codes || []);
-        setRoles(data.roles || []);
-      })
-      .catch((err) => {
-        console.error(err);
-        alert("Failed to load settings");
+        setUsers(data.users || []);
+
+        setDefaultPriceCode(data.default_price_code || "");
+        setProtectedPrices(data.protected_price_users || {});
       })
       .finally(() => setLoading(false));
   }, []);
 
-  const toggleDefaultPrice = (code) => {
-    setDefaultPriceCodes((prev) =>
-      prev.includes(code)
-        ? prev.filter((c) => c !== code)
-        : [...prev, code]
-    );
-  };
-
-  const toggleProtectedPrice = (code) => {
-    if (!selectedRole) return;
-
+  const toggleProtectedPrice = (userId, code) => {
     setProtectedPrices((prev) => {
-      const current = prev[selectedRole] || [];
+      const current = prev[userId] || [];
       return {
         ...prev,
-        [selectedRole]: current.includes(code)
+        [userId]: current.includes(code)
           ? current.filter((c) => c !== code)
           : [...current, code],
       };
@@ -57,71 +46,141 @@ const Options = () => {
   };
 
   const handleSave = async () => {
-    try {
-      await saveSettingsOptions({
-        order_rate_editable: orderRateEditable,
-        default_price_codes: defaultPriceCodes,
-        protected_price_categories: protectedPrices,
-      });
-      alert("Saved successfully");
-    } catch {
-      alert("Save failed");
-    }
+    await saveSettingsOptions({
+      order_rate_editable: orderRateEditable,
+      read_price_category: readPriceCategory,
+      default_price_code: defaultPriceCode,
+      protected_price_users: protectedPrices,
+    });
+
+    alert("Settings saved successfully");
   };
 
-  if (loading) return <div className="all-body">Loading...</div>;
+  if (loading) return <div className="loading">Loading</div>;
 
   return (
     <div className="all-body">
       <div className="options-page">
         <h2>Settings Options</h2>
-        <p>Client ID: <b>{clientId}</b></p>
+        <p>
+          Client ID <b>{clientId}</b>
+        </p>
 
+        {/* 1️⃣ Order Rate Editable */}
         <div className="option-card">
           <h3>1. Order Rate Editable</h3>
-          <label>
-            <input type="radio" checked={orderRateEditable} onChange={() => setOrderRateEditable(true)} /> Yes
-          </label>
-          <label>
-            <input type="radio" checked={!orderRateEditable} onChange={() => setOrderRateEditable(false)} /> No
-          </label>
-        </div>
-
-        <div className="option-card">
-          <h3>2. Default Price Categories</h3>
-          {priceCodes.map((p) => (
-            <label key={p.code}>
+          <div className="radio-group">
+            <label>
               <input
-                type="checkbox"
-                checked={defaultPriceCodes.includes(p.code)}
-                onChange={() => toggleDefaultPrice(p.code)}
+                type="radio"
+                checked={orderRateEditable}
+                onChange={() => setOrderRateEditable(true)}
               />
-              {p.name} ({p.code})
+              Yes
             </label>
-          ))}
+            <label>
+              <input
+                type="radio"
+                checked={!orderRateEditable}
+                onChange={() => setOrderRateEditable(false)}
+              />
+              No
+            </label>
+          </div>
         </div>
 
+        {/* 2️⃣ Read Price Category */}
         <div className="option-card">
-          <h3>3. Protected Price Categories</h3>
-          <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
-            <option value="">-- Select Role --</option>
-            {roles.map((r) => <option key={r}>{r}</option>)}
-          </select>
+          <h3>2. Read Price Category</h3>
+          <div className="radio-group">
+            <label>
+              <input
+                type="radio"
+                checked={readPriceCategory}
+                onChange={() => setReadPriceCategory(true)}
+              />
+              Yes
+            </label>
+            <label>
+              <input
+                type="radio"
+                checked={!readPriceCategory}
+                onChange={() => setReadPriceCategory(false)}
+              />
+              No
+            </label>
+          </div>
+        </div>
 
-          {selectedRole &&
-            priceCodes.map((p) => (
+        {/* 3️⃣ Default Price Category */}
+        <div className="option-card">
+          <h3>3. Default Price Category</h3>
+
+          <div className="checkbox-list">
+            {priceCodes.map((p) => (
               <label key={p.code}>
                 <input
-                  type="checkbox"
-                  checked={(protectedPrices[selectedRole] || []).includes(p.code)}
-                  onChange={() => toggleProtectedPrice(p.code)}
+                  type="radio"
+                  name="defaultPrice"
+                  checked={defaultPriceCode === p.code}
+                  onChange={() => setDefaultPriceCode(p.code)}
                 />
                 {p.name} ({p.code})
               </label>
             ))}
+          </div>
         </div>
 
-        <button onClick={handleSave}>Save Options</button>
+        {/* 4️⃣ Hide Cost For Users */}
+        <div className="option-card">
+          <h3>4. Hide Cost For Users</h3>
+
+          <div className="role-select">
+            <label>Select Users</label>
+            <select
+              multiple
+              value={selectedUsers}
+              onChange={(e) =>
+                setSelectedUsers(
+                  Array.from(e.target.selectedOptions, (o) => o.value)
+                )
+              }
+            >
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.username}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedUsers.length === 0 && (
+            <div className="empty-text">Select users to configure price access</div>
+          )}
+
+          {selectedUsers.map((userId) => (
+            <div key={userId} className="user-price-box">
+              <h4>User: {userId}</h4>
+
+              <div className="checkbox-list">
+                {priceCodes.map((p) => (
+                  <label key={p.code}>
+                    <input
+                      type="checkbox"
+                      checked={(protectedPrices[userId] || []).includes(p.code)}
+                      onChange={() => toggleProtectedPrice(userId, p.code)}
+                    />
+                    {p.name} ({p.code})
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button className="save-btn" onClick={handleSave}>
+          Save Options
+        </button>
       </div>
     </div>
   );

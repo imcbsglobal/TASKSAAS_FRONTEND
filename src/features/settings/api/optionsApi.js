@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:8000/api/settings/options/";
+const API_URL = "https://tasksas.com/api/settings/options/";
 
 const getAuthToken = () => {
   // 🔴 CHANGE THIS IF YOUR KEY NAME IS DIFFERENT
