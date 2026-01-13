@@ -91,7 +91,7 @@ const Options = () => {
 
         {/* 2️⃣ Read Price Category */}
         <div className="option-card">
-          <h3>2. Read Price Category</h3>
+          <h3>2. Read Price Categories From Master</h3>
           <div className="radio-group">
             <label>
               <input
