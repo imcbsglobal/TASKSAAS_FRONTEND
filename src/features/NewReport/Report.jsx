@@ -5,6 +5,14 @@ import './Report.scss';
 const BatchModal = ({ isOpen, onClose, product }) => {
   if (!isOpen) return null;
 
+  // Helper function to get price value from prices array
+  const getPrice = (prices, priceCode) => {
+    if (!prices || !Array.isArray(prices)) return '-';
+    const priceObj = prices.find(p => p.price_code === priceCode);
+    if (!priceObj || !priceObj.value || priceObj.value === '0.00') return '-';
+    return priceObj.value;
+  };
+
   return (
     <div className="md-modal-overlay" onClick={onClose}>
       <div className="md-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -34,7 +42,7 @@ const BatchModal = ({ isOpen, onClose, product }) => {
             </div>
             <div className="md-info-item">
               <span className="md-info-label">HSN Code:</span>
-              <span className="md-info-value">{product.text6}</span>
+              <span className="md-info-value">{product.text6 || 'N/A'}</span>
             </div>
             <div className="md-info-item">
               <span className="md-info-label">Tax Rate:</span>
@@ -53,16 +61,16 @@ const BatchModal = ({ isOpen, onClose, product }) => {
             <table className="md-batches-table">
               <thead>
                 <tr>
-                  <th>Batch #</th>
+                  <th>#</th>
                   <th>Barcode</th>
-                  <th>MRP</th>
-                  <th>Retail</th>
-                  <th>D.P</th>
-                  <th>CB</th>
-                  <th>Net Rate</th>
-                  <th>PK Shop</th>
-                  <th>Cost</th>
                   <th>Quantity</th>
+                  <th>Sales (S1)</th>
+                  <th>Card (S2)</th>
+                  <th>S3</th>
+                  <th>S4</th>
+                  <th>S5</th>
+                  <th>MRP</th>
+                  <th>Cost</th>
                   <th>Expiry</th>
                   <th>Modified</th>
                 </tr>
@@ -73,16 +81,23 @@ const BatchModal = ({ isOpen, onClose, product }) => {
                     <tr key={batch.id || index}>
                       <td>{index + 1}</td>
                       <td>{batch.barcode || '-'}</td>
-                      <td>{batch.MRP && batch.MRP !== '0.00' ? batch.MRP : '-'}</td>
-                      <td>{batch.RETAIL && batch.RETAIL !== '0.00' ? batch.RETAIL : '-'}</td>
-                      <td>{batch['D.P'] && batch['D.P'] !== '0.00' ? batch['D.P'] : '-'}</td>
-                      <td>{batch.CB && batch.CB !== '0.00' ? batch.CB : '-'}</td>
-                      <td>{batch['NET RATE'] && batch['NET RATE'] !== '0.00' ? batch['NET RATE'] : '-'}</td>
-                      <td>{batch['PK SHOP'] && batch['PK SHOP'] !== '0.00' ? batch['PK SHOP'] : '-'}</td>
-                      <td>{batch.COST && batch.COST !== '0.00' ? batch.COST : '-'}</td>
-                      <td className="md-quantity-cell">{batch.quantity || '0'}</td>
+                      <td className="md-quantity-cell" style={{ 
+                        fontWeight: '600',
+                        color: parseFloat(batch.quantity) < 0 ? '#ef4444' : parseFloat(batch.quantity) === 0 ? '#f59e0b' : '#10b981'
+                      }}>
+                        {batch.quantity || '0'}
+                      </td>
+                      <td>{getPrice(batch.prices, 'S1')}</td>
+                      <td>{getPrice(batch.prices, 'S2')}</td>
+                      <td>{getPrice(batch.prices, 'S3')}</td>
+                      <td>{getPrice(batch.prices, 'S4')}</td>
+                      <td>{getPrice(batch.prices, 'S5')}</td>
+                      <td style={{ fontWeight: '600' }}>{getPrice(batch.prices, 'MR')}</td>
+                      <td style={{ fontWeight: '600' }}>{getPrice(batch.prices, 'CO')}</td>
                       <td>{batch.expirydate || '-'}</td>
-                      <td>{batch.modified ? `${batch.modified} ${batch.modifiedtime || ''}`.trim() : '-'}</td>
+                      <td style={{ fontSize: '0.85em' }}>
+                        {batch.modified ? `${batch.modified} ${batch.modifiedtime || ''}`.trim() : '-'}
+                      </td>
                     </tr>
                   ))
                 ) : (
@@ -93,16 +108,6 @@ const BatchModal = ({ isOpen, onClose, product }) => {
               </tbody>
             </table>
           </div>
-
-          {/* Batch Summary */}
-          {product.batches && product.batches.length > 0 && (
-            <div className="md-batch-summary">
-              <div className="md-summary-item">
-                <span className="md-summary-label">Total Batches:</span>
-                <span className="md-summary-value">{product.batches.length}</span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

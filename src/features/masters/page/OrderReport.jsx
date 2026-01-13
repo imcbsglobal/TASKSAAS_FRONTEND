@@ -90,6 +90,7 @@ const OrderReport = () => {
         order.customer_code?.toLowerCase().includes(search) ||
         order.area?.toLowerCase().includes(search) ||
         order.username?.toLowerCase().includes(search) ||
+        order.remark?.toLowerCase().includes(search) ||
         order.items?.some(item => 
           item.product_name?.toLowerCase().includes(search)
         )
@@ -106,21 +107,11 @@ const OrderReport = () => {
 
   const filteredOrders = getFilteredOrders();
   
-  // Flatten orders FIRST to show each item as a row
-  const flattenedOrders = filteredOrders.flatMap(order =>
-    order.items.map((item, idx) => ({
-      ...order,
-      item,
-      isFirstItem: idx === 0,
-      itemCount: order.items.length,
-    }))
-  );
-
-  // NOW paginate the flattened orders
-  const totalFiltered = flattenedOrders.length;
+  // Paginate the filtered orders (ONE ROW PER ORDER)
+  const totalFiltered = filteredOrders.length;
   const startIndex = (page - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const paginatedOrders = flattenedOrders.slice(startIndex, endIndex);
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
   const totalPages = Math.ceil(totalFiltered / pageSize);
 
   const filteredAreas = areaSearchTerm.trim()
@@ -156,11 +147,9 @@ const OrderReport = () => {
     setIsAreaDropdownOpen(!isAreaDropdownOpen);
   };
 
-  // Open modal with order details - find all items with same order_id
+  // Open modal with order details
   const openDetailsModal = (order) => {
-    // Find the full order with all items
-    const fullOrder = orders.find(o => o.order_id === order.order_id);
-    setSelectedOrderDetails(fullOrder);
+    setSelectedOrderDetails(order);
     setIsModalOpen(true);
   };
 
@@ -270,7 +259,7 @@ const OrderReport = () => {
                       <input
                         id="or-search"
                         type="search"
-                        placeholder="Search by order no, customer, username, product or area..."
+                        placeholder="Search by order no, customer, username, product, area or remark..."
                         value={searchTerm}
                         onChange={(e) => {
                           setSearchTerm(e.target.value);
@@ -383,7 +372,7 @@ const OrderReport = () => {
               <div className="or-table-wrap" role="region" aria-label="Orders table">
                 <table className="or-orders-table" role="table" aria-describedby="or-desc">
                   <caption id="or-desc" style={{ display: "none" }}>
-                    Columns: serial no, order no, date & time, customer code, customer name, username, area, payment type, details button
+                    Columns: serial no, order no, date & time, customer code, customer name, username, area, payment type, remark, details button
                   </caption>
 
                   <thead>
@@ -396,6 +385,7 @@ const OrderReport = () => {
                       <th scope="col">Username</th>
                       <th scope="col">Area</th>
                       <th scope="col">Payment Type</th>
+                      <th scope="col">Remark</th>
                       <th scope="col">Details</th>
                     </tr>
                   </thead>
@@ -403,7 +393,7 @@ const OrderReport = () => {
                   <tbody>
                     {paginatedOrders.length > 0 ? (
                       paginatedOrders.map((order, index) => (
-                        <tr key={`${order.order_id}-${order.item.item_code}-${index}`}>
+                        <tr key={order.order_id}>
                           <td>{startIndex + index + 1}</td>
                           <td className="or-order-no">{order.order_id}</td>
                           <td>
@@ -422,6 +412,7 @@ const OrderReport = () => {
                           <td className="or-username">{order.username || "-"}</td>
                           <td className="or-area">{order.area || "-"}</td>
                           <td>{order.payment_type || "-"}</td>
+                          <td className="or-remark">{order.remark || "-"}</td>
                           <td className="or-details-cell">
                             <button 
                               className="or-details-btn"
@@ -436,7 +427,7 @@ const OrderReport = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="9" className="or-no-data">
+                        <td colSpan="10" className="or-no-data">
                           {searchTerm || selectedArea
                             ? "No orders found matching your filters."
                             : "No orders available."}
@@ -490,18 +481,18 @@ const OrderReport = () => {
             
             <div className="or-modal-body">
               {/* Order Info Section */}
-<div className="or-modal-info-section">
-  <div className="or-modal-info-grid">
-    <div className="or-modal-info-item">
-      <span className="or-modal-info-label">Order No:</span>
-      <span className="or-modal-info-value">{selectedOrderDetails.order_id}</span>
-    </div>
-    <div className="or-modal-info-item">
-      <span className="or-modal-info-label">Customer:</span>
-      <span className="or-modal-info-value">{selectedOrderDetails.customer_name}</span>
-    </div>
-  </div>
-</div>
+              <div className="or-modal-info-section">
+                <div className="or-modal-info-grid">
+                  <div className="or-modal-info-item">
+                    <span className="or-modal-info-label">Order No:</span>
+                    <span className="or-modal-info-value">{selectedOrderDetails.order_id}</span>
+                  </div>
+                  <div className="or-modal-info-item">
+                    <span className="or-modal-info-label">Customer:</span>
+                    <span className="or-modal-info-value">{selectedOrderDetails.customer_name}</span>
+                  </div>
+                </div>
+              </div>
 
               {/* Items Table */}
               <div className="or-modal-items-section">
