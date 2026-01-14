@@ -289,9 +289,8 @@ const Report = () => {
             const result = await response.json();
             
             if (result.success && Array.isArray(result.products)) {
-                const transformedData = result.products.map((product, index) => {
+                const transformedData = result.products.map((product) => {
                     return {
-                        no: index + 1,
                         code: product.code || 'N/A',
                         name: product.name || 'N/A',
                         product: product.product || 'N/A',
@@ -418,7 +417,11 @@ const Report = () => {
             return nameA.localeCompare(nameB);
         });
         
-        return result;
+        // Re-assign sequential numbers AFTER filtering and sorting
+        return result.map((item, index) => ({
+            ...item,
+            no: index + 1
+        }));
     }, [searchTerm, selectedBrand, selectedCategory, reportData]);
 
     const total = filteredData.length;
