@@ -36,12 +36,6 @@ const Debtors = () => {
     // Debounced search
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-    // Balance caching system
-    const [balanceCache, setBalanceCache] = useState({});
-    const [loadingBalances, setLoadingBalances] = useState(new Set());
-    const balanceCacheRef = useRef({});
-    const abortControllersRef = useRef({});
-
     // Virtualization states
     const [visibleRange, setVisibleRange] = useState({ start: 0, end: 20 });
     const dropdownListRef = useRef(null);
@@ -52,13 +46,6 @@ const Debtors = () => {
 
     useEffect(() => {
         fetchDebtorsData();
-        
-        // Cleanup on unmount
-        return () => {
-            Object.values(abortControllersRef.current).forEach(controller => {
-                controller.abort();
-            });
-        };
     }, []);
 
     // Get unique areas from all data
@@ -108,15 +95,7 @@ const Debtors = () => {
         const end = Math.min(filteredData.length, visibleEnd + overscan);
         
         setVisibleRange({ start, end });
-        
-        // Load balances only for visible items
-        for (let i = start; i < end; i++) {
-            const account = filteredData[i];
-            if (account && !balanceCacheRef.current[account.code] && !loadingBalances.has(account.code)) {
-                fetchBalance(account.code);
-            }
-        }
-    }, [filteredData, itemHeight, overscan, loadingBalances]);
+    }, [filteredData, itemHeight, overscan]);
 
     // Initial load when dropdown opens
     useEffect(() => {
@@ -124,96 +103,6 @@ const Debtors = () => {
             handleScroll();
         }
     }, [isOpen, filteredData, handleScroll]);
-
-    // Fetch balance for a specific account
-    const fetchBalance = useCallback(async (accountCode) => {
-        // Check cache first
-        if (balanceCacheRef.current[accountCode]) {
-            return balanceCacheRef.current[accountCode];
-        }
-
-        // Check if already loading
-        if (loadingBalances.has(accountCode)) {
-            return null;
-        }
-
-        try {
-            // Mark as loading
-            setLoadingBalances(prev => new Set(prev).add(accountCode));
-
-            // Create abort controller for this request
-            const controller = new AbortController();
-            abortControllersRef.current[accountCode] = controller;
-
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setLoadingBalances(prev => {
-                    const next = new Set(prev);
-                    next.delete(accountCode);
-                    return next;
-                });
-                return null;
-            }
-
-            const response = await axios.get(
-                `${API_BASE_URL}/get-ledger-details/?account_code=${accountCode}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    signal: controller.signal
-                }
-            );
-
-            if (response.data.success) {
-                const ledgerDetails = response.data.data || [];
-                
-                // Calculate totals from ledger
-                const totals = ledgerDetails.reduce(
-                    (acc, entry) => {
-                        acc.debit += parseFloat(entry.debit || 0);
-                        acc.credit += parseFloat(entry.credit || 0);
-                        return acc;
-                    },
-                    { debit: 0, credit: 0 }
-                );
-
-                // Get account info for opening balance
-                const account = allData.find(acc => acc.code === accountCode);
-                const openingBalance = parseFloat(account?.opening_balance || 0);
-                
-                // Calculate current balance
-                const currentBalance = openingBalance + totals.debit - totals.credit;
-
-                // Cache the result
-                const balanceData = {
-                    balance: currentBalance,
-                    debit: totals.debit,
-                    credit: totals.credit,
-                    opening: openingBalance
-                };
-
-                balanceCacheRef.current[accountCode] = balanceData;
-                setBalanceCache(prev => ({ ...prev, [accountCode]: balanceData }));
-
-                return balanceData;
-            }
-        } catch (err) {
-            if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
-                console.error(`Error fetching balance for ${accountCode}:`, err);
-            }
-        } finally {
-            setLoadingBalances(prev => {
-                const next = new Set(prev);
-                next.delete(accountCode);
-                return next;
-            });
-            delete abortControllersRef.current[accountCode];
-        }
-
-        return null;
-    }, [allData, loadingBalances]);
 
     // ----------------- API CALLS -----------------
 
@@ -271,11 +160,6 @@ const Debtors = () => {
         setSelectedAccount(account);
         setIsOpen(false);
         setSearchTerm('');
-        
-        // Fetch balance for selected account if not cached
-        if (!balanceCacheRef.current[account.code]) {
-            fetchBalance(account.code);
-        }
     };
 
     const handleShowLedger = account => {
@@ -306,19 +190,9 @@ const Debtors = () => {
         });
     };
 
-    const renderBalance = (accountCode) => {
-        const cached = balanceCache[accountCode];
-        const isLoading = loadingBalances.has(accountCode);
-
-        if (isLoading) {
-            return <span className="dbt-balance-loading">Loading...</span>;
-        }
-
-        if (!cached) {
-            return <span className="dbt-balance-placeholder">--</span>;
-        }
-
-        const balance = cached.balance;
+    const renderBalance = (account) => {
+        // Get balance directly from the account object (from API)
+        const balance = parseFloat(account?.balance ?? 0);
         
         return (
             <span className={`dbt-balance-amount ${balance >= 0 ? 'dbt-balance-positive' : 'dbt-balance-negative'}`}>
@@ -509,7 +383,7 @@ const Debtors = () => {
                                                                             )}
                                                                         </div>
                                                                         <div className="dbt-dropdown-item-balance">
-                                                                            {renderBalance(account.code)}
+                                                                            {renderBalance(account)}
                                                                         </div>
                                                                         <button
                                                                             className="dbt-show-btn"
@@ -582,7 +456,7 @@ const Debtors = () => {
                                                 <p>
                                                     <span className="label">Balance:</span>
                                                     <span className="value">
-                                                        {renderBalance(selectedAccount.code)}
+                                                        {renderBalance(selectedAccount)}
                                                     </span>
                                                 </p>
                                             </div>

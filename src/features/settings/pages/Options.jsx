@@ -8,7 +8,7 @@ const Options = () => {
   const [clientId, setClientId] = useState("");
 
   const [orderRateEditable, setOrderRateEditable] = useState(false);
-  const [readPriceCategory, setReadPriceCategory] = useState(false); // ✅ FIX
+  const [readPriceCategory, setReadPriceCategory] = useState(false);
 
   const [priceCodes, setPriceCodes] = useState([]);
   const [defaultPriceCode, setDefaultPriceCode] = useState("");
@@ -16,6 +16,9 @@ const Options = () => {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [protectedPrices, setProtectedPrices] = useState({});
+
+  // ✅ NEW: Remote Punch-In Permission State
+  const [remotePunchInUsers, setRemotePunchInUsers] = useState([]);
 
   useEffect(() => {
     getSettingsOptions()
@@ -29,6 +32,9 @@ const Options = () => {
 
         setDefaultPriceCode(data.default_price_code || "");
         setProtectedPrices(data.protected_price_users || {});
+        
+        // ✅ NEW: Load remote punch-in users from backend
+        setRemotePunchInUsers(data.remote_punchin_users || []);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -45,12 +51,22 @@ const Options = () => {
     });
   };
 
+  // ✅ NEW: Toggle remote punch-in permission for a user
+  const toggleRemotePunchIn = (userId) => {
+    setRemotePunchInUsers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
   const handleSave = async () => {
     await saveSettingsOptions({
       order_rate_editable: orderRateEditable,
       read_price_category: readPriceCategory,
       default_price_code: defaultPriceCode,
       protected_price_users: protectedPrices,
+      remote_punchin_users: remotePunchInUsers, // ✅ NEW: Send to backend
     });
 
     alert("Settings saved successfully");
@@ -176,6 +192,39 @@ const Options = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* ✅ 5️⃣ NEW: Remote Punch-In Permission */}
+        <div className="option-card">
+          <h3>5. Allow Remote Punch-In</h3>
+          <p style={{ fontSize: '14px', color: '#666', marginBottom: '15px' }}>
+            Users with this permission can punch in from anywhere, without the 100-meter location restriction.
+          </p>
+
+          <div className="checkbox-list">
+            {users.map((u) => (
+              <label key={u.id}>
+                <input
+                  type="checkbox"
+                  checked={remotePunchInUsers.includes(u.id)}
+                  onChange={() => toggleRemotePunchIn(u.id)}
+                />
+                {u.username} {u.role ? `(${u.role})` : ""}
+              </label>
+            ))}
+          </div>
+
+          {remotePunchInUsers.length > 0 && (
+            <div style={{ 
+              marginTop: '15px', 
+              padding: '10px', 
+              backgroundColor: '#e8f5e9', 
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}>
+              <strong>✓ {remotePunchInUsers.length} user(s)</strong> can now punch in remotely
+            </div>
+          )}
         </div>
 
         <button className="save-btn" onClick={handleSave}>

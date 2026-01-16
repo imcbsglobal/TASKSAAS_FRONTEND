@@ -162,16 +162,21 @@ const LedgerPage = () => {
     const totalDebit = accountData?.master_debit || allLedgerTotals.debit;
     const totalCredit = accountData?.master_credit || allLedgerTotals.credit;
 
+    // Get current balance directly from API - use the balance field from accountData or accountInfo
+    const currentBalance = parseFloat(
+        accountData?.balance ?? 
+        accountInfo?.balance ?? 
+        0
+    );
+
     console.log('Summary values:', {
         openingBalance,
         totalDebit,
         totalCredit,
-        fromAccountData: !!accountData?.master_debit,
-        fromCalculation: !accountData?.master_debit
+        currentBalance,
+        fromAccountData: !!accountData,
+        fromAccountInfo: !!accountInfo
     });
-
-    // FIXED: Current balance = opening + debit - credit (simple debit-credit logic)
-    const currentBalance = openingBalance + totalDebit - totalCredit;
 
     // Calculate running balance for each row
     const calculateRunningBalances = (entries) => {
@@ -180,7 +185,7 @@ const LedgerPage = () => {
         return entries.map((entry) => {
             const debit = parseFloat(entry.debit || 0);
             const credit = parseFloat(entry.credit || 0);
-            // FIXED: Balance = previous balance + debit - credit
+            // Balance = previous balance + debit - credit
             runningBalance = runningBalance + debit - credit;
             
             return {
@@ -203,7 +208,7 @@ const LedgerPage = () => {
         { debit: 0, credit: 0 }
     );
 
-    // FIXED: Final balance = opening + filtered debit - filtered credit
+    // Final balance = opening + filtered debit - filtered credit
     const finalBalance = openingBalance + filteredTotals.debit - filteredTotals.credit;
 
     return (
@@ -233,74 +238,79 @@ const LedgerPage = () => {
                         </div>
                     </header>
 
-                    {/* Date Filter */}
-                    <div className="ldg-date-filter">
-                        <div className="ldg-filter-title">
-                            📅 Filter by Date Range
-                        </div>
-                        <div className="ldg-filter-controls">
-                            <div className="ldg-filter-group">
-                                <label htmlFor="fromDate" className="ldg-filter-label">From Date</label>
-                                <input
-                                    type="date"
-                                    id="fromDate"
-                                    className="ldg-date-input"
-                                    value={fromDate}
-                                    onChange={(e) => setFromDate(e.target.value)}
-                                />
-                            </div>
-                            <div className="ldg-filter-group">
-                                <label htmlFor="toDate" className="ldg-filter-label">To Date</label>
-                                <input
-                                    type="date"
-                                    id="toDate"
-                                    className="ldg-date-input"
-                                    value={toDate}
-                                    onChange={(e) => setToDate(e.target.value)}
-                                />
-                            </div>
-                            <button 
-                                className="ldg-clear-filter-btn"
-                                onClick={handleClearFilter}
-                                disabled={!fromDate && !toDate}
-                            >
-                                Clear Filter
-                            </button>
-                        </div>
-                        {(fromDate || toDate) && (
-                            <div className="ldg-filter-info">
-                                Showing {filteredLedgerDetails.length} of {ledgerDetails.length} entries
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Account Summary - Always show if we have data */}
+                    {/* Filter and Summary in One Line */}
                     {ledgerDetails.length > 0 && (
-                        <div className="ldg-summary-cards">
-                            <div className="ldg-summary-card">
-                                <div className="ldg-summary-label">Opening Balance</div>
-                                <div className={`ldg-summary-value ${openingBalance < 0 ? 'negative' : ''}`}>
-                                    {formatCurrency(openingBalance)}
+                        <div className="ldg-filter-summary-row">
+                            {/* Date Filter */}
+                            <div className="ldg-date-filter">
+                                <div className="ldg-filter-title">
+                                    📅 Filter by Date Range
+                                </div>
+                                <div className="ldg-filter-controls">
+                                    <div className="ldg-filter-group">
+                                        <label htmlFor="fromDate" className="ldg-filter-label">From Date</label>
+                                        <input
+                                            type="date"
+                                            id="fromDate"
+                                            className="ldg-date-input"
+                                            value={fromDate}
+                                            onChange={(e) => setFromDate(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="ldg-filter-group">
+                                        <label htmlFor="toDate" className="ldg-filter-label">To Date</label>
+                                        <input
+                                            type="date"
+                                            id="toDate"
+                                            className="ldg-date-input"
+                                            value={toDate}
+                                            onChange={(e) => setToDate(e.target.value)}
+                                        />
+                                    </div>
+                                    <button 
+                                        className="ldg-clear-filter-btn"
+                                        onClick={handleClearFilter}
+                                        disabled={!fromDate && !toDate}
+                                    >
+                                        Clear Filter
+                                    </button>
                                 </div>
                             </div>
-                            <div className="ldg-summary-card ldg-summary-debit">
-                                <div className="ldg-summary-label">Total Debit</div>
-                                <div className="ldg-summary-value">
-                                    {formatCurrency(totalDebit)}
+
+                            {/* Account Summary Cards */}
+                            <div className="ldg-summary-cards">
+                                <div className="ldg-summary-card">
+                                    <div className="ldg-summary-label">Opening Balance</div>
+                                    <div className={`ldg-summary-value ${openingBalance < 0 ? 'negative' : ''}`}>
+                                        {formatCurrency(openingBalance)}
+                                    </div>
+                                </div>
+                                <div className="ldg-summary-card ldg-summary-debit">
+                                    <div className="ldg-summary-label">Total Debit</div>
+                                    <div className="ldg-summary-value">
+                                        {formatCurrency(totalDebit)}
+                                    </div>
+                                </div>
+                                <div className="ldg-summary-card ldg-summary-credit">
+                                    <div className="ldg-summary-label">Total Credit</div>
+                                    <div className="ldg-summary-value">
+                                        {formatCurrency(totalCredit)}
+                                    </div>
+                                </div>
+                                <div className="ldg-summary-card ldg-summary-balance">
+                                    <div className="ldg-summary-label">Current Balance</div>
+                                    <div className={`ldg-summary-value ${currentBalance < 0 ? 'negative' : ''}`}>
+                                        {formatCurrency(currentBalance)}
+                                    </div>
                                 </div>
                             </div>
-                            <div className="ldg-summary-card ldg-summary-credit">
-                                <div className="ldg-summary-label">Total Credit</div>
-                                <div className="ldg-summary-value">
-                                    {formatCurrency(totalCredit)}
-                                </div>
-                            </div>
-                            <div className="ldg-summary-card ldg-summary-balance">
-                                <div className="ldg-summary-label">Current Balance</div>
-                                <div className={`ldg-summary-value ${currentBalance < 0 ? 'negative' : ''}`}>
-                                    {formatCurrency(currentBalance)}
-                                </div>
-                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Filter Info */}
+                    {(fromDate || toDate) && (
+                        <div className="ldg-filter-info">
+                            Showing {filteredLedgerDetails.length} of {ledgerDetails.length} entries
                         </div>
                     )}
 
@@ -333,92 +343,84 @@ const LedgerPage = () => {
                                     </p>
                                 </div>
                             ) : (
-                                <>
-                                    <div className="ldg-table-info">
-                                        <span className="ldg-entries-count">
-                                            Total Entries: <strong>{filteredLedgerDetails.length}</strong>
-                                        </span>
-                                    </div>
-
-                                    <div className="ldg-table-wrap">
-                                        <table className="ldg-ledger-table">
-                                            <thead>
-                                                <tr>
-                                                    <th className="ldg-col-no">No</th>
-                                                    <th className="ldg-col-date">Date</th>
-                                                    <th className="ldg-col-particulars">Particulars</th>
-                                                    <th className="ldg-col-mode">Mode</th>
-                                                    <th className="ldg-col-voucher">Voucher No</th>
-                                                    <th className="ldg-col-amount">Debit</th>
-                                                    <th className="ldg-col-amount">Credit</th>
-                                                    <th className="ldg-col-amount">Balance</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {entriesWithBalance.map((entry, index) => (
-                                                    <tr key={index}>
-                                                        <td data-label="No" className="ldg-col-no">{index + 1}</td>
-                                                        <td data-label="Date" className="ldg-col-date">
-                                                            {formatDate(entry.entry_date)}
-                                                        </td>
-                                                        <td data-label="Particulars" className="ldg-col-particulars">
-                                                            <div className="ldg-particulars-main">
-                                                                {entry.particulars || 'N/A'}
+                                <div className="ldg-table-wrap">
+                                    <table className="ldg-ledger-table">
+                                        <thead>
+                                            <tr>
+                                                <th className="ldg-col-no">No</th>
+                                                <th className="ldg-col-date">Date</th>
+                                                <th className="ldg-col-particulars">Particulars</th>
+                                                <th className="ldg-col-mode">Mode</th>
+                                                <th className="ldg-col-voucher">Voucher No</th>
+                                                <th className="ldg-col-amount">Debit</th>
+                                                <th className="ldg-col-amount">Credit</th>
+                                                <th className="ldg-col-amount">Balance</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {entriesWithBalance.map((entry, index) => (
+                                                <tr key={index}>
+                                                    <td data-label="No" className="ldg-col-no">{index + 1}</td>
+                                                    <td data-label="Date" className="ldg-col-date">
+                                                        {formatDate(entry.entry_date)}
+                                                    </td>
+                                                    <td data-label="Particulars" className="ldg-col-particulars">
+                                                        <div className="ldg-particulars-main">
+                                                            {entry.particulars || 'N/A'}
+                                                        </div>
+                                                        {entry.narration && (
+                                                            <div className="ldg-narration-text">
+                                                                {entry.narration}
                                                             </div>
-                                                            {entry.narration && (
-                                                                <div className="ldg-narration-text">
-                                                                    {entry.narration}
-                                                                </div>
-                                                            )}
-                                                        </td>
-                                                        <td data-label="Mode" className="ldg-col-mode">
-                                                            <span className={`ldg-mode-badge ldg-mode-${(entry.entry_mode || '').toLowerCase()}`}>
-                                                                {entry.entry_mode || 'N/A'}
-                                                            </span>
-                                                        </td>
-                                                        <td data-label="Voucher" className="ldg-col-voucher">
-                                                            {entry.voucher_no || 'N/A'}
-                                                        </td>
-                                                        <td data-label="Debit" className="ldg-col-amount ldg-amount-debit">
-                                                            {entry.debit && parseFloat(entry.debit) !== 0
-                                                                ? formatCurrency(entry.debit)
-                                                                : '-'}
-                                                        </td>
-                                                        <td data-label="Credit" className="ldg-col-amount ldg-amount-credit">
-                                                            {entry.credit && parseFloat(entry.credit) !== 0
-                                                                ? formatCurrency(entry.credit)
-                                                                : '-'}
-                                                        </td>
-                                                        <td
-                                                            data-label="Balance"
-                                                            className={`ldg-col-amount ldg-balance ${
-                                                                entry.runningBalance < 0 ? 'negative' : ''
-                                                            }`}
-                                                        >
-                                                            {formatCurrency(entry.runningBalance)}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                            <tfoot>
-                                                <tr className="ldg-totals-row">
-                                                    <td colSpan="5" className="ldg-totals-label">Total</td>
-                                                    <td className="ldg-col-amount ldg-amount-debit ldg-total">
-                                                        {formatCurrency(filteredTotals.debit)}
+                                                        )}
                                                     </td>
-                                                    <td className="ldg-col-amount ldg-amount-credit ldg-total">
-                                                        {formatCurrency(filteredTotals.credit)}
+                                                    <td data-label="Mode" className="ldg-col-mode">
+                                                        <span className={`ldg-mode-badge ldg-mode-${(entry.entry_mode || '').toLowerCase()}`}>
+                                                            {entry.entry_mode || 'N/A'}
+                                                        </span>
                                                     </td>
-                                                    <td className={`ldg-col-amount ldg-total ${
-                                                        finalBalance < 0 ? 'negative' : 'positive'
-                                                    }`}>
-                                                        {formatCurrency(finalBalance)}
+                                                    <td data-label="Voucher" className="ldg-col-voucher">
+                                                        {entry.voucher_no || 'N/A'}
+                                                    </td>
+                                                    <td data-label="Debit" className="ldg-col-amount ldg-amount-debit">
+                                                        {entry.debit && parseFloat(entry.debit) !== 0
+                                                            ? formatCurrency(entry.debit)
+                                                            : '-'}
+                                                    </td>
+                                                    <td data-label="Credit" className="ldg-col-amount ldg-amount-credit">
+                                                        {entry.credit && parseFloat(entry.credit) !== 0
+                                                            ? formatCurrency(entry.credit)
+                                                            : '-'}
+                                                    </td>
+                                                    <td
+                                                        data-label="Balance"
+                                                        className={`ldg-col-amount ldg-balance ${
+                                                            entry.runningBalance < 0 ? 'negative' : ''
+                                                        }`}
+                                                    >
+                                                        {formatCurrency(entry.runningBalance)}
                                                     </td>
                                                 </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-                                </>
+                                            ))}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr className="ldg-totals-row">
+                                                <td colSpan="5" className="ldg-totals-label">Total</td>
+                                                <td className="ldg-col-amount ldg-amount-debit ldg-total">
+                                                    {formatCurrency(filteredTotals.debit)}
+                                                </td>
+                                                <td className="ldg-col-amount ldg-amount-credit ldg-total">
+                                                    {formatCurrency(filteredTotals.credit)}
+                                                </td>
+                                                <td className={`ldg-col-amount ldg-total ${
+                                                    finalBalance < 0 ? 'negative' : 'positive'
+                                                }`}>
+                                                    {formatCurrency(finalBalance)}
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
                             )}
                         </>
                     )}

@@ -916,21 +916,35 @@
   text-align: left;
   font-size: 12px;
   font-weight: 700;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.5px;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.or-modal-items-table thead th:last-child {
-  border-right: none;
+/* Center align ALL columns */
+/* Center align header columns (except Price and Amount which stay right-aligned) */
+.or-modal-items-table thead th {
+  text-align: center;
 }
 
+/* Price and Amount headers aligned right to match their data */
+.or-modal-items-table thead th:nth-child(5),
+.or-modal-items-table thead th:nth-child(7) {
+  text-align: right;
+}
 .or-modal-items-table tbody td {
   padding: 14px 16px;
   border-bottom: 1px solid #e5e7eb;
   background: white;
   color: #334155;
   font-weight: 500;
+  text-align: center; /* Center align all body cells by default */
+}
+
+/* Keep Price and Amount right-aligned */
+.or-modal-items-table tbody td:nth-child(5),
+.or-modal-items-table tbody td:nth-child(7) {
+  text-align: right;
 }
 
 .or-modal-items-table tbody tr:hover td {
@@ -1029,27 +1043,13 @@
   color: white;
 }
 
-.or-modal-items-table thead th {
-  padding: 14px 16px;
-  text-align: left;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
-}
+
 
 .or-modal-items-table thead th:last-child {
   border-right: none;
 }
 
-.or-modal-items-table tbody td {
-  padding: 14px 16px;
-  border-bottom: 1px solid #e5e7eb;
-  background: white;
-  color: #334155;
-  font-weight: 500;
-}
+
 
 .or-modal-items-table tbody tr:hover td {
   background: rgba(59, 130, 246, 0.06);

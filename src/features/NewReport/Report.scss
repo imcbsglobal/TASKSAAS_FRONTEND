@@ -146,37 +146,38 @@
 .md-filter-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px;
+  gap: 0;
+  padding: 20px 24px;
   background: linear-gradient(135deg, rgba(30, 58, 138, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%);
   border-radius: 12px;
   border: 1px solid rgba(59, 130, 246, 0.08);
 }
 
-/* FILTER ROW */
+/* FILTER ROW - Now contains everything in one row with equal gaps */
 .md-filter-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: flex-end;
-  gap: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .md-filter-left {
   display: flex;
   align-items: flex-end;
   gap: 16px;
-  flex-wrap: wrap;
-  flex: 1;
+  flex-wrap: nowrap;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
-/* SECONDARY ROW */
+/* SECONDARY ROW - Now inline with filters */
 .md-secondary-row {
   display: flex;
   align-items: flex-end;
   gap: 16px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(59, 130, 246, 0.1);
-  justify-content: flex-end;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .md-filter-item {
@@ -186,18 +187,19 @@
 
 .md-filter-item label {
   display: block;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #64748b;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 /* Search Box */
 .md-search-wrap {
   position: relative;
-  width: 400px;
-  min-width: 240px;
+  width: 220px;
+  min-width: 200px;
 }
 
 .md-search-icon {
@@ -443,7 +445,7 @@
 /* View Selector Inline */
 .md-view-selector-inline {
   width: auto;
-  min-width: 150px;
+  min-width: 120px;
 }
 
 .md-view-selector-inline select {
@@ -469,7 +471,7 @@
 /* Rows Selector Inline */
 .md-rows-selector-inline {
   width: auto;
-  min-width: 120px;
+  min-width: 100px;
 }
 
 .md-rows-selector-inline select {
@@ -506,7 +508,6 @@
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
   white-space: nowrap;
-  margin-left: auto;
 }
 
 .md-clear-filters-btn:hover {

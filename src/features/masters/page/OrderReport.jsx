@@ -372,7 +372,7 @@ const OrderReport = () => {
               <div className="or-table-wrap" role="region" aria-label="Orders table">
                 <table className="or-orders-table" role="table" aria-describedby="or-desc">
                   <caption id="or-desc" style={{ display: "none" }}>
-                    Columns: serial no, order no, date & time, customer code, customer name, username, area, payment type, remark, details button
+                    Columns: serial no, order no with view button, date & time, customer code, customer name, username, area, payment type, remark
                   </caption>
 
                   <thead>
@@ -386,7 +386,6 @@ const OrderReport = () => {
                       <th scope="col">Area</th>
                       <th scope="col">Payment Type</th>
                       <th scope="col">Remark</th>
-                      <th scope="col">Details</th>
                     </tr>
                   </thead>
 
@@ -395,7 +394,26 @@ const OrderReport = () => {
                       paginatedOrders.map((order, index) => (
                         <tr key={order.order_id}>
                           <td>{startIndex + index + 1}</td>
-                          <td className="or-order-no">{order.order_id}</td>
+                          <td className="or-order-no">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
+                              <span>{order.order_id}</span>
+                              <button 
+                                className="or-details-btn"
+                                onClick={() => openDetailsModal(order)}
+                                aria-label="View details"
+                                style={{ 
+                                  padding: '4px 10px',
+                                  fontSize: '0.85em',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                              >
+                                <span className="or-details-icon">👁️</span>
+                                View
+                              </button>
+                            </div>
+                          </td>
                           <td>
                             {formatDate(order.created_date)}
                             {order.created_time && (
@@ -413,21 +431,11 @@ const OrderReport = () => {
                           <td className="or-area">{order.area || "-"}</td>
                           <td>{order.payment_type || "-"}</td>
                           <td className="or-remark">{order.remark || "-"}</td>
-                          <td className="or-details-cell">
-                            <button 
-                              className="or-details-btn"
-                              onClick={() => openDetailsModal(order)}
-                              aria-label="View details"
-                            >
-                              <span className="or-details-icon">👁️</span>
-                              View
-                            </button>
-                          </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="10" className="or-no-data">
+                        <td colSpan="9" className="or-no-data">
                           {searchTerm || selectedArea
                             ? "No orders found matching your filters."
                             : "No orders available."}

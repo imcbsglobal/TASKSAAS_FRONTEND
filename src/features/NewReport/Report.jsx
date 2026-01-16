@@ -61,15 +61,15 @@ const BatchModal = ({ isOpen, onClose, product }) => {
             <table className="md-batches-table">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>No</th>
                   <th>Barcode</th>
                   <th>Quantity</th>
+                  <th>MRP</th>
                   <th>Sales (S1)</th>
                   <th>Card (S2)</th>
                   <th>S3</th>
                   <th>S4</th>
                   <th>S5</th>
-                  <th>MRP</th>
                   <th>Cost</th>
                   <th>Expiry</th>
                   <th>Modified</th>
@@ -87,12 +87,12 @@ const BatchModal = ({ isOpen, onClose, product }) => {
                       }}>
                         {batch.quantity || '0'}
                       </td>
+                      <td style={{ fontWeight: '600' }}>{getPrice(batch.prices, 'MR')}</td>
                       <td>{getPrice(batch.prices, 'S1')}</td>
                       <td>{getPrice(batch.prices, 'S2')}</td>
                       <td>{getPrice(batch.prices, 'S3')}</td>
                       <td>{getPrice(batch.prices, 'S4')}</td>
                       <td>{getPrice(batch.prices, 'S5')}</td>
-                      <td style={{ fontWeight: '600' }}>{getPrice(batch.prices, 'MR')}</td>
                       <td style={{ fontWeight: '600' }}>{getPrice(batch.prices, 'CO')}</td>
                       <td>{batch.expirydate || '-'}</td>
                       <td style={{ fontSize: '0.85em' }}>
@@ -498,6 +498,7 @@ const Report = () => {
                             
                             <div className="md-filter-container">
                                 <div className="md-filter-row">
+                                    {/* LEFT SIDE: Search + Filters */}
                                     <div className="md-filter-left">
                                         <div className="md-filter-item md-filter-search compact">
                                             <label htmlFor="md-search">Search</label>
@@ -642,49 +643,50 @@ const Report = () => {
                                         </div>
                                     </div>
 
-                                    {hasActiveFilters && (
-                                        <button
-                                            type="button"
-                                            className="md-clear-filters-btn"
-                                            onClick={clearAllFilters}
-                                        >
-                                            Clear All Filters
-                                        </button>
-                                    )}
-                                </div>
-
-                                <div className="md-secondary-row">
-                                    <div className="md-filter-item">
-                                        <label htmlFor="view-select">View</label>
-                                        <div className="md-view-selector-inline">
-                                            <select
-                                                id="view-select"
-                                                value={viewMode}
-                                                onChange={(e) => setViewMode(e.target.value)}
-                                            >
-                                                <option value="table">📋 Table</option>
-                                                <option value="grid">🎴 Grid</option>
-                                            </select>
+                                    {/* RIGHT SIDE: View + Rows + Clear Button */}
+                                    <div className="md-secondary-row">
+                                        <div className="md-filter-item">
+                                            <label htmlFor="view-select">View</label>
+                                            <div className="md-view-selector-inline">
+                                                <select
+                                                    id="view-select"
+                                                    value={viewMode}
+                                                    onChange={(e) => setViewMode(e.target.value)}
+                                                >
+                                                    <option value="table">📋 Table</option>
+                                                    <option value="grid">🎴 Grid</option>
+                                                </select>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="md-filter-item">
-                                        <label htmlFor="rows-select">Rows</label>
-                                        <div className="md-rows-selector-inline">
-                                            <select
-                                                id="rows-select"
-                                                value={rowsPerPage}
-                                                onChange={(e) => {
-                                                    setRowsPerPage(Number(e.target.value));
-                                                    setPage(1);
-                                                }}
-                                            >
-                                                <option value={10}>10</option>
-                                                <option value={20}>20</option>
-                                                <option value={50}>50</option>
-                                                <option value={100}>100</option>
-                                            </select>
+                                        <div className="md-filter-item">
+                                            <label htmlFor="rows-select">Rows</label>
+                                            <div className="md-rows-selector-inline">
+                                                <select
+                                                    id="rows-select"
+                                                    value={rowsPerPage}
+                                                    onChange={(e) => {
+                                                        setRowsPerPage(Number(e.target.value));
+                                                        setPage(1);
+                                                    }}
+                                                >
+                                                    <option value={10}>10</option>
+                                                    <option value={20}>20</option>
+                                                    <option value={50}>50</option>
+                                                    <option value={100}>100</option>
+                                                </select>
+                                            </div>
                                         </div>
+
+                                        {hasActiveFilters && (
+                                            <button
+                                                type="button"
+                                                className="md-clear-filters-btn"
+                                                onClick={clearAllFilters}
+                                            >
+                                                Clear All Filters
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -741,6 +743,3 @@ const Report = () => {
 };
 
 export default Report;
-
-
-// j
