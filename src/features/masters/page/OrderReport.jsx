@@ -508,7 +508,7 @@ const OrderReport = () => {
             </div>
             
             <div className="or-modal-body">
-              {/* Order Info Section */}
+              {/* Order Info Section - Only Order No and Customer Name */}
               <div className="or-modal-info-section">
                 <div className="or-modal-info-grid">
                   <div className="or-modal-info-item">
@@ -518,32 +518,6 @@ const OrderReport = () => {
                   <div className="or-modal-info-item">
                     <span className="or-modal-info-label">Customer:</span>
                     <span className="or-modal-info-value">{selectedOrderDetails.customer_name}</span>
-                  </div>
-                  <div className="or-modal-info-item">
-                    <span className="or-modal-info-label">Customer Code:</span>
-                    <span className="or-modal-info-value">{selectedOrderDetails.customer_code || "-"}</span>
-                  </div>
-                  <div className="or-modal-info-item">
-                    <span className="or-modal-info-label">Status:</span>
-                    <span className={getStatusBadgeClass(selectedOrderDetails.status)}>
-                      {selectedOrderDetails.status || "-"}
-                    </span>
-                  </div>
-                  <div className="or-modal-info-item">
-                    <span className="or-modal-info-label">Payment Type:</span>
-                    <span className="or-modal-info-value">{selectedOrderDetails.payment_type || "-"}</span>
-                  </div>
-                  <div className="or-modal-info-item">
-                    <span className="or-modal-info-label">Area:</span>
-                    <span className="or-modal-info-value">{selectedOrderDetails.area || "-"}</span>
-                  </div>
-                  <div className="or-modal-info-item">
-                    <span className="or-modal-info-label">Username:</span>
-                    <span className="or-modal-info-value">{selectedOrderDetails.username || "-"}</span>
-                  </div>
-                  <div className="or-modal-info-item">
-                    <span className="or-modal-info-label">Remark:</span>
-                    <span className="or-modal-info-value">{selectedOrderDetails.remark || "-"}</span>
                   </div>
                 </div>
               </div>
