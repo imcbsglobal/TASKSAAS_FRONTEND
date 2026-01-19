@@ -36,7 +36,7 @@ const OrderReport = () => {
         headers["Authorization"] = `Bearer ${token}`;
       }
       
-      const response = await fetch("https://tasksas.com/api/item-orders/list", {
+      const response = await fetch("https://tasksas.com/api/item-orders/list-all", {
         method: "GET",
         headers: headers,
       });
@@ -91,6 +91,7 @@ const OrderReport = () => {
         order.area?.toLowerCase().includes(search) ||
         order.username?.toLowerCase().includes(search) ||
         order.remark?.toLowerCase().includes(search) ||
+        order.status?.toLowerCase().includes(search) ||
         order.items?.some(item => 
           item.product_name?.toLowerCase().includes(search)
         )
@@ -177,6 +178,15 @@ const OrderReport = () => {
     }).format(amount || 0);
   };
 
+  const getStatusBadgeClass = (status) => {
+    if (!status) return 'or-status-badge';
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('completed')) return 'or-status-badge or-status-completed';
+    if (statusLower.includes('uploaded')) return 'or-status-badge or-status-uploaded';
+    if (statusLower.includes('pending')) return 'or-status-badge or-status-pending';
+    return 'or-status-badge';
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -259,7 +269,7 @@ const OrderReport = () => {
                       <input
                         id="or-search"
                         type="search"
-                        placeholder="Search by order no, customer, username, product, area or remark..."
+                        placeholder="Search by order no, customer, username, product, area, status or remark..."
                         value={searchTerm}
                         onChange={(e) => {
                           setSearchTerm(e.target.value);
@@ -372,7 +382,7 @@ const OrderReport = () => {
               <div className="or-table-wrap" role="region" aria-label="Orders table">
                 <table className="or-orders-table" role="table" aria-describedby="or-desc">
                   <caption id="or-desc" style={{ display: "none" }}>
-                    Columns: serial no, order no with view button, date & time, customer code, customer name, username, area, payment type, remark
+                    Columns: serial no, order no with view button, date & time, customer code, customer name, username, area, payment type, status, remark
                   </caption>
 
                   <thead>
@@ -385,6 +395,7 @@ const OrderReport = () => {
                       <th scope="col">Username</th>
                       <th scope="col">Area</th>
                       <th scope="col">Payment Type</th>
+                      <th scope="col">Status</th>
                       <th scope="col">Remark</th>
                     </tr>
                   </thead>
@@ -430,12 +441,21 @@ const OrderReport = () => {
                           <td className="or-username">{order.username || "-"}</td>
                           <td className="or-area">{order.area || "-"}</td>
                           <td>{order.payment_type || "-"}</td>
+                          <td>
+                            {order.status ? (
+                              <span className={getStatusBadgeClass(order.status)}>
+                                {order.status}
+                              </span>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
                           <td className="or-remark">{order.remark || "-"}</td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="9" className="or-no-data">
+                        <td colSpan="10" className="or-no-data">
                           {searchTerm || selectedArea
                             ? "No orders found matching your filters."
                             : "No orders available."}
@@ -499,6 +519,32 @@ const OrderReport = () => {
                     <span className="or-modal-info-label">Customer:</span>
                     <span className="or-modal-info-value">{selectedOrderDetails.customer_name}</span>
                   </div>
+                  <div className="or-modal-info-item">
+                    <span className="or-modal-info-label">Customer Code:</span>
+                    <span className="or-modal-info-value">{selectedOrderDetails.customer_code || "-"}</span>
+                  </div>
+                  <div className="or-modal-info-item">
+                    <span className="or-modal-info-label">Status:</span>
+                    <span className={getStatusBadgeClass(selectedOrderDetails.status)}>
+                      {selectedOrderDetails.status || "-"}
+                    </span>
+                  </div>
+                  <div className="or-modal-info-item">
+                    <span className="or-modal-info-label">Payment Type:</span>
+                    <span className="or-modal-info-value">{selectedOrderDetails.payment_type || "-"}</span>
+                  </div>
+                  <div className="or-modal-info-item">
+                    <span className="or-modal-info-label">Area:</span>
+                    <span className="or-modal-info-value">{selectedOrderDetails.area || "-"}</span>
+                  </div>
+                  <div className="or-modal-info-item">
+                    <span className="or-modal-info-label">Username:</span>
+                    <span className="or-modal-info-value">{selectedOrderDetails.username || "-"}</span>
+                  </div>
+                  <div className="or-modal-info-item">
+                    <span className="or-modal-info-label">Remark:</span>
+                    <span className="or-modal-info-value">{selectedOrderDetails.remark || "-"}</span>
+                  </div>
                 </div>
               </div>
 
@@ -549,6 +595,38 @@ const OrderReport = () => {
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        .or-status-badge {
+          display: inline-block;
+          padding: 4px 10px;
+          border-radius: 12px;
+          font-size: 0.85em;
+          font-weight: 500;
+          text-transform: capitalize;
+          background-color: #e2e8f0;
+          color: #475569;
+        }
+
+        .or-status-completed {
+          background-color: #dcfce7;
+          color: #166534;
+        }
+
+        .or-status-uploaded {
+          background-color: #dbeafe;
+          color: #1e40af;
+        }
+
+        .or-status-pending {
+          background-color: #fef3c7;
+          color: #92400e;
+        }
+
+        .text-center {
+          text-align: center;
+        }
+      `}</style>
     </div>
   );
 };
