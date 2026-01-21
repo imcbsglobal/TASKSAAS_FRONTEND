@@ -303,6 +303,25 @@ const CollectionReport = () => {
                                                 ))}
                                             </select>
                                         </div>
+
+                                        <div className="cr-filter-item">
+                                            <label htmlFor="rows-select">Rows per page</label>
+                                            <div className="cr-rows-selector-inline">
+                                                <select
+                                                    id="rows-select"
+                                                    value={rowsPerPage}
+                                                    onChange={(e) => {
+                                                        setRowsPerPage(Number(e.target.value));
+                                                        setPage(1);
+                                                    }}
+                                                >
+                                                    <option value={10}>10</option>
+                                                    <option value={20}>20</option>
+                                                    <option value={50}>50</option>
+                                                    <option value={100}>100</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {hasActiveFilters && (
@@ -314,27 +333,6 @@ const CollectionReport = () => {
                                             Clear All Filters
                                         </button>
                                     )}
-                                </div>
-
-                                <div className="cr-secondary-row">
-                                    <div className="cr-filter-item">
-                                        <label htmlFor="rows-select">Rows per page</label>
-                                        <div className="cr-rows-selector-inline">
-                                            <select
-                                                id="rows-select"
-                                                value={rowsPerPage}
-                                                onChange={(e) => {
-                                                    setRowsPerPage(Number(e.target.value));
-                                                    setPage(1);
-                                                }}
-                                            >
-                                                <option value={10}>10</option>
-                                                <option value={20}>20</option>
-                                                <option value={50}>50</option>
-                                                <option value={100}>100</option>
-                                            </select>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
 

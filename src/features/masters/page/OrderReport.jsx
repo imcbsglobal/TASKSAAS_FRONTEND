@@ -4,8 +4,9 @@ import "./OrderReport.scss";
 const OrderReport = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArea, setSelectedArea] = useState("");
-  const [areaSearchTerm, setAreaSearchTerm] = useState("");
-  const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
   
@@ -19,6 +20,7 @@ const OrderReport = () => {
   const [error, setError] = useState(null);
   const [totalOrders, setTotalOrders] = useState(0);
   const [uniqueAreas, setUniqueAreas] = useState([]);
+  const [uniqueStatuses, setUniqueStatuses] = useState([]);
 
   // Fetch orders from API
   const fetchOrders = async () => {
@@ -54,13 +56,19 @@ const OrderReport = () => {
         setOrders(data.orders || []);
         setTotalOrders(data.total_orders || 0);
         
-        // Extract unique areas from orders
         const areas = [...new Set(
           data.orders
             .map(order => order.area)
             .filter(area => area && area.trim() !== "")
         )].sort();
         setUniqueAreas(areas);
+        
+        const statuses = [...new Set(
+          data.orders
+            .map(order => order.status)
+            .filter(status => status && status.trim() !== "")
+        )].sort();
+        setUniqueStatuses(statuses);
       } else {
         throw new Error("Failed to fetch orders");
       }
@@ -72,16 +80,13 @@ const OrderReport = () => {
     }
   };
 
-  // Fetch orders on component mount
   useEffect(() => {
     fetchOrders();
   }, []);
 
-  // Filter orders
   const getFilteredOrders = () => {
     let filtered = [...orders];
 
-    // Search filter
     if (searchTerm.trim()) {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(order => 
@@ -98,28 +103,42 @@ const OrderReport = () => {
       );
     }
 
-    // Area filter
     if (selectedArea) {
       filtered = filtered.filter(order => order.area === selectedArea);
+    }
+    
+    if (selectedStatus) {
+      filtered = filtered.filter(order => order.status === selectedStatus);
+    }
+    
+    if (startDate) {
+      filtered = filtered.filter(order => {
+        if (!order.created_date) return false;
+        const orderDate = new Date(order.created_date);
+        const start = new Date(startDate);
+        return orderDate >= start;
+      });
+    }
+    
+    if (endDate) {
+      filtered = filtered.filter(order => {
+        if (!order.created_date) return false;
+        const orderDate = new Date(order.created_date);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        return orderDate <= end;
+      });
     }
 
     return filtered;
   };
 
   const filteredOrders = getFilteredOrders();
-  
-  // Paginate the filtered orders (ONE ROW PER ORDER)
   const totalFiltered = filteredOrders.length;
   const startIndex = (page - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
   const totalPages = Math.ceil(totalFiltered / pageSize);
-
-  const filteredAreas = areaSearchTerm.trim()
-    ? uniqueAreas.filter(area => 
-        area.toLowerCase().includes(areaSearchTerm.toLowerCase())
-      )
-    : uniqueAreas;
 
   const clearSearch = () => {
     setSearchTerm("");
@@ -129,32 +148,18 @@ const OrderReport = () => {
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedArea("");
-    setAreaSearchTerm("");
+    setSelectedStatus("");
+    setStartDate("");
+    setEndDate("");
     setPageSize(10);
     setPage(1);
   };
 
-  const handleAreaSelect = (area) => {
-    setSelectedArea(area);
-    setIsAreaDropdownOpen(false);
-    setAreaSearchTerm("");
-    setPage(1);
-  };
-
-  const handleAreaDropdownToggle = () => {
-    if (isAreaDropdownOpen) {
-      setAreaSearchTerm("");
-    }
-    setIsAreaDropdownOpen(!isAreaDropdownOpen);
-  };
-
-  // Open modal with order details
   const openDetailsModal = (order) => {
     setSelectedOrderDetails(order);
     setIsModalOpen(true);
   };
 
-  // Close modal
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedOrderDetails(null);
@@ -187,19 +192,6 @@ const OrderReport = () => {
     return 'or-status-badge';
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (!e.target.closest('.or-area-dropdown-container')) {
-        setIsAreaDropdownOpen(false);
-        setAreaSearchTerm("");
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Close modal on Escape key
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape' && isModalOpen) {
@@ -209,6 +201,8 @@ const OrderReport = () => {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isModalOpen]);
+  
+  const hasActiveFilters = searchTerm || selectedArea || selectedStatus || startDate || endDate;
 
   return (
     <div className="or-page">
@@ -260,95 +254,127 @@ const OrderReport = () => {
 
           {!loading && !error && (
             <>
-              <div className="or-filter-row">
-                <div className="or-filter-left">
-                  <div className="or-filter-item or-filter-search compact">
-                    <label htmlFor="or-search">Search</label>
-                    <div className="or-search-wrap">
-                      <span className="or-search-icon">🔍</span>
+              <div className="or-filter-container">
+                <div className="or-filter-row">
+                  <div className="or-filter-left">
+                    <div className="or-filter-item or-filter-search compact">
+                      <label htmlFor="or-search">Search</label>
+                      <div className="or-search-wrap">
+                        <span className="or-search-icon">🔍</span>
+                        <input
+                          id="or-search"
+                          type="search"
+                          placeholder="Search orders..."
+                          value={searchTerm}
+                          onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setPage(1);
+                          }}
+                        />
+                        {searchTerm && (
+                          <button
+                            type="button"
+                            className="or-search-clear"
+                            onClick={clearSearch}
+                            aria-label="Clear search"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Start Date Filter */}
+                    <div className="or-filter-item or-filter-date">
+                      <label htmlFor="start-date">Start Date</label>
                       <input
-                        id="or-search"
-                        type="search"
-                        placeholder="Search by order no, customer, username, product, area, status or remark..."
-                        value={searchTerm}
+                        id="start-date"
+                        type="date"
+                        className="or-date-input"
+                        value={startDate}
                         onChange={(e) => {
-                          setSearchTerm(e.target.value);
+                          setStartDate(e.target.value);
                           setPage(1);
                         }}
                       />
-                      {searchTerm && (
-                        <button
-                          type="button"
-                          className="or-search-clear"
-                          onClick={clearSearch}
-                          aria-label="Clear search"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
-                  </div>
 
-                  <div className="or-filter-item or-filter-area">
-                    <label htmlFor="area-select">Filter by Area</label>
-                    <div className="or-area-dropdown-container">
-                      <button
-                        type="button"
-                        className="or-area-select-button"
-                        onClick={handleAreaDropdownToggle}
+                    {/* End Date Filter */}
+                    <div className="or-filter-item or-filter-date">
+                      <label htmlFor="end-date">End Date</label>
+                      <input
+                        id="end-date"
+                        type="date"
+                        className="or-date-input"
+                        value={endDate}
+                        onChange={(e) => {
+                          setEndDate(e.target.value);
+                          setPage(1);
+                        }}
+                      />
+                    </div>
+
+                    {/* Status Filter */}
+                    <div className="or-filter-item or-filter-status">
+                      <label htmlFor="status-select">Status</label>
+                      <select
+                        id="status-select"
+                        value={selectedStatus}
+                        onChange={(e) => {
+                          setSelectedStatus(e.target.value);
+                          setPage(1);
+                        }}
+                        className="or-select-input"
                       >
-                        <span className="or-area-selected">
-                          {selectedArea || "All Areas"}
-                        </span>
-                        <span className="or-area-arrow">{isAreaDropdownOpen ? "▲" : "▼"}</span>
-                      </button>
-                      
-                      {isAreaDropdownOpen && (
-                        <div className="or-area-dropdown-menu">
-                          <div className="or-area-search-container">
-                            <span className="or-area-search-icon">🔍</span>
-                            <input
-                              type="text"
-                              placeholder="Search areas..."
-                              value={areaSearchTerm}
-                              onChange={(e) => setAreaSearchTerm(e.target.value)}
-                              className="or-area-search-input"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </div>
-                          
-                          <div className="or-area-options">
-                            <div
-                              className={`or-area-option ${!selectedArea ? 'active' : ''}`}
-                              onClick={() => handleAreaSelect("")}
-                            >
-                              All Areas
-                              {!selectedArea && <span className="or-check">✓</span>}
-                            </div>
-                            
-                            {filteredAreas.length > 0 ? (
-                              filteredAreas.map(area => (
-                                <div
-                                  key={area}
-                                  className={`or-area-option ${selectedArea === area ? 'active' : ''}`}
-                                  onClick={() => handleAreaSelect(area)}
-                                >
-                                  {area}
-                                  {selectedArea === area && <span className="or-check">✓</span>}
-                                </div>
-                              ))
-                            ) : (
-                              <div className="or-area-no-results">
-                                No areas found
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                        <option value="">All Statuses</option>
+                        {uniqueStatuses.map(status => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Area Filter */}
+                    <div className="or-filter-item or-filter-area">
+                      <label htmlFor="area-select">Area</label>
+                      <select
+                        id="area-select"
+                        value={selectedArea}
+                        onChange={(e) => {
+                          setSelectedArea(e.target.value);
+                          setPage(1);
+                        }}
+                        className="or-select-input"
+                      >
+                        <option value="">All Areas</option>
+                        {uniqueAreas.map(area => (
+                          <option key={area} value={area}>{area}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Rows per page */}
+                    <div className="or-filter-item">
+                      <label htmlFor="rows-select">Rows per page</label>
+                      <div className="or-rows-selector-inline">
+                        <select
+                          id="rows-select"
+                          value={pageSize}
+                          onChange={(e) => {
+                            setPageSize(Number(e.target.value));
+                            setPage(1);
+                          }}
+                        >
+                          <option value={10}>10</option>
+                          <option value={20}>20</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 
-                  {(searchTerm || selectedArea) && (
+                  {/* Show clear button if any filter is active */}
+                  {hasActiveFilters && (
                     <button
                       type="button"
                       className="or-clear-filters-btn"
@@ -357,25 +383,6 @@ const OrderReport = () => {
                       Clear All Filters
                     </button>
                   )}
-                </div>
-
-                <div className="or-stats">
-                  <div className="or-rows-selector">
-                    <label htmlFor="rows-select">Rows:</label>
-                    <select
-                      id="rows-select"
-                      value={pageSize}
-                      onChange={(e) => {
-                        setPageSize(Number(e.target.value));
-                        setPage(1);
-                      }}
-                    >
-                      <option value={10}>10</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                  </div>
                 </div>
               </div>
 
@@ -456,7 +463,7 @@ const OrderReport = () => {
                     ) : (
                       <tr>
                         <td colSpan="10" className="or-no-data">
-                          {searchTerm || selectedArea
+                          {hasActiveFilters
                             ? "No orders found matching your filters."
                             : "No orders available."}
                         </td>
@@ -508,7 +515,6 @@ const OrderReport = () => {
             </div>
             
             <div className="or-modal-body">
-              {/* Order Info Section - Only Order No and Customer Name */}
               <div className="or-modal-info-section">
                 <div className="or-modal-info-grid">
                   <div className="or-modal-info-item">
@@ -522,7 +528,6 @@ const OrderReport = () => {
                 </div>
               </div>
 
-              {/* Items Table */}
               <div className="or-modal-items-section">
                 <h3 className="or-modal-section-title">
                   Order Items ({selectedOrderDetails.items.length})

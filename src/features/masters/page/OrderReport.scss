@@ -151,7 +151,7 @@
 .or-filter-left {
   display: flex;
   align-items: flex-end;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
   flex: 1;
 }
@@ -173,7 +173,7 @@
 /* Search Box */
 .or-search-wrap {
   position: relative;
-  width: 400px;
+  width: 280px;
   min-width: 240px;
 }
 
@@ -239,7 +239,7 @@
 
 /* Area Filter Dropdown */
 .or-filter-area {
-  min-width: 250px;
+  min-width: 170px;
   position: relative;
 }
 
@@ -1400,5 +1400,321 @@
 
   .or-table-wrap::-webkit-scrollbar {
     height: 6px;
+  }
+}
+
+/* Add these styles after the Area Filter Dropdown section */
+
+/* Date Filter */
+.or-filter-date {
+  min-width: 150px;
+  position: relative;
+}
+
+.or-date-input {
+  width: 100%;
+  height: 44px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.or-date-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), 0 8px 20px rgba(37, 99, 235, 0.12);
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+}
+
+.or-date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: opacity(0.6);
+}
+
+.or-date-input::-webkit-calendar-picker-indicator:hover {
+  filter: opacity(1);
+}
+
+/* Status Filter Dropdown */
+.or-filter-status {
+  min-width: 170px;
+  position: relative;
+}
+
+.or-status-dropdown-container {
+  position: relative;
+  width: 100%;
+}
+
+.or-status-select-button {
+  width: 100%;
+  height: 44px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+}
+
+.or-status-select-button:hover {
+  border-color: #cbd5e1;
+}
+
+.or-status-select-button:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+.or-status-selected {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.or-status-arrow {
+  margin-left: 8px;
+  color: #64748b;
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.or-status-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  animation: dropdownSlide 0.2s ease;
+}
+
+.or-status-search-container {
+  position: relative;
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.or-status-search-icon {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.or-status-search-input {
+  width: 100%;
+  height: 36px;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1f2937;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.or-status-search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.or-status-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.or-status-options {
+  overflow-y: auto;
+  max-height: 300px;
+  padding: 4px;
+}
+
+.or-status-options::-webkit-scrollbar {
+  width: 8px;
+}
+
+.or-status-options::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.or-status-options::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 4px;
+}
+
+.or-status-options::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #2563eb 0%, #1e40af 100%);
+}
+
+.or-status-option {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.15s ease;
+}
+
+.or-status-option:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: #1e40af;
+}
+
+.or-status-option.active {
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.12), rgba(59, 130, 246, 0.12));
+  color: #1e40af;
+  font-weight: 600;
+}
+
+.or-status-no-results {
+  padding: 20px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* Update responsive styles */
+@media (max-width: 880px) {
+  .or-filter-date {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .or-filter-status {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .or-status-dropdown-container {
+    width: 100%;
+  }
+
+  .or-status-select-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .or-filter-date {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .or-filter-status {
+    width: 100%;
+    min-width: 100%;
+  }
+}
+/* FILTER CONTAINER - Match Collection Report */
+.or-filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.04) 0%, rgba(59, 130, 246, 0.04) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(59, 130, 246, 0.12);
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.08);
+}
+
+/* SECONDARY ROW for Rows per page */
+
+
+/* Rows Selector Inline */
+.or-rows-selector-inline {
+  width: auto;
+  min-width: 100px;
+}
+
+.or-rows-selector-inline select {
+  width: 100%;
+  height: 44px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #1f2937;
+  transition: all 0.2s ease;
+}
+
+.or-rows-selector-inline select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Select inputs for Status and Area */
+.or-select-input {
+  width: 200px;
+  height: 44px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.or-select-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), 0 8px 20px rgba(37, 99, 235, 0.12);
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+}
+
+.or-select-input:hover {
+  border-color: #cbd5e1;
+}
+
+/* Update responsive for secondary row */
+@media (max-width: 880px) {
+  
+
+  .or-rows-selector-inline {
+    width: 100%;
+  }
+  
+  .or-select-input {
+    width: 100%;
   }
 }
