@@ -43,7 +43,7 @@ const StoreLocationCapture = React.memo(() => {
       try {
         setIsLoading(true);
         const cachedData = sessionStorage.getItem('customers_data');
-        
+
         const response = await PunchAPI.getFirms();
         const firms = response.firms || [];
         setCustomers(firms);
@@ -58,7 +58,7 @@ const StoreLocationCapture = React.memo(() => {
 
   const filteredCustomers = useMemo(() => {
     if (!debouncedSearchTerm) return customers;
-    
+
     return customers.filter((c) => {
       const name = (c.name || c.customerName || c.firm_name || "").toLowerCase();
       return name.includes(debouncedSearchTerm.toLowerCase());
@@ -84,8 +84,8 @@ const StoreLocationCapture = React.memo(() => {
       <div className="customer_section">
         <h2>Select Customer</h2>
 
-        <div 
-          className="drop_button" 
+        <div
+          className="drop_button"
           onClick={handleDropdownToggle}
           aria-expanded={dropdownOpen}
         >
@@ -110,7 +110,7 @@ const StoreLocationCapture = React.memo(() => {
             </div>
 
             {filteredCustomers.length > 0 ? (
-              <VirtualizedCustomerList 
+              <VirtualizedCustomerList
                 customers={filteredCustomers}
                 onSelect={handleCustomerSelect}
                 searchTerm={debouncedSearchTerm}

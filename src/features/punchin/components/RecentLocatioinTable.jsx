@@ -63,6 +63,7 @@ const StoreTable = () => {
     const [error, setError] = useState(null)
     const userRole = useSelector((state) => state.auth?.user?.role)
     const [statusFilter, setStatusFilter] = useState('all');
+    const [updatedByFilter, setUpdatedByFilter] = useState('');
     const [calendarDates, setCalendarDates] = useState([
         formatDateApi(new Date(new Date().setDate(new Date().getDate() - 6))),
         formatDateApi(new Date())
@@ -93,15 +94,25 @@ const StoreTable = () => {
         ))
     }
 
-    // Filter data based on status filter
+    // Filter data based on status and updated by filter
     const filteredData = useMemo(() => {
-        if (statusFilter === 'all') {
-            return storesData;
+        let result = storesData;
+
+        if (statusFilter !== 'all') {
+            result = result.filter(store =>
+                store.status?.toLowerCase() === statusFilter.toLowerCase()
+            );
         }
-        return storesData.filter(store =>
-            store.status?.toLowerCase() === statusFilter.toLowerCase()
-        );
-    }, [storesData, statusFilter]);
+
+        if (updatedByFilter.trim() !== '') {
+            const search = updatedByFilter.toLowerCase();
+            result = result.filter(store =>
+                store.taskDoneBy?.toLowerCase().includes(search)
+            );
+        }
+
+        return result;
+    }, [storesData, statusFilter, updatedByFilter]);
 
     const userColumns = useMemo(() => [
         {
@@ -287,6 +298,50 @@ const StoreTable = () => {
                 <div className="filters_section">
                     <div className="filter_status">
                         <span className="filter_label">
+                            Updated By:
+                        </span>
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <input
+                                type="text"
+                                value={updatedByFilter}
+                                onChange={(e) => setUpdatedByFilter(e.target.value)}
+                                placeholder="Search user..."
+                                className="search_input"
+                                style={{
+                                    width: '150px',
+                                    padding: '8px 30px 8px 10px',
+                                    fontSize: '14px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #e2e8f0',
+                                    outline: 'none'
+                                }}
+                            />
+                            {updatedByFilter && (
+                                <button
+                                    onClick={() => setUpdatedByFilter('')}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '8px',
+                                        background: 'none',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        color: '#94a3b8',
+                                        fontSize: '16px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: 0,
+                                        width: '20px',
+                                        height: '20px'
+                                    }}
+                                >
+                                    ×
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <div className="filter_status">
+                        <span className="filter_label">
                             Status :
                         </span>                        <select
                             value={statusFilter}
@@ -305,6 +360,7 @@ const StoreTable = () => {
                         </span>
                         <DatePickerFilter value={calendarDates} setCalendarDates={setCalendarDates} />
                     </div>
+
                 </div>
             </div>
 

@@ -2,11 +2,16 @@ import React, { useState, useMemo, useEffect } from 'react';
 import './CollectionReport.scss';
 
 const CollectionReport = () => {
+    const getToday = () => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMode, setSelectedMode] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('');
-    const [fromDate, setFromDate] = useState('');
-    const [toDate, setToDate] = useState('');
+    const [fromDate, setFromDate] = useState(getToday());
+    const [toDate, setToDate] = useState(getToday());
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [page, setPage] = useState(1);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -18,37 +23,37 @@ const CollectionReport = () => {
         try {
             setLoading(true);
             setError(null);
-            
+
             const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-            
+
             const headers = {
                 'Content-Type': 'application/json',
             };
-            
+
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
-            
+
             const response = await fetch('https://tasksas.com/api/collection/list/', {
                 method: 'GET',
                 headers: headers,
             });
-            
+
             if (!response.ok) {
                 if (response.status === 401) {
                     throw new Error('Unauthorized - Please login again');
                 }
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const result = await response.json();
-            
+
             console.log('API Response - Total records:', result.data?.length || 0);
             console.log('Full API Response:', result);
-            
+
             if (result.success && Array.isArray(result.data)) {
                 // Log all cheque entries to debug
-                const chequeEntries = result.data.filter(item => 
+                const chequeEntries = result.data.filter(item =>
                     item.type && item.type.toLowerCase() === 'cheque'
                 );
                 console.log('=== CHEQUE ENTRIES DEBUG ===');
@@ -67,7 +72,7 @@ const CollectionReport = () => {
                     });
                 });
                 console.log('=== END CHEQUE DEBUG ===');
-                
+
                 const transformedData = result.data.map((item) => ({
                     id: item.id,
                     code: item.code || 'N/A',
@@ -119,17 +124,17 @@ const CollectionReport = () => {
 
     const filteredData = useMemo(() => {
         let result = collectionData;
-        
+
         if (searchTerm) {
             const t = searchTerm.trim().toLowerCase();
-            result = result.filter(d => 
+            result = result.filter(d =>
                 (d.name || "").toLowerCase().includes(t) ||
                 (d.code || "").toLowerCase().includes(t) ||
                 (d.place || "").toLowerCase().includes(t) ||
                 (d.phone || "").toLowerCase().includes(t)
             );
         }
-        
+
         if (selectedMode) {
             result = result.filter(d => d.type === selectedMode);
         }
@@ -145,7 +150,7 @@ const CollectionReport = () => {
         if (toDate) {
             result = result.filter(d => d.created_date <= toDate);
         }
-        
+
         return result;
     }, [searchTerm, selectedMode, selectedStatus, fromDate, toDate, collectionData]);
 
@@ -185,8 +190,8 @@ const CollectionReport = () => {
                                 <h1 className="cr-title">Collection Report</h1>
                                 <p className="cr-subtitle">Daily collection summary and payment tracking</p>
                             </div>
-                            <button 
-                                className="cr-refresh-btn" 
+                            <button
+                                className="cr-refresh-btn"
                                 onClick={handleRefresh}
                                 disabled={isRefreshing || loading}
                             >
@@ -357,7 +362,7 @@ const CollectionReport = () => {
                                             displayedData.map((row, index) => (
                                                 <tr key={row.id}>
                                                     <td>
-                                                        <span style={{ 
+                                                        <span style={{
                                                             fontWeight: '700',
                                                             fontSize: '14px',
                                                             color: '#64748b'
@@ -366,8 +371,8 @@ const CollectionReport = () => {
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <span style={{ 
-                                                            fontFamily: 'monospace', 
+                                                        <span style={{
+                                                            fontFamily: 'monospace',
                                                             fontSize: '13px',
                                                             fontWeight: '600',
                                                             color: '#334155'
@@ -377,15 +382,15 @@ const CollectionReport = () => {
                                                     </td>
                                                     <td>
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                                            <span style={{ 
+                                                            <span style={{
                                                                 fontSize: '13px',
                                                                 fontWeight: '500',
                                                                 color: '#334155'
                                                             }}>
                                                                 {row.created_date}
                                                             </span>
-                                                            <span style={{ 
-                                                                fontFamily: 'monospace', 
+                                                            <span style={{
+                                                                fontFamily: 'monospace',
                                                                 fontSize: '12px',
                                                                 color: '#64748b'
                                                             }}>
@@ -394,7 +399,7 @@ const CollectionReport = () => {
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <span style={{ 
+                                                        <span style={{
                                                             fontSize: '13px',
                                                             color: '#64748b',
                                                             fontStyle: 'italic'
@@ -411,16 +416,16 @@ const CollectionReport = () => {
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <span style={{ 
-                                                            fontFamily: 'monospace', 
-                                                            fontSize: '13px' 
+                                                        <span style={{
+                                                            fontFamily: 'monospace',
+                                                            fontSize: '13px'
                                                         }}>
                                                             {row.phone}
                                                         </span>
                                                     </td>
                                                     <td>
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                                            <span style={{ 
+                                                            <span style={{
                                                                 fontSize: '13px',
                                                                 fontWeight: '600',
                                                                 color: '#334155'
@@ -443,11 +448,10 @@ const CollectionReport = () => {
                                                         {row.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </td>
                                                     <td>
-                                                        <span className={`cr-status-badge ${
-                                                            row.status.toLowerCase().includes('uploaded') ? 'cr-status-success' :
-                                                            row.status.toLowerCase().includes('pending') ? 'cr-status-pending' :
-                                                            'cr-status-default'
-                                                        }`}>
+                                                        <span className={`cr-status-badge ${row.status.toLowerCase().includes('uploaded') ? 'cr-status-success' :
+                                                                row.status.toLowerCase().includes('pending') ? 'cr-status-pending' :
+                                                                    'cr-status-default'
+                                                            }`}>
                                                             {row.status}
                                                         </span>
                                                     </td>
@@ -465,17 +469,17 @@ const CollectionReport = () => {
                             </div>
 
                             <div className="cr-pagination">
-                                <button 
-                                    className="cr-page-btn" 
-                                    onClick={() => changePage(1)} 
+                                <button
+                                    className="cr-page-btn"
+                                    onClick={() => changePage(1)}
                                     disabled={page === 1 || total === 0}
                                 >
                                     First
                                 </button>
 
-                                <button 
-                                    className="cr-page-btn" 
-                                    onClick={() => changePage(page - 1)} 
+                                <button
+                                    className="cr-page-btn"
+                                    onClick={() => changePage(page - 1)}
                                     disabled={page === 1 || total === 0}
                                 >
                                     Prev
@@ -485,17 +489,17 @@ const CollectionReport = () => {
                                     {total === 0 ? "No records" : `Page ${page} of ${totalPages} (${total} records)`}
                                 </div>
 
-                                <button 
-                                    className="cr-page-btn" 
-                                    onClick={() => changePage(page + 1)} 
+                                <button
+                                    className="cr-page-btn"
+                                    onClick={() => changePage(page + 1)}
                                     disabled={page === totalPages || total === 0}
                                 >
                                     Next
                                 </button>
 
-                                <button 
-                                    className="cr-page-btn" 
-                                    onClick={() => changePage(totalPages)} 
+                                <button
+                                    className="cr-page-btn"
+                                    onClick={() => changePage(totalPages)}
                                     disabled={page === totalPages || total === 0}
                                 >
                                     Last
