@@ -125,8 +125,7 @@ $shadow-md: 0 4px 6px -1px rgb(59 130 246 / 0.1), 0 2px 4px -2px rgb(59 130 246 
         display: block;
       }
 
-      .filter_status,
-      .filter_date {
+      .filter_status {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -170,40 +169,51 @@ $shadow-md: 0 4px 6px -1px rgb(59 130 246 / 0.1), 0 2px 4px -2px rgb(59 130 246 
             color: $text;
           }
         }
+      }
 
-        /* ------------------------------------
-           DATE PICKER - Colorful Blue Input
-           ------------------------------------ */
-        .date-picker-filter {
-          min-width: 100%;
+      .filter_date_inputs {
+        display: flex;
+        gap: 12px;
+        align-items: center;
 
-          input {
-            font-size: 12px !important;
-            padding: 6px 10px !important; // Extra slim padding
-            border: 1px solid $accent !important;
-            border-radius: 6px !important;
-            transition: all 0.3s ease !important;
-            font-weight: 600 !important;
-            // Blue gradient background
-            background: linear-gradient(135deg, $accent 0%, $accent-light 100%) !important;
-            color: white !important; // White text for contrast
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25) !important;
+        .date_input_group {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+
+          .filter_label {
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: $text-secondary;
+          }
+
+          .date_field {
+            font-size: 12px;
+            padding: 6px 10px;
+            border: 1px solid $accent;
+            border-radius: 6px;
+            background: linear-gradient(135deg, $accent 0%, $accent-light 100%);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+            cursor: pointer;
+            width: auto;
+            max-width: 130px;
+
+            &::-webkit-calendar-picker-indicator {
+              filter: invert(1) brightness(100);
+              cursor: pointer;
+            }
 
             &:hover {
-              background: linear-gradient(135deg, $accent-hover 0%, $accent 100%) !important;
-              box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35) !important;
-              transform: translateY(-1px) !important;
+              background: linear-gradient(135deg, $accent-hover 0%, $accent 100%);
+              box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+              transform: translateY(-1px);
             }
 
             &:focus {
-              outline: none !important;
-              box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
-            }
-
-            // Style the calendar icon
-            &::-webkit-calendar-picker-indicator {
-              filter: invert(1) brightness(100) !important;
-              cursor: pointer !important;
+              outline: none;
+              box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
             }
           }
         }
@@ -536,15 +546,18 @@ $shadow-md: 0 4px 6px -1px rgb(59 130 246 / 0.1), 0 2px 4px -2px rgb(59 130 246 
     }
 
     @keyframes pulse {
-      0%, 100% {
+
+      0%,
+      100% {
         opacity: 1;
       }
+
       50% {
         opacity: 0.5;
       }
     }
   }
-  
+
   /* ============================================
      PAGINATION CONTROLS - Navigation Buttons
      ============================================ */
@@ -666,6 +679,7 @@ $shadow-md: 0 4px 6px -1px rgb(59 130 246 / 0.1), 0 2px 4px -2px rgb(59 130 246 
       0% {
         transform: rotate(0deg);
       }
+
       100% {
         transform: rotate(360deg);
       }

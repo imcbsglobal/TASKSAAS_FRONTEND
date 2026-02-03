@@ -10,6 +10,7 @@ const CollectionReport = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMode, setSelectedMode] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('');
+    const [selectedCreatedBy, setSelectedCreatedBy] = useState('');
     const [fromDate, setFromDate] = useState(getToday());
     const [toDate, setToDate] = useState(getToday());
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -115,12 +116,13 @@ const CollectionReport = () => {
         setSearchTerm('');
         setSelectedMode('');
         setSelectedStatus('');
+        setSelectedCreatedBy('');
         setFromDate('');
         setToDate('');
         setPage(1);
     };
 
-    const hasActiveFilters = searchTerm || selectedMode || selectedStatus || fromDate || toDate;
+    const hasActiveFilters = searchTerm || selectedMode || selectedStatus || selectedCreatedBy || fromDate || toDate;
 
     const filteredData = useMemo(() => {
         let result = collectionData;
@@ -143,6 +145,10 @@ const CollectionReport = () => {
             result = result.filter(d => d.status === selectedStatus);
         }
 
+        if (selectedCreatedBy) {
+            result = result.filter(d => (d.created_by || "").toLowerCase().includes(selectedCreatedBy.toLowerCase().trim()));
+        }
+
         if (fromDate) {
             result = result.filter(d => d.created_date >= fromDate);
         }
@@ -152,7 +158,7 @@ const CollectionReport = () => {
         }
 
         return result;
-    }, [searchTerm, selectedMode, selectedStatus, fromDate, toDate, collectionData]);
+    }, [searchTerm, selectedMode, selectedStatus, selectedCreatedBy, fromDate, toDate, collectionData]);
 
     const total = filteredData.length;
     const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
@@ -179,6 +185,8 @@ const CollectionReport = () => {
         const statuses = collectionData.map(d => d.status).filter(status => status && status.trim() !== "" && status !== "-");
         return [...new Set(statuses)].sort();
     }, [collectionData]);
+
+
 
     return (
         <div className="cr-page">
@@ -307,6 +315,18 @@ const CollectionReport = () => {
                                                     <option key={status} value={status}>{status}</option>
                                                 ))}
                                             </select>
+                                        </div>
+
+                                        <div className="cr-filter-item">
+                                            <label htmlFor="created-by-filter">Created By</label>
+                                            <input
+                                                id="created-by-filter"
+                                                type="text"
+                                                placeholder="Search user..."
+                                                value={selectedCreatedBy}
+                                                onChange={(e) => setSelectedCreatedBy(e.target.value)}
+                                                className="cr-date-input"
+                                            />
                                         </div>
 
                                         <div className="cr-filter-item">
@@ -449,8 +469,8 @@ const CollectionReport = () => {
                                                     </td>
                                                     <td>
                                                         <span className={`cr-status-badge ${row.status.toLowerCase().includes('uploaded') ? 'cr-status-success' :
-                                                                row.status.toLowerCase().includes('pending') ? 'cr-status-pending' :
-                                                                    'cr-status-default'
+                                                            row.status.toLowerCase().includes('pending') ? 'cr-status-pending' :
+                                                                'cr-status-default'
                                                             }`}>
                                                             {row.status}
                                                         </span>

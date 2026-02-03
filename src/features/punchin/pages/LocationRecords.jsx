@@ -12,21 +12,14 @@ const LocationRecords = () => {
     return (
         <div className="all-body">
             <div className='location_capture'>
-                <div className="header_section">
-                    <div className="header-tit">
-                        <div className="header_title">Manage Store Locations</div>
-                        <div className="header_sub">Track and manage your store locations </div>
-
-                    </div>
-                    {userRole !== "Admin" &&
-                        (<div className="add_new_button" onClick={() => {
-                            navigate("/punch-in/location/capture")
-                        }}>
-                            <AiOutlinePlus className='icon' />
-                            <span className='add-loc-label'>Add Location</span>
-                        </div>)
-                    }
-                </div>
+                {userRole !== "Admin" &&
+                    (<div className="add_new_button" style={{ marginBottom: '20px' }} onClick={() => {
+                        navigate("/punch-in/location/capture")
+                    }}>
+                        <AiOutlinePlus className='icon' />
+                        <span className='add-loc-label'>Add Location</span>
+                    </div>)
+                }
                 <div className="">
                     <StoreTable />
                 </div>

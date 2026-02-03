@@ -64,18 +64,16 @@ const PunchinTable = () => {
     const [showPhoto, setShowPhoto] = useState(false)
     const [photoUrl, setPhotoUrl] = useState('')
     const userRole = useSelector((state) => state.auth?.user?.role)
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [calendarDates, setCalendarDates] = useState([
-        formatDateApi(new Date(new Date().setDate(new Date().getDate() - 6))),
-        formatDateApi(new Date())
-    ])
+    const [statusFilter, setStatusFilter] = useState('pending');
+    const [fromDate, setFromDate] = useState(formatDateApi(new Date()));
+    const [toDate, setToDate] = useState(formatDateApi(new Date()));
 
 
     useEffect(() => {
         const fetchTableData = async () => {
             try {
                 setLoading(true)
-                const response = await PunchAPI.getPunchinTable(calendarDates)
+                const response = await PunchAPI.getPunchinTable([fromDate, toDate])
 
                 if (response?.data) {
                     setStoresData(response.data)
@@ -91,7 +89,7 @@ const PunchinTable = () => {
             }
         }
         fetchTableData()
-    }, [calendarDates])
+    }, [fromDate, toDate])
 
     const handleStatusUpdate = (id, newStatus) => {
         // Update local state to reflect the change immediately
@@ -371,11 +369,25 @@ const PunchinTable = () => {
                             <option value="rejected">Rejected</option>
                         </select>
                     </div>
-                    <div className="filter_date">
-                        <span className="filter_label">
-                            Date:
-                        </span>
-                        <DatePickerFilter value={calendarDates} setCalendarDates={setCalendarDates} />
+                    <div className="filter_date_inputs">
+                        <div className="date_input_group">
+                            <span className="filter_label">From:</span>
+                            <input
+                                type="date"
+                                value={fromDate}
+                                onChange={(e) => setFromDate(e.target.value)}
+                                className="search_input date_field"
+                            />
+                        </div>
+                        <div className="date_input_group">
+                            <span className="filter_label">To:</span>
+                            <input
+                                type="date"
+                                value={toDate}
+                                onChange={(e) => setToDate(e.target.value)}
+                                className="search_input date_field"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -443,7 +455,7 @@ const PunchinTable = () => {
                         value={table.getState().pagination.pageSize}
                         onChange={(e) => table.setPageSize(Number(e.target.value))}
                     >
-                        {[5, 10, 20].map((size) => (
+                        {[10, 50, 100].map((size) => (
                             <option key={size} value={size}>
                                 Show {size}
                             </option>
