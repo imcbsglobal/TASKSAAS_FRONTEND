@@ -17,8 +17,11 @@ const Options = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [protectedPrices, setProtectedPrices] = useState({});
 
-  // ✅ NEW: Remote Punch-In Permission State
+  // 5️⃣ Remote Punch-In Permission
   const [remotePunchInUsers, setRemotePunchInUsers] = useState([]);
+
+  // 6️⃣ Barcode Based List
+  const [barcodeBasedList, setBarcodeBasedList] = useState(false);
 
   useEffect(() => {
     getSettingsOptions()
@@ -32,9 +35,10 @@ const Options = () => {
 
         setDefaultPriceCode(data.default_price_code || "");
         setProtectedPrices(data.protected_price_users || {});
-        
-        // ✅ NEW: Load remote punch-in users from backend
         setRemotePunchInUsers(data.remote_punchin_users || []);
+
+        // 6️⃣ load barcode option
+        setBarcodeBasedList(Boolean(data.barcode_based_list));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -51,7 +55,6 @@ const Options = () => {
     });
   };
 
-  // ✅ NEW: Toggle remote punch-in permission for a user
   const toggleRemotePunchIn = (userId) => {
     setRemotePunchInUsers((prev) =>
       prev.includes(userId)
@@ -66,7 +69,10 @@ const Options = () => {
       read_price_category: readPriceCategory,
       default_price_code: defaultPriceCode,
       protected_price_users: protectedPrices,
-      remote_punchin_users: remotePunchInUsers, // ✅ NEW: Send to backend
+      remote_punchin_users: remotePunchInUsers,
+
+      // 6️⃣ send barcode flag
+      barcode_based_list: barcodeBasedList,
     });
 
     alert("Settings saved successfully");
@@ -131,7 +137,6 @@ const Options = () => {
         {/* 3️⃣ Default Price Category */}
         <div className="option-card">
           <h3>3. Default Price Category</h3>
-
           <div className="checkbox-list">
             {priceCodes.map((p) => (
               <label key={p.code}>
@@ -170,10 +175,6 @@ const Options = () => {
             </select>
           </div>
 
-          {selectedUsers.length === 0 && (
-            <div className="empty-text">Select users to configure price access</div>
-          )}
-
           {selectedUsers.map((userId) => (
             <div key={userId} className="user-price-box">
               <h4>User: {userId}</h4>
@@ -194,13 +195,9 @@ const Options = () => {
           ))}
         </div>
 
-        {/* ✅ 5️⃣ NEW: Remote Punch-In Permission */}
+        {/* 5️⃣ Remote Punch-In */}
         <div className="option-card">
           <h3>5. Allow Remote Punch-In</h3>
-          <p style={{ fontSize: '14px', color: '#666', marginBottom: '15px' }}>
-            Users with this permission can punch in from anywhere, without the 100-meter location restriction.
-          </p>
-
           <div className="checkbox-list">
             {users.map((u) => (
               <label key={u.id}>
@@ -213,18 +210,29 @@ const Options = () => {
               </label>
             ))}
           </div>
+        </div>
 
-          {remotePunchInUsers.length > 0 && (
-            <div style={{ 
-              marginTop: '15px', 
-              padding: '10px', 
-              backgroundColor: '#e8f5e9', 
-              borderRadius: '4px',
-              fontSize: '14px'
-            }}>
-              <strong>✓ {remotePunchInUsers.length} user(s)</strong> can now punch in remotely
-            </div>
-          )}
+        {/* 6️⃣ Barcode Based List */}
+        <div className="option-card">
+          <h3>6. Barcode Based List</h3>
+          <div className="radio-group">
+            <label>
+              <input
+                type="radio"
+                checked={barcodeBasedList}
+                onChange={() => setBarcodeBasedList(true)}
+              />
+              Yes
+            </label>
+            <label>
+              <input
+                type="radio"
+                checked={!barcodeBasedList}
+                onChange={() => setBarcodeBasedList(false)}
+              />
+              No
+            </label>
+          </div>
         </div>
 
         <button className="save-btn" onClick={handleSave}>
