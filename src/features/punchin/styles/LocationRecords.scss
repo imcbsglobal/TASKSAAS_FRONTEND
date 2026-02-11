@@ -75,7 +75,7 @@ $shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         min-height: 44px;
         position: relative;
         overflow: hidden;
-        
+
         // Subtle animated background
         &::before {
             content: '';
@@ -84,14 +84,14 @@ $shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s;
         }
 
         &:hover::before {
             left: 100%;
         }
-        
+
         .icon {
             font-size: 1rem;
             flex-shrink: 0;
@@ -107,7 +107,7 @@ $shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
             background: linear-gradient(135deg, $accent-hover 0%, $accent 100%);
             transform: translateY(-2px);
             box-shadow: 0 8px 15px -3px rgb(37 99 235 / 0.3), 0 4px 6px -4px rgb(37 99 235 / 0.2);
-            
+
             .icon {
                 transform: scale(1.1);
             }
@@ -131,13 +131,13 @@ $shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         border: 1px solid $border;
         overflow: hidden;
         min-height: 200px;
-        
+
         // Loading state
         &.is-loading {
             display: flex;
             align-items: center;
             justify-content: center;
-            
+
             &::before {
                 content: "Loading...";
                 font-size: 0.9rem;
@@ -357,7 +357,7 @@ $shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
             max-width: 260px;
             min-height: 46px;
             border-radius: 10px;
-            
+
             .icon {
                 font-size: 1.1rem;
             }
@@ -408,7 +408,8 @@ $shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 /* High DPI displays */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
     .location_capture .add_new_button {
         border: 0.5px solid transparent;
     }
@@ -418,11 +419,11 @@ $shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 @media (prefers-reduced-motion: reduce) {
     .location_capture .add_new_button {
         transition: none;
-        
+
         &::before {
             transition: none;
         }
-        
+
         .icon {
             transition: none;
         }

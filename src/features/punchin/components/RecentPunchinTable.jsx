@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import '../styles/StoreTable.scss'
 import { GoSearch } from 'react-icons/go';
+import { FaEye, FaMapMarkerAlt } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import {
     createColumnHelper,
@@ -67,6 +68,8 @@ const PunchinTable = () => {
     const [statusFilter, setStatusFilter] = useState('pending');
     const [fromDate, setFromDate] = useState(formatDateApi(new Date()));
     const [toDate, setToDate] = useState(formatDateApi(new Date()));
+    const [showPunchDetails, setShowPunchDetails] = useState(false);
+    const [selectedPunch, setSelectedPunch] = useState(null);
 
 
     useEffect(() => {
@@ -111,38 +114,120 @@ const PunchinTable = () => {
     const userColumns = useMemo(() => [
         {
             header: "Store",
-            accessorKey: "firm_name"
+            accessorKey: "firm_name",
+            cell: ({ row }) => (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ whiteSpace: "nowrap", fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {row.original.firm_name}
+                        {row.original.latitude && row.original.longitude && (
+                            <a
+                                href={`https://www.google.com/maps?q=${row.original.latitude},${row.original.longitude}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#ef4444', display: 'flex', alignItems: 'center' }}
+                                title="View Store Location"
+                            >
+                                <FaMapMarkerAlt size={14} />
+                            </a>
+                        )}
+                    </div>
+                    {row.original.firm_location && (
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>
+                            Address: {row.original.firm_location}
+                        </div>
+                    )}
+                </div>
+            )
         },
         {
-            header: "Address",
-            accessorKey: "firm_location",
-            cell: ({ getValue }) => {
-                const value = getValue()
-                return value && value.trim() !== "" ? value : <div style={{ "color": "red" }}>Address unavailable</div>
-            }
+            header: "Punch Details",
+            cell: ({ row }) => (
+                <div style={{ display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
+                    onClick={() => {
+                        setSelectedPunch(row.original);
+                        setShowPunchDetails(true);
+                    }}
+                >
+                    <FaEye size={20} color="#2563eb" />
+                </div>
+            )
         },
         {
-            header: "Punch In Time",
-            accessorKey: "punchin_time",
-            cell: ({ getValue }) => {
-                const value = getValue()
-                return value ? formatDT(value) : 'N/A'
-            }
-        },
-        {
-            header: "Punch Out Time",
-            accessorKey: 'punchout_time',
-            cell: ({ getValue }) => {
-                const value = getValue()
-                return value ? formatDT(value) : 'N/A'
-            }
-        },
-        {
-            header: "Duration",
+            header: "Current Location",
+            accessorKey: "current_location",
             cell: ({ row }) => {
-                const { punchin_time, punchout_time } = row.original;
-                const duration = timeDiff(punchin_time, punchout_time)
-                return duration ? duration : "N/A"
+                const location = row.original.current_location;
+                // Parse coordinates from location string (format: "latitude,longitude")
+                const coords = location ? location.split(',') : null;
+                const hasValidCoords = coords && coords.length === 2;
+                
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ maxWidth: '180px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                            {location || 'N/A'}
+                        </div>
+                        {hasValidCoords && (
+                            <a
+                                href={`https://www.google.com/maps?q=${coords[0].trim()},${coords[1].trim()}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#3b82f6', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+                                title="View Current Location on Map"
+                            >
+                                <FaMapMarkerAlt size={16} />
+                            </a>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
+            header: "Shop Location",
+            accessorKey: "shop_location",
+            cell: ({ row }) => {
+                const location = row.original.shop_location;
+                // Parse coordinates from location string (format: "latitude,longitude")
+                const coords = location ? location.split(',') : null;
+                const hasValidCoords = coords && coords.length === 2;
+                
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ maxWidth: '180px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                            {location || 'N/A'}
+                        </div>
+                        {hasValidCoords && (
+                            <a
+                                href={`https://www.google.com/maps?q=${coords[0].trim()},${coords[1].trim()}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#10b981', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+                                title="View Shop Location on Map"
+                            >
+                                <FaMapMarkerAlt size={16} />
+                            </a>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
+            header: "Punch In Status",
+            accessorKey: "punchin_status",
+            cell: ({ row }) => {
+                const punchinStatus = row.original.punchin_status;
+                return (
+                    <div style={{ 
+                        padding: '4px 8px', 
+                        borderRadius: '4px',
+                        display: 'inline-block',
+                        backgroundColor: punchinStatus === 'manual' ? '#fef3c7' : '#dbeafe',
+                        color: punchinStatus === 'manual' ? '#92400e' : '#1e40af',
+                        fontWeight: '500',
+                        fontSize: '13px'
+                    }}>
+                        {punchinStatus || 'N/A'}
+                    </div>
+                );
             }
         },
         {
@@ -190,39 +275,126 @@ const PunchinTable = () => {
 
     const adminColumns = useMemo(() => [
         {
+            header: "Updated By",
+            accessorKey: "created_by",
+            cell: ({ getValue }) => getValue() || 'N/A'
+        },
+        {
             header: "Store",
-            accessorKey: "firm_name"
+            accessorKey: "firm_name",
+            cell: ({ row }) => (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ whiteSpace: "nowrap", fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {row.original.firm_name}
+                        {row.original.latitude && row.original.longitude && (
+                            <a
+                                href={`https://www.google.com/maps?q=${row.original.latitude},${row.original.longitude}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#ef4444', display: 'flex', alignItems: 'center' }}
+                                title="View Store Location"
+                            >
+                                <FaMapMarkerAlt size={14} />
+                            </a>
+                        )}
+                    </div>
+                    {row.original.firm_location && (
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>
+                            Address: {row.original.firm_location}
+                        </div>
+                    )}
+                </div>
+            )
         },
         {
-            header: "Address",
-            accessorKey: "firm_location",
-            cell: ({ getValue }) => {
-                const value = getValue()
-                return value && value.trim() !== "" ? value : <div style={{ "color": "red" }}>Address unavailable</div>
-            }
+            header: "Punch Details",
+            cell: ({ row }) => (
+                <div style={{ display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
+                    onClick={() => {
+                        setSelectedPunch(row.original);
+                        setShowPunchDetails(true);
+                    }}
+                >
+                    <FaEye size={20} color="#2563eb" />
+                </div>
+            )
         },
         {
-            header: "Punch In Time",
-            accessorKey: "punchin_time",
-            cell: ({ getValue }) => {
-                const value = getValue()
-                return value ? formatDT(value) : 'N/A'
-            }
-        },
-        {
-            header: "Punch Out Time",
-            accessorKey: 'punchout_time',
-            cell: ({ getValue }) => {
-                const value = getValue()
-                return value ? formatDT(value) : 'N/A'
-            }
-        },
-        {
-            header: "Duration",
+            header: "Current Location",
+            accessorKey: "current_location",
             cell: ({ row }) => {
-                const { punchin_time, punchout_time } = row.original;
-                const duration = timeDiff(punchin_time, punchout_time)
-                return duration ? duration : "N/A"
+                const location = row.original.current_location;
+                // Parse coordinates from location string (format: "latitude,longitude")
+                const coords = location ? location.split(',') : null;
+                const hasValidCoords = coords && coords.length === 2;
+                
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ maxWidth: '180px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                            {location || 'N/A'}
+                        </div>
+                        {hasValidCoords && (
+                            <a
+                                href={`https://www.google.com/maps?q=${coords[0].trim()},${coords[1].trim()}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#3b82f6', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+                                title="View Current Location on Map"
+                            >
+                                <FaMapMarkerAlt size={16} />
+                            </a>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
+            header: "Shop Location",
+            accessorKey: "shop_location",
+            cell: ({ row }) => {
+                const location = row.original.shop_location;
+                // Parse coordinates from location string (format: "latitude,longitude")
+                const coords = location ? location.split(',') : null;
+                const hasValidCoords = coords && coords.length === 2;
+                
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ maxWidth: '180px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                            {location || 'N/A'}
+                        </div>
+                        {hasValidCoords && (
+                            <a
+                                href={`https://www.google.com/maps?q=${coords[0].trim()},${coords[1].trim()}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#10b981', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+                                title="View Shop Location on Map"
+                            >
+                                <FaMapMarkerAlt size={16} />
+                            </a>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
+            header: "Punch In Status",
+            accessorKey: "punchin_status",
+            cell: ({ row }) => {
+                const punchinStatus = row.original.punchin_status;
+                return (
+                    <div style={{ 
+                        padding: '4px 8px', 
+                        borderRadius: '4px',
+                        display: 'inline-block',
+                        backgroundColor: punchinStatus === 'manual' ? '#fef3c7' : '#dbeafe',
+                        color: punchinStatus === 'manual' ? '#92400e' : '#1e40af',
+                        fontWeight: '500',
+                        fontSize: '13px'
+                    }}>
+                        {punchinStatus || 'N/A'}
+                    </div>
+                );
             }
         },
         {
@@ -256,11 +428,7 @@ const PunchinTable = () => {
 
         },
 
-        {
-            header: "Updated By",
-            accessorKey: "created_by",
-            cell: ({ getValue }) => getValue() || 'N/A'
-        },
+
         {
             header: "Approval Status",
             accessorKey: "status",
@@ -293,7 +461,7 @@ const PunchinTable = () => {
     //     return <div className="loading">Loading store data...</div>
     // }
     if (loading) {
-        const columnsCount = userRole === "Admin" ? 6 : 5;
+        const columnsCount = userRole === "Admin" ? 9 : 8;
         return (
             <div className="table_section">
                 <h4 className="table_title">Recently Added Store Locations</h4>
@@ -430,7 +598,7 @@ const PunchinTable = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={userRole === "Admin" ? 10 : 8} className="no-data">
+                                <td colSpan={userRole === "Admin" ? 9 : 8} className="no-data">
                                     No stores found matching your search criteria
                                 </td>
                             </tr>
@@ -474,6 +642,33 @@ const PunchinTable = () => {
                         children={(<div className='photo-model-container' >
                             <img src={photoUrl} alt="" srcSet="" />
                         </div>)} />
+                )
+            }
+
+            {/* Punch Details Modal */}
+            {
+                showPunchDetails && selectedPunch && (
+                    <BaseModal
+                        isOpen={showPunchDetails}
+                        onClose={() => {
+                            setShowPunchDetails(false);
+                            setSelectedPunch(null);
+                        }}
+                        children={(
+                            <div className="punch-details-content" style={{ padding: '20px' }}>
+                                <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: 'bold', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>Punch Details</h3>
+                                <div style={{ marginBottom: '15px' }}>
+                                    <strong>Punch In Time:</strong> {selectedPunch.punchin_time ? formatDT(selectedPunch.punchin_time) : 'N/A'}
+                                </div>
+                                <div style={{ marginBottom: '15px' }}>
+                                    <strong>Punch Out Time:</strong> {selectedPunch.punchout_time ? formatDT(selectedPunch.punchout_time) : 'N/A'}
+                                </div>
+                                <div>
+                                    <strong>Duration:</strong> {timeDiff(selectedPunch.punchin_time, selectedPunch.punchout_time) || 'N/A'}
+                                </div>
+                            </div>
+                        )}
+                    />
                 )
             }
         </div>
