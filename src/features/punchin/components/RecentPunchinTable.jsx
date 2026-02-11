@@ -160,7 +160,7 @@ const PunchinTable = () => {
                 // Parse coordinates from location string (format: "latitude,longitude")
                 const coords = location ? location.split(',') : null;
                 const hasValidCoords = coords && coords.length === 2;
-                
+
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ maxWidth: '180px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
@@ -181,47 +181,30 @@ const PunchinTable = () => {
                 );
             }
         },
-        {
-            header: "Shop Location",
-            accessorKey: "shop_location",
-            cell: ({ row }) => {
-                const location = row.original.shop_location;
-                // Parse coordinates from location string (format: "latitude,longitude")
-                const coords = location ? location.split(',') : null;
-                const hasValidCoords = coords && coords.length === 2;
-                
-                return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ maxWidth: '180px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
-                            {location || 'N/A'}
-                        </div>
-                        {hasValidCoords && (
-                            <a
-                                href={`https://www.google.com/maps?q=${coords[0].trim()},${coords[1].trim()}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ color: '#10b981', display: 'flex', alignItems: 'center', flexShrink: 0 }}
-                                title="View Shop Location on Map"
-                            >
-                                <FaMapMarkerAlt size={16} />
-                            </a>
-                        )}
-                    </div>
-                );
-            }
-        },
+
         {
             header: "Punch In Status",
             accessorKey: "punchin_status",
             cell: ({ row }) => {
                 const punchinStatus = row.original.punchin_status;
+                let bgColor = '#dbeafe';
+                let textColor = '#1e40af';
+
+                if (punchinStatus === 'manual') {
+                    bgColor = '#fef3c7';
+                    textColor = '#92400e';
+                } else if (punchinStatus === 'mismatch location') {
+                    bgColor = '#fee2e2';
+                    textColor = '#991b1b';
+                }
+
                 return (
-                    <div style={{ 
-                        padding: '4px 8px', 
+                    <div style={{
+                        padding: '4px 8px',
                         borderRadius: '4px',
                         display: 'inline-block',
-                        backgroundColor: punchinStatus === 'manual' ? '#fef3c7' : '#dbeafe',
-                        color: punchinStatus === 'manual' ? '#92400e' : '#1e40af',
+                        backgroundColor: bgColor,
+                        color: textColor,
                         fontWeight: '500',
                         fontSize: '13px'
                     }}>
@@ -327,7 +310,7 @@ const PunchinTable = () => {
                 // Parse coordinates from location string (format: "latitude,longitude")
                 const coords = location ? location.split(',') : null;
                 const hasValidCoords = coords && coords.length === 2;
-                
+
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ maxWidth: '180px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
@@ -348,47 +331,30 @@ const PunchinTable = () => {
                 );
             }
         },
-        {
-            header: "Shop Location",
-            accessorKey: "shop_location",
-            cell: ({ row }) => {
-                const location = row.original.shop_location;
-                // Parse coordinates from location string (format: "latitude,longitude")
-                const coords = location ? location.split(',') : null;
-                const hasValidCoords = coords && coords.length === 2;
-                
-                return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ maxWidth: '180px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
-                            {location || 'N/A'}
-                        </div>
-                        {hasValidCoords && (
-                            <a
-                                href={`https://www.google.com/maps?q=${coords[0].trim()},${coords[1].trim()}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ color: '#10b981', display: 'flex', alignItems: 'center', flexShrink: 0 }}
-                                title="View Shop Location on Map"
-                            >
-                                <FaMapMarkerAlt size={16} />
-                            </a>
-                        )}
-                    </div>
-                );
-            }
-        },
+
         {
             header: "Punch In Status",
             accessorKey: "punchin_status",
             cell: ({ row }) => {
                 const punchinStatus = row.original.punchin_status;
+                let bgColor = '#dbeafe';
+                let textColor = '#1e40af';
+
+                if (punchinStatus === 'manual') {
+                    bgColor = '#fef3c7';
+                    textColor = '#92400e';
+                } else if (punchinStatus === 'mismatch location') {
+                    bgColor = '#fee2e2';
+                    textColor = '#991b1b';
+                }
+
                 return (
-                    <div style={{ 
-                        padding: '4px 8px', 
+                    <div style={{
+                        padding: '4px 8px',
                         borderRadius: '4px',
                         display: 'inline-block',
-                        backgroundColor: punchinStatus === 'manual' ? '#fef3c7' : '#dbeafe',
-                        color: punchinStatus === 'manual' ? '#92400e' : '#1e40af',
+                        backgroundColor: bgColor,
+                        color: textColor,
                         fontWeight: '500',
                         fontSize: '13px'
                     }}>
@@ -461,7 +427,7 @@ const PunchinTable = () => {
     //     return <div className="loading">Loading store data...</div>
     // }
     if (loading) {
-        const columnsCount = userRole === "Admin" ? 9 : 8;
+        const columnsCount = userRole === "Admin" ? 8 : 7;
         return (
             <div className="table_section">
                 <h4 className="table_title">Recently Added Store Locations</h4>
@@ -598,7 +564,7 @@ const PunchinTable = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={userRole === "Admin" ? 9 : 8} className="no-data">
+                                <td colSpan={userRole === "Admin" ? 8 : 7} className="no-data">
                                     No stores found matching your search criteria
                                 </td>
                             </tr>
