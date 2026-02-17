@@ -26,6 +26,7 @@ import CollectionReport from '../features/NewReport/CollectionReport';
 import { AreaAssign } from '../features/punchin';
 import AreaAssignTableView from '../features/punchin/pages/AreaAssignTableView';
 import Options from '../features/settings/pages/Options';
+import DeveloperOptions from '../features/settings/pages/DeveloperOptions';
 
 const AppLayout = () => {
     const location = useLocation();
@@ -131,53 +132,61 @@ const AppLayout = () => {
 
                 {/* Masters */}
                 {/* Masters */}
-<Route path="/masters">
-    <Route
-        index
-        element={
-            <ProtectedRoute>
-                <MenuManagement />
-            </ProtectedRoute>
-        }
-    />
-    <Route
-        path="users"
-        element={
-            <ProtectedRoute>
-                <MasterUsers />
-            </ProtectedRoute>
-        }
-    />
-    <Route
-        path="debtors"
-        element={
-            <ProtectedRoute>
-                <MasterDebtors />
-            </ProtectedRoute>
-        }
-    />
-    <Route
-            path="suppliers"
-            element={
-                <ProtectedRoute>
-                    <MasterSuppliers />
-                </ProtectedRoute>
-            }
-        />
-    </Route>
+                <Route path="/masters">
+                    <Route
+                        index
+                        element={
+                            <ProtectedRoute>
+                                <MenuManagement />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="users"
+                        element={
+                            <ProtectedRoute>
+                                <MasterUsers />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="debtors"
+                        element={
+                            <ProtectedRoute>
+                                <MasterDebtors />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="suppliers"
+                        element={
+                            <ProtectedRoute>
+                                <MasterSuppliers />
+                            </ProtectedRoute>
+                        }
+                    />
+                </Route>
 
-    {/* Settings → Options */}
-    <Route
-        path="/settings/options"
-        element={
-            <ProtectedRoute>
-                <Options />
-            </ProtectedRoute>
-        }
-    />
+                {/* Settings → Options */}
+                <Route
+                    path="/settings/options"
+                    element={
+                        <ProtectedRoute>
+                            <Options />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/settings/developer-options"
+                    element={
+                        <ProtectedRoute>
+                            <DeveloperOptions />
+                        </ProtectedRoute>
+                    }
+                />
 
-    {/* 404 */}
-    <Route path="/*" element={<NotFound />} />
+                {/* 404 */}
+                <Route path="/*" element={<NotFound />} />
 
             </Routes>
         </>

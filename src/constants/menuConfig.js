@@ -1,19 +1,19 @@
 // Font Awesome icons
 import {
-  FaBox,
-  FaUniversity,
-  FaMoneyBillWave,
-  FaBuilding,
-  FaFingerprint,
-  FaCog,
-  FaMapMarkerAlt,
-  FaTable,
-  FaChevronDown,
-  FaChevronRight,
-  FaUserFriends,
-  FaTruck,
-  FaFileAlt,
-  FaChartBar
+    FaBox,
+    FaUniversity,
+    FaMoneyBillWave,
+    FaBuilding,
+    FaFingerprint,
+    FaCog,
+    FaMapMarkerAlt,
+    FaTable,
+    FaChevronDown,
+    FaChevronRight,
+    FaUserFriends,
+    FaTruck,
+    FaFileAlt,
+    FaChartBar
 } from 'react-icons/fa';
 
 // Material icons
@@ -44,7 +44,7 @@ export const MENU_CONFIG = [
         route: '/masters/debtors',
         order: 1
     },
-    
+
     // -------------------------------
     // Reports (Simple Menu Item)
     // -------------------------------
@@ -56,7 +56,7 @@ export const MENU_CONFIG = [
         route: '/reports',
         order: 2
     },
-    
+
     {
         id: 'master-suppliers',
         type: MENU_TYPES.SIMPLE,
@@ -77,7 +77,7 @@ export const MENU_CONFIG = [
         route: '/reports/collection',
         order: 4
     },
-    
+
     {
         id: 'debtors',
         type: MENU_TYPES.SIMPLE,
@@ -174,6 +174,12 @@ export const MENU_CONFIG = [
                 label: 'Options',
                 icon: FaCog,
                 route: '/settings/options'
+            },
+            {
+                id: 'developer-options',
+                label: 'Developer Option',
+                icon: FaCog,
+                route: '/settings/developer-options'
             }
         ]
     }
