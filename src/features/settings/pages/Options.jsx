@@ -23,6 +23,10 @@ const Options = () => {
   // 6️⃣ Barcode Based List
   const [barcodeBasedList, setBarcodeBasedList] = useState(false);
 
+  // 7️⃣ Print & Tax
+  const [defaultPrintForm, setDefaultPrintForm] = useState("Form 1");
+  const [taxType, setTaxType] = useState("No tax");
+
   useEffect(() => {
     getSettingsOptions()
       .then((data) => {
@@ -39,6 +43,10 @@ const Options = () => {
 
         // 6️⃣ load barcode option
         setBarcodeBasedList(Boolean(data.barcode_based_list));
+
+        // 7️⃣ Print & Tax
+        setDefaultPrintForm(data.default_print_form || "Form 1");
+        setTaxType(data.tax_type || "No tax");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -73,6 +81,10 @@ const Options = () => {
 
       // 6️⃣ send barcode flag
       barcode_based_list: barcodeBasedList,
+
+      // 7️⃣ send print & tax
+      default_print_form: defaultPrintForm,
+      tax_type: taxType,
     });
 
     alert("Settings saved successfully");
@@ -231,6 +243,68 @@ const Options = () => {
                 onChange={() => setBarcodeBasedList(false)}
               />
               No
+            </label>
+          </div>
+        </div>
+
+        {/* 7️⃣ Default Print Form */}
+        <div className="option-card">
+          <h3>7. Default Print Form</h3>
+          <div className="radio-group">
+            <label>
+              <input
+                type="radio"
+                checked={defaultPrintForm === "Form 1"}
+                onChange={() => setDefaultPrintForm("Form 1")}
+              />
+              Form 1
+            </label>
+            <label>
+              <input
+                type="radio"
+                checked={defaultPrintForm === "Form 2"}
+                onChange={() => setDefaultPrintForm("Form 2")}
+              />
+              Form 2
+            </label>
+            <label>
+              <input
+                type="radio"
+                checked={defaultPrintForm === "Form 3"}
+                onChange={() => setDefaultPrintForm("Form 3")}
+              />
+              Form 3
+            </label>
+          </div>
+        </div>
+
+        {/* 8️⃣ TAX Type */}
+        <div className="option-card">
+          <h3>8. TAX</h3>
+          <div className="radio-group">
+            <label>
+              <input
+                type="radio"
+                checked={taxType === "No tax"}
+                onChange={() => setTaxType("No tax")}
+              />
+              No tax
+            </label>
+            <label>
+              <input
+                type="radio"
+                checked={taxType === "plus tax"}
+                onChange={() => setTaxType("plus tax")}
+              />
+              plus tax
+            </label>
+            <label>
+              <input
+                type="radio"
+                checked={taxType === "reverse tax"}
+                onChange={() => setTaxType("reverse tax")}
+              />
+              reverse tax
             </label>
           </div>
         </div>
