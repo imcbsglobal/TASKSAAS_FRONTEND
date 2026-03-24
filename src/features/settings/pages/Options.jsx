@@ -27,6 +27,10 @@ const Options = () => {
   const [defaultPrintForm, setDefaultPrintForm] = useState("Form 1");
   const [taxType, setTaxType] = useState("No tax");
 
+  // 9️⃣ User Type
+  const [userType, setUserType] = useState("All");
+  const [userTypes, setUserTypes] = useState([]);
+
   useEffect(() => {
     getSettingsOptions()
       .then((data) => {
@@ -47,6 +51,10 @@ const Options = () => {
         // 7️⃣ Print & Tax
         setDefaultPrintForm(data.default_print_form || "Form 1");
         setTaxType(data.tax_type || "No tax");
+
+        // 9️⃣ User Type
+        setUserType(data.user_type || "All");
+        setUserTypes(data.user_types || []);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -85,6 +93,9 @@ const Options = () => {
       // 7️⃣ send print & tax
       default_print_form: defaultPrintForm,
       tax_type: taxType,
+
+      // 9️⃣ send user type
+      user_type: userType,
     });
 
     alert("Settings saved successfully");
@@ -306,6 +317,24 @@ const Options = () => {
               />
               reverse tax
             </label>
+          </div>
+        </div>
+
+        {/* 9️⃣ User Type */}
+        <div className="option-card">
+          <h3>9. User Type</h3>
+          <div className="role-select">
+            <select
+              value={userType}
+              onChange={(e) => setUserType(e.target.value)}
+            >
+              <option value="All">All</option>
+              {userTypes.map((type, index) => (
+                <option key={index} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
