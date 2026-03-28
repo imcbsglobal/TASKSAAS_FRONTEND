@@ -27,6 +27,7 @@ import { AreaAssign } from '../features/punchin';
 import AreaAssignTableView from '../features/punchin/pages/AreaAssignTableView';
 import Options from '../features/settings/pages/Options';
 import DeveloperOptions from '../features/settings/pages/DeveloperOptions';
+import Logo from '../features/settings/pages/Logo';
 
 const AppLayout = () => {
     const location = useLocation();
@@ -173,6 +174,14 @@ const AppLayout = () => {
                     element={
                         <ProtectedRoute>
                             <Options />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/settings/logo"
+                    element={
+                        <ProtectedRoute>
+                            <Logo />
                         </ProtectedRoute>
                     }
                 />

@@ -176,6 +176,12 @@ export const MENU_CONFIG = [
                 route: '/settings/options'
             },
             {
+                id: 'settings-logo',
+                label: 'Logo',
+                icon: FaCog,
+                route: '/settings/logo'
+            },
+            {
                 id: 'developer-options',
                 label: 'Developer Option',
                 icon: FaCog,
