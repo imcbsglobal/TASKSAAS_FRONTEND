@@ -22,6 +22,8 @@ import MasterUsers from '../features/masters/page/MasterUsers';
 import BillsReceivable from '../features/bills/BillsReceivable';
 import Reports from '../features/NewReport/Report';
 import CollectionReport from '../features/NewReport/CollectionReport';
+import Sales from '../features/NewReport/sales';
+import SalesReturn from '../features/NewReport/salesreturn';
 
 import { AreaAssign } from '../features/punchin';
 import AreaAssignTableView from '../features/punchin/pages/AreaAssignTableView';
@@ -120,6 +122,22 @@ const AppLayout = () => {
                         </ProtectedRoute>
                     }
                 />
+                <Route
+                    path="/reports/sales"
+                    element={
+                        <ProtectedRoute>
+                            <Sales />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/reports/sales-return"
+                    element={
+                        <ProtectedRoute>
+                            <SalesReturn />
+                        </ProtectedRoute>
+                    }
+                />
 
                 {/* Punch-In */}
                 <Route path="/punch-in/location" element={<LocationRecords />} />
@@ -131,7 +149,6 @@ const AppLayout = () => {
                 <Route path="/area-assign" element={<AreaAssign />} />
                 <Route path="/masters/area-table" element={<AreaAssignTableView />} />
 
-                {/* Masters */}
                 {/* Masters */}
                 <Route path="/masters">
                     <Route
@@ -168,7 +185,7 @@ const AppLayout = () => {
                     />
                 </Route>
 
-                {/* Settings → Options */}
+                {/* Settings */}
                 <Route
                     path="/settings/options"
                     element={

@@ -27,12 +27,10 @@ const StatusCell = ({ initialStatus, row, onStatusUpdate }) => {
         setIsUpdating(true);
 
         try {
-            // Call API to update status
             await PunchAPI.updateStatus({ "shop_id": row.original.firm_code, "status": newStatus });
             onStatusUpdate?.(row.original.id, newStatus);
         } catch (error) {
             console.error("Failed to update status", error);
-            // Revert to previous status on error
             setStatus(initialStatus);
         } finally {
             setIsUpdating(false);
@@ -59,21 +57,25 @@ const StatusCell = ({ initialStatus, row, onStatusUpdate }) => {
 const StoreTable = () => {
     const [globalFilter, setGlobalFilter] = useState('')
     const [storesData, setStoresData] = useState([])
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
     const userRole = useSelector((state) => state.auth?.user?.role)
-    const [statusFilter, setStatusFilter] = useState('pending');
+    const [statusFilter, setStatusFilter] = useState('all');
     const [updatedByFilter, setUpdatedByFilter] = useState('');
-    const [fromDate, setFromDate] = useState(formatDateApi(new Date()));
-    const [toDate, setToDate] = useState(formatDateApi(new Date()));
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
 
     useEffect(() => {
         const fetchTableData = async () => {
+            if (!fromDate || !toDate) return;
             try {
                 setLoading(true)
                 const response = await PunchAPI.LocationTable([fromDate, toDate])
                 if (response?.data) {
-                    setStoresData(response.data)
+                    const sorted = [...response.data].sort((a, b) =>
+                        new Date(b.lastCapturedTime) - new Date(a.lastCapturedTime)
+                    )
+                    setStoresData(sorted)
                 }
             } catch (error) {
                 console.error('Failed to fetch table data', error)
@@ -86,13 +88,11 @@ const StoreTable = () => {
     }, [fromDate, toDate])
 
     const handleStatusUpdate = (id, newStatus) => {
-        // Update local state to reflect the change immediately
         setStoresData(prev => prev.map(store =>
             store.id === id ? { ...store, status: newStatus } : store
         ))
     }
 
-    // Filter data based on status and updated by filter
     const filteredData = useMemo(() => {
         let result = storesData;
 
@@ -214,7 +214,7 @@ const StoreTable = () => {
     ], [handleStatusUpdate])
 
     const table = useReactTable({
-        data: filteredData,  // Use filtered data instead of raw data
+        data: filteredData,
         columns: userRole === "Admin" ? adminColumns : userColumns,
         state: {
             globalFilter: globalFilter,
@@ -228,22 +228,14 @@ const StoreTable = () => {
         }
     })
 
-    // if (loading) {
-    //     return <div className="loading"><Skeleton /></div>
-    // }
-
     if (loading) {
         const columnsCount = userRole === "Admin" ? 6 : 5;
         return (
             <div className="table_section">
                 <h4 className="table_title">Recently Added Store Locations</h4>
-
-                {/* Skeleton for Filters */}
                 <div className="filter_search_section">
                     <Skeleton height={40} width="100%" />
                 </div>
-
-                {/* Skeleton Table */}
                 <div className="table_container skeleton-loading">
                     <table>
                         <thead>
@@ -272,7 +264,6 @@ const StoreTable = () => {
         );
     }
 
-
     if (error) {
         return <div className="error">Error: {error}</div>
     }
@@ -295,9 +286,7 @@ const StoreTable = () => {
                 {/* Filter Section */}
                 <div className="filters_section">
                     <div className="filter_status">
-                        <span className="filter_label">
-                            Updated By:
-                        </span>
+                        <span className="filter_label">Updated By:</span>
                         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                             <input
                                 type="text"
@@ -339,9 +328,8 @@ const StoreTable = () => {
                         </div>
                     </div>
                     <div className="filter_status">
-                        <span className="filter_label">
-                            Status :
-                        </span>                        <select
+                        <span className="filter_label">Status :</span>
+                        <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                             className="status-filter-select"
@@ -372,7 +360,6 @@ const StoreTable = () => {
                             />
                         </div>
                     </div>
-
                 </div>
             </div>
 

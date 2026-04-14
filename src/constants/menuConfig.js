@@ -13,7 +13,9 @@ import {
     FaUserFriends,
     FaTruck,
     FaFileAlt,
-    FaChartBar
+    FaChartBar,
+    FaShoppingCart,
+    FaUndoAlt
 } from 'react-icons/fa';
 
 // Material icons
@@ -96,8 +98,32 @@ export const MENU_CONFIG = [
     //     label: 'Bills Receivable',
     //     icon: FaMoneyBillWave,
     //     route: '/bills/receivable',
-    //     order: 3.5
+    //     order: 5.5
     // },
+
+    // -------------------------------
+    // Sales
+    // -------------------------------
+    {
+        id: 'sales',
+        type: MENU_TYPES.SIMPLE,
+        label: 'Sales',
+        icon: FaShoppingCart,
+        route: '/reports/sales',
+        order: 5.7
+    },
+
+    // -------------------------------
+    // Sales Return
+    // -------------------------------
+    {
+        id: 'sales-return',
+        type: MENU_TYPES.SIMPLE,
+        label: 'Sales Return',
+        icon: FaUndoAlt,
+        route: '/reports/sales-return',
+        order: 5.8
+    },
 
     {
         id: 'area-assign',
