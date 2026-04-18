@@ -1,0 +1,253 @@
+.bank-qr-page {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.bank-qr-page h2 {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.bank-qr-page p.subtitle {
+  font-size: 15px;
+  color: #64748b;
+  margin-bottom: 32px;
+}
+
+/* Card */
+.bank-qr-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981, #3b82f6);
+  }
+}
+
+/* Current QR preview */
+.qr-preview-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.qr-preview-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.qr-preview-img {
+  max-width: 240px;
+  max-height: 240px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 2px dashed #cbd5e1;
+  padding: 12px;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16,185,129,0.1);
+  }
+}
+
+.qr-placeholder {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  gap: 10px;
+  color: #94a3b8;
+
+  .placeholder-icon {
+    font-size: 36px;
+  }
+
+  span {
+    font-size: 13px;
+    font-weight: 500;
+  }
+}
+
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: #f8fafc;
+  margin-bottom: 20px;
+
+  &:hover,
+  &.dragging {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #f0fdf4, #f0f9ff);
+    box-shadow: 0 0 0 4px rgba(16,185,129,0.12);
+  }
+
+  .drop-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+  }
+
+  .drop-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 4px;
+  }
+
+  .drop-hint {
+    font-size: 13px;
+    color: #94a3b8;
+  }
+
+  input[type="file"] {
+    display: none;
+  }
+}
+
+/* Selected file info */
+.file-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  border: 1.5px solid #a7f3d0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #065f46;
+  gap: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+.file-info-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-info-size {
+  font-size: 13px;
+  color: #6ee7b7;
+  flex-shrink: 0;
+}
+
+.file-clear-btn {
+  background: none;
+  border: none;
+  color: #10b981;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.2s;
+
+  &:hover { color: #059669; }
+}
+
+/* Error */
+.qr-error {
+  background: #fef2f2;
+  border: 1.5px solid #fca5a5;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Success */
+.qr-success {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  color: #16a34a;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Upload button */
+.upload-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 10px 15px -3px rgba(16,185,129,0.3);
+  transition: all 0.3s ease;
+  letter-spacing: 0.02em;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(16,185,129,0.35);
+    background: linear-gradient(135deg, #059669 0%, #047857 50%, #064e3b 100%);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}

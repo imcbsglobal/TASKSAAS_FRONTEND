@@ -208,6 +208,12 @@ export const MENU_CONFIG = [
                 route: '/settings/logo'
             },
             {
+                id: 'settings-bank-qr',
+                label: 'Bank QR',
+                icon: FaCog,
+                route: '/settings/bank-qr'
+            },
+            {
                 id: 'developer-options',
                 label: 'Developer Option',
                 icon: FaCog,

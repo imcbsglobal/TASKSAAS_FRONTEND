@@ -30,6 +30,7 @@ import AreaAssignTableView from '../features/punchin/pages/AreaAssignTableView';
 import Options from '../features/settings/pages/Options';
 import DeveloperOptions from '../features/settings/pages/DeveloperOptions';
 import Logo from '../features/settings/pages/Logo';
+import BankQr from '../features/settings/pages/BankQr';
 
 const AppLayout = () => {
     const location = useLocation();
@@ -199,6 +200,14 @@ const AppLayout = () => {
                     element={
                         <ProtectedRoute>
                             <Logo />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/settings/bank-qr"
+                    element={
+                        <ProtectedRoute>
+                            <BankQr />
                         </ProtectedRoute>
                     }
                 />
