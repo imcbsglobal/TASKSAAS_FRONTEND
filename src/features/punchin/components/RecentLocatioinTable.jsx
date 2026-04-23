@@ -3,7 +3,6 @@ import '../styles/StoreTable.scss'
 import { GoSearch } from 'react-icons/go';
 import { useSelector } from 'react-redux';
 import {
-    createColumnHelper,
     flexRender,
     getCoreRowModel,
     useReactTable,
@@ -12,10 +11,11 @@ import {
 } from '@tanstack/react-table';
 import { PunchAPI } from '../services/punchService';
 import { formatDT, formatDateApi } from '@/utils/';
-import DatePickerFilter from './DatePickerFilter';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
+// Helper to get YYYY-MM-DD string from a Date object
+const toDateString = (date) => date.toISOString().split('T')[0];
 
 const StatusCell = ({ initialStatus, row, onStatusUpdate }) => {
     const [status, setStatus] = useState(initialStatus);
@@ -62,15 +62,20 @@ const StoreTable = () => {
     const userRole = useSelector((state) => state.auth?.user?.role)
     const [statusFilter, setStatusFilter] = useState('all');
     const [updatedByFilter, setUpdatedByFilter] = useState('');
+
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
 
     useEffect(() => {
         const fetchTableData = async () => {
-            if (!fromDate || !toDate) return;
+            const from = fromDate || '2000-01-01';
+            const to = toDate || toDateString(new Date());
+
             try {
-                setLoading(true)
-                const response = await PunchAPI.LocationTable([fromDate, toDate])
+                // Use silent refresh (no setLoading) when dates change to prevent calendar jumping
+                if (storesData.length === 0) setLoading(true)
+                setError(null)
+                const response = await PunchAPI.LocationTable([from, to])
                 if (response?.data) {
                     const sorted = [...response.data].sort((a, b) =>
                         new Date(b.lastCapturedTime) - new Date(a.lastCapturedTime)
@@ -122,7 +127,7 @@ const StoreTable = () => {
             accessorKey: "storeLocation",
             cell: ({ getValue }) => {
                 const value = getValue()
-                return value && value.trim() !== "" ? value : <div style={{ "color": "red" }}>Address unavailable</div>
+                return value && value.trim() !== "" ? value : <div style={{ color: "red" }}>Address unavailable</div>
             }
         },
         {
@@ -138,7 +143,6 @@ const StoreTable = () => {
             cell: ({ row }) => {
                 const { latitude, longitude } = row.original
                 if (!latitude || !longitude) return 'N/A'
-
                 const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`
                 return (
                     <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
@@ -170,7 +174,7 @@ const StoreTable = () => {
             accessorKey: "storeLocation",
             cell: ({ getValue }) => {
                 const value = getValue()
-                return value && value.trim() !== "" ? value : <div style={{ "color": "red" }}>Address unavailable</div>
+                return value && value.trim() !== "" ? value : <div style={{ color: "red" }}>Address unavailable</div>
             }
         },
         {
@@ -191,7 +195,6 @@ const StoreTable = () => {
             cell: ({ row }) => {
                 const { latitude, longitude } = row.original
                 if (!latitude || !longitude) return 'N/A'
-
                 const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`
                 return (
                     <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
@@ -272,6 +275,7 @@ const StoreTable = () => {
         <div className='table_section'>
             <h4 className="table_title">Recently Added Store Locations</h4>
             <div className="filter_search_section">
+
                 {/* Search Section */}
                 <div className="search_section">
                     <GoSearch className="search_icon" />
@@ -283,50 +287,36 @@ const StoreTable = () => {
                         className="search_input"
                     />
                 </div>
+
                 {/* Filter Section */}
                 <div className="filters_section">
-                    <div className="filter_status">
-                        <span className="filter_label">Updated By:</span>
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <input
-                                type="text"
-                                value={updatedByFilter}
-                                onChange={(e) => setUpdatedByFilter(e.target.value)}
-                                placeholder="Search user..."
-                                className="search_input"
-                                style={{
-                                    width: '150px',
-                                    padding: '8px 30px 8px 10px',
-                                    fontSize: '14px',
-                                    borderRadius: '6px',
-                                    border: '1px solid #e2e8f0',
-                                    outline: 'none'
-                                }}
-                            />
-                            {updatedByFilter && (
-                                <button
-                                    onClick={() => setUpdatedByFilter('')}
-                                    style={{
-                                        position: 'absolute',
-                                        right: '8px',
-                                        background: 'none',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        color: '#94a3b8',
-                                        fontSize: '16px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        padding: 0,
-                                        width: '20px',
-                                        height: '20px'
-                                    }}
-                                >
-                                    ×
-                                </button>
-                            )}
+
+                    {/* Updated By filter — admin only */}
+                    {userRole === "Admin" && (
+                        <div className="filter_status">
+                            <span className="filter_label">Updated By:</span>
+                            {/* ✅ Removed all inline styles — now fully controlled by SCSS */}
+                            <div className="updated-by-wrapper">
+                                <input
+                                    type="text"
+                                    value={updatedByFilter}
+                                    onChange={(e) => setUpdatedByFilter(e.target.value)}
+                                    placeholder="Search user..."
+                                    className="search_input"
+                                />
+                                {updatedByFilter && (
+                                    <button
+                                        onClick={() => setUpdatedByFilter('')}
+                                        className="clear-btn"
+                                    >
+                                        ×
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Status filter */}
                     <div className="filter_status">
                         <span className="filter_label">Status :</span>
                         <select
@@ -340,6 +330,8 @@ const StoreTable = () => {
                             <option value="rejected">Rejected</option>
                         </select>
                     </div>
+
+                    {/* Date range filter */}
                     <div className="filter_date_inputs">
                         <div className="date_input_group">
                             <span className="filter_label">From:</span>
@@ -347,7 +339,7 @@ const StoreTable = () => {
                                 type="date"
                                 value={fromDate}
                                 onChange={(e) => setFromDate(e.target.value)}
-                                className="search_input date_field"
+                                className="date_field"
                             />
                         </div>
                         <div className="date_input_group">
@@ -356,7 +348,7 @@ const StoreTable = () => {
                                 type="date"
                                 value={toDate}
                                 onChange={(e) => setToDate(e.target.value)}
-                                className="search_input date_field"
+                                className="date_field"
                             />
                         </div>
                     </div>
