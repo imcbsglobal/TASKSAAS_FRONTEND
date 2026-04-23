@@ -190,12 +190,12 @@ const PunchinTable = () => {
                 let bgColor = '#dbeafe';
                 let textColor = '#1e40af';
 
-                if (punchinStatus === 'manual') {
+                if (punchinStatus?.toLowerCase() === 'manual') {
                     bgColor = '#fef3c7';
                     textColor = '#92400e';
-                } else if (punchinStatus === 'mismatch location') {
+                } else if (punchinStatus?.toLowerCase() === 'mismatch location') {
                     bgColor = '#fee2e2';
-                    textColor = '#991b1b';
+                    textColor = '#ef4444'; // Brighter red
                 }
 
                 return (
@@ -340,12 +340,12 @@ const PunchinTable = () => {
                 let bgColor = '#dbeafe';
                 let textColor = '#1e40af';
 
-                if (punchinStatus === 'manual') {
+                if (punchinStatus?.toLowerCase() === 'manual') {
                     bgColor = '#fef3c7';
                     textColor = '#92400e';
-                } else if (punchinStatus === 'mismatch location') {
+                } else if (punchinStatus?.toLowerCase() === 'mismatch location') {
                     bgColor = '#fee2e2';
-                    textColor = '#991b1b';
+                    textColor = '#ef4444'; // Brighter red
                 }
 
                 return (
