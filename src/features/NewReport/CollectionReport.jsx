@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import './CollectionReport.scss';
 
 const CollectionReport = () => {
     const getToday = () => {
         const d = new Date();
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     };
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -27,53 +28,23 @@ const CollectionReport = () => {
 
             const token = localStorage.getItem('authToken') || localStorage.getItem('token');
 
-            const headers = {
-                'Content-Type': 'application/json',
-            };
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
 
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-
-            const response = await fetch('https://tasksas.com/api/collection/list/', {
+            const response = await fetch('https://tasksas.com/api/collection/list-all/', {
                 method: 'GET',
-                headers: headers,
+                headers,
             });
 
             if (!response.ok) {
-                if (response.status === 401) {
-                    throw new Error('Unauthorized - Please login again');
-                }
+                if (response.status === 401) throw new Error('Unauthorized - Please login again');
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();
-
             console.log('API Response - Total records:', result.data?.length || 0);
-            console.log('Full API Response:', result);
 
             if (result.success && Array.isArray(result.data)) {
-                // Log all cheque entries to debug
-                const chequeEntries = result.data.filter(item =>
-                    item.type && item.type.toLowerCase() === 'cheque'
-                );
-                console.log('=== CHEQUE ENTRIES DEBUG ===');
-                console.log('Total Cheque Entries:', chequeEntries.length);
-                chequeEntries.forEach((item, index) => {
-                    console.log(`Cheque ${index + 1}:`, {
-                        id: item.id,
-                        code: item.code,
-                        name: item.name,
-                        type: item.type,
-                        cheque_number: item.cheque_number,
-                        cheque_no: item.cheque_no,
-                        chequeNumber: item.chequeNumber,
-                        chequeNo: item.chequeNo,
-                        allKeys: Object.keys(item)
-                    });
-                });
-                console.log('=== END CHEQUE DEBUG ===');
-
                 const transformedData = result.data.map((item) => ({
                     id: item.id,
                     code: item.code || 'N/A',
@@ -85,8 +56,8 @@ const CollectionReport = () => {
                     cheque_number: item.cheque_number || item.cheque_no || item.chequeNumber || item.chequeNo || '',
                     created_date: item.created_date || 'N/A',
                     created_time: item.created_time || '-',
-                    created_by: item.created_by || '-', // Placeholder for future API field
-                    status: item.status || '-'
+                    created_by: item.created_by || '-',
+                    status: item.status || '-',
                 }));
                 setCollectionData(transformedData);
             } else {
@@ -100,9 +71,7 @@ const CollectionReport = () => {
         }
     };
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+    useEffect(() => { fetchData(); }, []);
 
     const handleRefresh = () => {
         setIsRefreshing(true);
@@ -130,32 +99,24 @@ const CollectionReport = () => {
         if (searchTerm) {
             const t = searchTerm.trim().toLowerCase();
             result = result.filter(d =>
-                (d.name || "").toLowerCase().includes(t) ||
-                (d.code || "").toLowerCase().includes(t) ||
-                (d.place || "").toLowerCase().includes(t) ||
-                (d.phone || "").toLowerCase().includes(t)
+                (d.name || '').toLowerCase().includes(t) ||
+                (d.code || '').toLowerCase().includes(t) ||
+                (d.place || '').toLowerCase().includes(t) ||
+                (d.phone || '').toLowerCase().includes(t)
             );
         }
 
-        if (selectedMode) {
-            result = result.filter(d => d.type === selectedMode);
-        }
-
-        if (selectedStatus) {
-            result = result.filter(d => d.status === selectedStatus);
-        }
+        if (selectedMode) result = result.filter(d => d.type === selectedMode);
+        if (selectedStatus) result = result.filter(d => d.status === selectedStatus);
 
         if (selectedCreatedBy) {
-            result = result.filter(d => (d.created_by || "").toLowerCase().includes(selectedCreatedBy.toLowerCase().trim()));
+            result = result.filter(d =>
+                (d.created_by || '').toLowerCase().includes(selectedCreatedBy.toLowerCase().trim())
+            );
         }
 
-        if (fromDate) {
-            result = result.filter(d => d.created_date >= fromDate);
-        }
-
-        if (toDate) {
-            result = result.filter(d => d.created_date <= toDate);
-        }
+        if (fromDate) result = result.filter(d => d.created_date >= fromDate);
+        if (toDate) result = result.filter(d => d.created_date <= toDate);
 
         return result;
     }, [searchTerm, selectedMode, selectedStatus, selectedCreatedBy, fromDate, toDate, collectionData]);
@@ -174,19 +135,55 @@ const CollectionReport = () => {
         setPage(p);
     };
 
-    // Get unique payment modes from data
     const uniqueModes = useMemo(() => {
-        const modes = collectionData.map(d => d.type).filter(type => type && type.trim() !== "");
+        const modes = collectionData.map(d => d.type).filter(t => t && t.trim() !== '');
         return [...new Set(modes)].sort();
     }, [collectionData]);
 
-    // Get unique statuses from data
+    // Build unique statuses dynamically from whatever the API returns
     const uniqueStatuses = useMemo(() => {
-        const statuses = collectionData.map(d => d.status).filter(status => status && status.trim() !== "" && status !== "-");
+        const statuses = collectionData
+            .map(d => d.status)
+            .filter(s => s && s.trim() !== '' && s !== '-');
         return [...new Set(statuses)].sort();
     }, [collectionData]);
 
+    // Status badge: purely driven by the actual status string from API
+    const getStatusClass = (status) => {
+        const s = (status || '').toLowerCase();
+        if (s === 'completed') return 'cr-status-completed';
+        if (s.includes('uploaded')) return 'cr-status-success';
+        if (s.includes('pending')) return 'cr-status-pending';
+        return 'cr-status-default';
+    };
 
+    const handleExport = () => {
+        const exportRows = filteredData.map((row, index) => ({
+            'SNO': index + 1,
+            'Code': row.code,
+            'Created Date': row.created_date,
+            'Created Time': row.created_time,
+            'Created By': row.created_by,
+            'Name': row.name,
+            'Place': row.place,
+            'Phone': row.phone,
+            'Type': row.type,
+            'Cheque Number': row.type?.toLowerCase() === 'cheque' ? row.cheque_number : '',
+            'Amount': row.amount,
+            'Status': row.status,
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(exportRows);
+        worksheet['!cols'] = [
+            { wch: 6 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 16 },
+            { wch: 22 }, { wch: 16 }, { wch: 14 }, { wch: 10 }, { wch: 16 },
+            { wch: 12 }, { wch: 14 },
+        ];
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Collection Report');
+        const fileName = `Collection_Report_${fromDate || 'all'}_to_${toDate || 'all'}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+    };
 
     return (
         <div className="cr-page">
@@ -198,36 +195,46 @@ const CollectionReport = () => {
                                 <h1 className="cr-title">Collection Report</h1>
                                 <p className="cr-subtitle">Daily collection summary and payment tracking</p>
                             </div>
-                            <button
-                                className="cr-refresh-btn"
-                                onClick={handleRefresh}
-                                disabled={isRefreshing || loading}
-                            >
-                                🔄 Refresh
-                            </button>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                <button
+                                    className="cr-refresh-btn"
+                                    onClick={handleRefresh}
+                                    disabled={isRefreshing || loading}
+                                >
+                                    🔄 Refresh
+                                </button>
+                                <button
+                                    className="cr-refresh-btn"
+                                    onClick={handleExport}
+                                    disabled={loading || filteredData.length === 0}
+                                    style={{
+                                        background: '#16a34a',
+                                        color: '#fff',
+                                        border: 'none',
+                                        cursor: filteredData.length === 0 ? 'not-allowed' : 'pointer',
+                                        opacity: filteredData.length === 0 ? 0.5 : 1,
+                                    }}
+                                >
+                                    📥 Export Excel
+                                </button>
+                            </div>
                         </div>
                     </header>
 
                     {loading && (
-                        <div className="cr-loading">
-                            Loading collection data...
-                        </div>
+                        <div className="cr-loading">Loading collection data...</div>
                     )}
 
                     {error && (
                         <div className="cr-error">
                             ⚠️ Error Loading Data
-                            <p style={{ marginTop: "10px" }}>{error}</p>
+                            <p style={{ marginTop: '10px' }}>{error}</p>
                             <button
                                 style={{
-                                    marginTop: "20px",
-                                    padding: "10px 20px",
-                                    background: "#3b82f6",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "8px",
-                                    cursor: "pointer",
-                                    fontWeight: "600"
+                                    marginTop: '20px', padding: '10px 20px',
+                                    background: '#3b82f6', color: 'white',
+                                    border: 'none', borderRadius: '8px',
+                                    cursor: 'pointer', fontWeight: '600',
                                 }}
                                 onClick={handleRefresh}
                             >
@@ -271,7 +278,7 @@ const CollectionReport = () => {
                                                 id="from-date"
                                                 type="date"
                                                 value={fromDate}
-                                                onChange={(e) => setFromDate(e.target.value)}
+                                                onChange={(e) => { setFromDate(e.target.value); setPage(1); }}
                                                 className="cr-date-input"
                                             />
                                         </div>
@@ -282,7 +289,7 @@ const CollectionReport = () => {
                                                 id="to-date"
                                                 type="date"
                                                 value={toDate}
-                                                onChange={(e) => setToDate(e.target.value)}
+                                                onChange={(e) => { setToDate(e.target.value); setPage(1); }}
                                                 className="cr-date-input"
                                             />
                                         </div>
@@ -292,7 +299,7 @@ const CollectionReport = () => {
                                             <select
                                                 id="payment-mode"
                                                 value={selectedMode}
-                                                onChange={(e) => setSelectedMode(e.target.value)}
+                                                onChange={(e) => { setSelectedMode(e.target.value); setPage(1); }}
                                                 className="cr-select-input"
                                             >
                                                 <option value="">All Types</option>
@@ -307,7 +314,7 @@ const CollectionReport = () => {
                                             <select
                                                 id="status-filter"
                                                 value={selectedStatus}
-                                                onChange={(e) => setSelectedStatus(e.target.value)}
+                                                onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
                                                 className="cr-select-input"
                                             >
                                                 <option value="">All Statuses</option>
@@ -324,7 +331,7 @@ const CollectionReport = () => {
                                                 type="text"
                                                 placeholder="Search user..."
                                                 value={selectedCreatedBy}
-                                                onChange={(e) => setSelectedCreatedBy(e.target.value)}
+                                                onChange={(e) => { setSelectedCreatedBy(e.target.value); setPage(1); }}
                                                 className="cr-date-input"
                                             />
                                         </div>
@@ -335,10 +342,7 @@ const CollectionReport = () => {
                                                 <select
                                                     id="rows-select"
                                                     value={rowsPerPage}
-                                                    onChange={(e) => {
-                                                        setRowsPerPage(Number(e.target.value));
-                                                        setPage(1);
-                                                    }}
+                                                    onChange={(e) => { setRowsPerPage(Number(e.target.value)); setPage(1); }}
                                                 >
                                                     <option value={10}>10</option>
                                                     <option value={20}>20</option>
@@ -382,48 +386,27 @@ const CollectionReport = () => {
                                             displayedData.map((row, index) => (
                                                 <tr key={row.id}>
                                                     <td>
-                                                        <span style={{
-                                                            fontWeight: '700',
-                                                            fontSize: '14px',
-                                                            color: '#64748b'
-                                                        }}>
+                                                        <span style={{ fontWeight: '700', fontSize: '14px', color: '#64748b' }}>
                                                             {(page - 1) * rowsPerPage + index + 1}
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <span style={{
-                                                            fontFamily: 'monospace',
-                                                            fontSize: '13px',
-                                                            fontWeight: '600',
-                                                            color: '#334155'
-                                                        }}>
+                                                        <span style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: '600', color: '#334155' }}>
                                                             {row.code}
                                                         </span>
                                                     </td>
                                                     <td>
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                                            <span style={{
-                                                                fontSize: '13px',
-                                                                fontWeight: '500',
-                                                                color: '#334155'
-                                                            }}>
+                                                            <span style={{ fontSize: '13px', fontWeight: '500', color: '#334155' }}>
                                                                 {row.created_date}
                                                             </span>
-                                                            <span style={{
-                                                                fontFamily: 'monospace',
-                                                                fontSize: '12px',
-                                                                color: '#64748b'
-                                                            }}>
+                                                            <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#64748b' }}>
                                                                 {row.created_time}
                                                             </span>
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <span style={{
-                                                            fontSize: '13px',
-                                                            color: '#64748b',
-                                                            fontStyle: 'italic'
-                                                        }}>
+                                                        <span style={{ fontSize: '13px', color: '#64748b', fontStyle: 'italic' }}>
                                                             {row.created_by}
                                                         </span>
                                                     </td>
@@ -431,34 +414,18 @@ const CollectionReport = () => {
                                                         <span style={{ fontWeight: '600' }}>{row.name}</span>
                                                     </td>
                                                     <td>
-                                                        <span style={{ fontSize: '13px', color: '#64748b' }}>
-                                                            {row.place}
-                                                        </span>
+                                                        <span style={{ fontSize: '13px', color: '#64748b' }}>{row.place}</span>
                                                     </td>
                                                     <td>
-                                                        <span style={{
-                                                            fontFamily: 'monospace',
-                                                            fontSize: '13px'
-                                                        }}>
-                                                            {row.phone}
-                                                        </span>
+                                                        <span style={{ fontFamily: 'monospace', fontSize: '13px' }}>{row.phone}</span>
                                                     </td>
                                                     <td>
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                                            <span style={{
-                                                                fontSize: '13px',
-                                                                fontWeight: '600',
-                                                                color: '#334155'
-                                                            }}>
+                                                            <span style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }}>
                                                                 {row.type}
                                                             </span>
-                                                            {row.type && row.type.toLowerCase() === 'cheque' && row.cheque_number && (
-                                                                <span style={{
-                                                                    fontSize: '11px',
-                                                                    color: '#64748b',
-                                                                    fontFamily: 'monospace',
-                                                                    fontWeight: '500'
-                                                                }}>
+                                                            {row.type?.toLowerCase() === 'cheque' && row.cheque_number && (
+                                                                <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace', fontWeight: '500' }}>
                                                                     Ch. No: {row.cheque_number}
                                                                 </span>
                                                             )}
@@ -468,10 +435,7 @@ const CollectionReport = () => {
                                                         {row.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </td>
                                                     <td>
-                                                        <span className={`cr-status-badge ${row.status.toLowerCase().includes('uploaded') ? 'cr-status-success' :
-                                                            row.status.toLowerCase().includes('pending') ? 'cr-status-pending' :
-                                                                'cr-status-default'
-                                                            }`}>
+                                                        <span className={`cr-status-badge ${getStatusClass(row.status)}`}>
                                                             {row.status}
                                                         </span>
                                                     </td>
@@ -489,41 +453,13 @@ const CollectionReport = () => {
                             </div>
 
                             <div className="cr-pagination">
-                                <button
-                                    className="cr-page-btn"
-                                    onClick={() => changePage(1)}
-                                    disabled={page === 1 || total === 0}
-                                >
-                                    First
-                                </button>
-
-                                <button
-                                    className="cr-page-btn"
-                                    onClick={() => changePage(page - 1)}
-                                    disabled={page === 1 || total === 0}
-                                >
-                                    Prev
-                                </button>
-
+                                <button className="cr-page-btn" onClick={() => changePage(1)} disabled={page === 1 || total === 0}>First</button>
+                                <button className="cr-page-btn" onClick={() => changePage(page - 1)} disabled={page === 1 || total === 0}>Prev</button>
                                 <div className="cr-page-info">
-                                    {total === 0 ? "No records" : `Page ${page} of ${totalPages} (${total} records)`}
+                                    {total === 0 ? 'No records' : `Page ${page} of ${totalPages} (${total} records)`}
                                 </div>
-
-                                <button
-                                    className="cr-page-btn"
-                                    onClick={() => changePage(page + 1)}
-                                    disabled={page === totalPages || total === 0}
-                                >
-                                    Next
-                                </button>
-
-                                <button
-                                    className="cr-page-btn"
-                                    onClick={() => changePage(totalPages)}
-                                    disabled={page === totalPages || total === 0}
-                                >
-                                    Last
-                                </button>
+                                <button className="cr-page-btn" onClick={() => changePage(page + 1)} disabled={page === totalPages || total === 0}>Next</button>
+                                <button className="cr-page-btn" onClick={() => changePage(totalPages)} disabled={page === totalPages || total === 0}>Last</button>
                             </div>
                         </>
                     )}

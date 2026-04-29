@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import * as XLSX from 'xlsx';
 import "./OrderReport.scss";
 
 const OrderReport = () => {
@@ -197,6 +198,50 @@ const OrderReport = () => {
     return 'or-status-badge';
   };
 
+  // ── Export to Excel ──────────────────────────────────────────────────────
+  const handleExport = () => {
+    const exportRows = filteredOrders.map((order, index) => ({
+      'No': index + 1,
+      'Order No': order.order_id,
+      'Date': formatDate(order.created_date),
+      'Time': order.created_time || '-',
+      'Customer Code': order.customer_code || '-',
+      'Customer Name': order.customer_name,
+      'Username': order.username || '-',
+      'Area': order.area || '-',
+      'Payment Type': order.payment_type || '-',
+      'Status': order.status || '-',
+      'Remark': order.remark || '-',
+      'Total Amount': order.items
+        ? order.items.reduce((sum, item) => sum + (item.amount || 0), 0)
+        : 0,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportRows);
+
+    worksheet['!cols'] = [
+      { wch: 6 },  // No
+      { wch: 16 }, // Order No
+      { wch: 14 }, // Date
+      { wch: 10 }, // Time
+      { wch: 14 }, // Customer Code
+      { wch: 22 }, // Customer Name
+      { wch: 14 }, // Username
+      { wch: 14 }, // Area
+      { wch: 14 }, // Payment Type
+      { wch: 12 }, // Status
+      { wch: 20 }, // Remark
+      { wch: 14 }, // Total Amount
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Order Report');
+
+    const fileName = `Order_Report_${startDate || 'all'}_to_${endDate || 'all'}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+  // ────────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape' && isModalOpen) {
@@ -219,13 +264,22 @@ const OrderReport = () => {
                 <h1 id="or-page-title" className="or-title">Order Report</h1>
                 <p className="or-subtitle">Complete overview of all orders</p>
               </div>
-              <button 
-                className="or-refresh-btn"
-                onClick={fetchOrders}
-                disabled={loading}
-              >
-                🔄 {loading ? 'Loading...' : 'Refresh'}
-              </button>
+              <div className="or-header-actions">
+                <button 
+                  className="or-refresh-btn"
+                  onClick={fetchOrders}
+                  disabled={loading}
+                >
+                  🔄 {loading ? 'Loading...' : 'Refresh'}
+                </button>
+                <button
+                  className="or-export-btn"
+                  onClick={handleExport}
+                  disabled={loading || filteredOrders.length === 0}
+                >
+                  📥 Export Excel
+                </button>
+              </div>
             </div>
           </header>
 
@@ -442,7 +496,7 @@ const OrderReport = () => {
                             {order.created_time && (
                               <>
                                 <br />
-                                <span style={{ fontSize: '0.9em', color: '#64748b' }}>
+                                <span className="or-time-text">
                                   {order.created_time}
                                 </span>
                               </>
@@ -579,38 +633,6 @@ const OrderReport = () => {
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        .or-status-badge {
-          display: inline-block;
-          padding: 4px 10px;
-          border-radius: 12px;
-          font-size: 0.85em;
-          font-weight: 500;
-          text-transform: capitalize;
-          background-color: #e2e8f0;
-          color: #475569;
-        }
-
-        .or-status-completed {
-          background-color: #dcfce7;
-          color: #166534;
-        }
-
-        .or-status-uploaded {
-          background-color: #dbeafe;
-          color: #1e40af;
-        }
-
-        .or-status-pending {
-          background-color: #fef3c7;
-          color: #92400e;
-        }
-
-        .text-center {
-          text-align: center;
-        }
-      `}</style>
     </div>
   );
 };
