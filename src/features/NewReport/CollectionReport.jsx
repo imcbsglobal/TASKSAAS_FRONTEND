@@ -21,6 +21,41 @@ const CollectionReport = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // ── ALL users list for the Created By dropdown ─────────────────────────
+    const [usersList, setUsersList] = useState([]);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const token =
+                    localStorage.getItem('token') || sessionStorage.getItem('token');
+                const response = await fetch('https://tasksas.com/api/users_api/list/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` }),
+                    },
+                });
+                const result = await response.json();
+
+                // Support both { users: [...] } and plain array responses
+                const users =
+                    result.users && Array.isArray(result.users)
+                        ? result.users
+                        : Array.isArray(result)
+                        ? result
+                        : [];
+
+                // ✅ No role filter — ALL users
+                setUsersList(users);
+            } catch (err) {
+                console.error('Failed to fetch users list', err);
+            }
+        };
+        fetchUsers();
+    }, []);
+    // ──────────────────────────────────────────────────────────────────────
+
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -109,11 +144,11 @@ const CollectionReport = () => {
         if (selectedMode) result = result.filter(d => d.type === selectedMode);
         if (selectedStatus) result = result.filter(d => d.status === selectedStatus);
 
+        // ── Created By: exact match against u.id (username string) ─────────
         if (selectedCreatedBy) {
-            result = result.filter(d =>
-                (d.created_by || '').toLowerCase().includes(selectedCreatedBy.toLowerCase().trim())
-            );
+            result = result.filter(d => d.created_by === selectedCreatedBy);
         }
+        // ───────────────────────────────────────────────────────────────────
 
         if (fromDate) result = result.filter(d => d.created_date >= fromDate);
         if (toDate) result = result.filter(d => d.created_date <= toDate);
@@ -140,7 +175,6 @@ const CollectionReport = () => {
         return [...new Set(modes)].sort();
     }, [collectionData]);
 
-    // Build unique statuses dynamically from whatever the API returns
     const uniqueStatuses = useMemo(() => {
         const statuses = collectionData
             .map(d => d.status)
@@ -148,7 +182,6 @@ const CollectionReport = () => {
         return [...new Set(statuses)].sort();
     }, [collectionData]);
 
-    // Status badge: purely driven by the actual status string from API
     const getStatusClass = (status) => {
         const s = (status || '').toLowerCase();
         if (s === 'completed') return 'cr-status-completed';
@@ -324,17 +357,26 @@ const CollectionReport = () => {
                                             </select>
                                         </div>
 
+                                        {/* ── Created By — dropdown of ALL users from API ── */}
                                         <div className="cr-filter-item">
                                             <label htmlFor="created-by-filter">Created By</label>
-                                            <input
+                                            <select
                                                 id="created-by-filter"
-                                                type="text"
-                                                placeholder="Search user..."
                                                 value={selectedCreatedBy}
                                                 onChange={(e) => { setSelectedCreatedBy(e.target.value); setPage(1); }}
-                                                className="cr-date-input"
-                                            />
+                                                className="cr-select-input"
+                                            >
+                                                <option value="">All Users</option>
+                                                {usersList.map((u) => (
+                                                    // u.id is the username string (e.g. "ARUN")
+                                                    // which matches collection row's created_by
+                                                    <option key={u.id} value={u.id}>
+                                                        {u.id}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
+                                        {/* ─────────────────────────────────────────────── */}
 
                                         <div className="cr-filter-item">
                                             <label htmlFor="rows-select">Rows per page</label>

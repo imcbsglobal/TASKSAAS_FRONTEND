@@ -298,24 +298,153 @@
     }
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
+// ── Captcha Gate ──────────────────────────────────────────────────────────────
+.captcha-gate-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    font-family: 'Inter', sans-serif;
+}
+
+.captcha-gate-box {
+    background: white;
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 90%;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+    animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &.shake {
+        animation: shake 0.4s ease;
     }
 
-    to {
-        opacity: 1;
+    .captcha-gate-icon {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 28px;
+        color: white;
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
     }
+
+    h2 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+
+    .captcha-gate-subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+    .captcha-hint {
+        display: inline-block;
+        background: #f3f4f6;
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 13px;
+        color: #374151;
+        margin-bottom: 20px;
+
+        code {
+            font-family: monospace;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+    }
+
+    .captcha-input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 18px;
+        font-family: monospace;
+        font-weight: 600;
+        text-align: center;
+        letter-spacing: 2px;
+        color: #111827;
+        outline: none;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+        margin-bottom: 12px;
+
+        &:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+
+        &.captcha-input-error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        }
+    }
+
+    .captcha-error {
+        font-size: 13px;
+        color: #dc2626;
+        margin-bottom: 16px;
+        font-weight: 500;
+    }
+
+    .captcha-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        margin-top: 4px;
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-10px); }
+    40%       { transform: translateX(10px); }
+    60%       { transform: translateX(-8px); }
+    80%       { transform: translateX(8px); }
 }

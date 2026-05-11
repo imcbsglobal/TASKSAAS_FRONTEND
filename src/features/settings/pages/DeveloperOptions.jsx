@@ -1,9 +1,74 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { clearTableAction } from "../api/developerOptionsApi";
-import { FaDatabase, FaBoxOpen, FaBarcode, FaExclamationTriangle, FaServer } from "react-icons/fa";
+import { FaDatabase, FaBoxOpen, FaBarcode, FaExclamationTriangle, FaServer, FaLock, FaShieldAlt } from "react-icons/fa";
 import "./DeveloperOptions.scss";
 
+// ── Captcha Gate ──────────────────────────────────────────────────────────────
+const CaptchaGate = ({ onSuccess }) => {
+    const [input, setInput] = useState("");
+    const [error, setError] = useState("");
+    const [shake, setShake] = useState(false);
+
+    // Expected value: current date in DD-MM-YYYY format
+    const expectedCaptcha = useMemo(() => {
+        const d = new Date();
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const yyyy = d.getFullYear();
+        return `${dd}-${mm}-${yyyy}`;
+    }, []);
+
+    const handleVerify = () => {
+        if (input.trim() === expectedCaptcha) {
+            setError("");
+            onSuccess();
+        } else {
+            setError(`Incorrect. Enter today's date in DD-MM-YYYY format.`);
+            setShake(true);
+            setInput("");
+            setTimeout(() => setShake(false), 500);
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") handleVerify();
+    };
+
+    return (
+        <div className="captcha-gate-overlay">
+            <div className={`captcha-gate-box ${shake ? "shake" : ""}`}>
+                <div className="captcha-gate-icon">
+                    <FaShieldAlt />
+                </div>
+                <h2>Developer Access</h2>
+                <p className="captcha-gate-subtitle">
+                    This area is restricted. Enter today's date to continue.
+                </p>
+                <div className="captcha-hint">
+                    Format: <code>DD-MM-YYYY</code>
+                </div>
+                <input
+                    type="text"
+                    className={`captcha-input ${error ? "captcha-input-error" : ""}`}
+                    placeholder="e.g. 11-05-2026"
+                    value={input}
+                    onChange={(e) => { setInput(e.target.value); setError(""); }}
+                    onKeyDown={handleKeyDown}
+                    autoFocus
+                    maxLength={10}
+                />
+                {error && <p className="captcha-error">{error}</p>}
+                <button className="captcha-btn" onClick={handleVerify}>
+                    <FaLock style={{ marginRight: 8 }} /> Verify & Enter
+                </button>
+            </div>
+        </div>
+    );
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 const DeveloperOptions = () => {
+    const [verified, setVerified] = useState(false);
     const [clientId, setClientId] = useState("");
     const [loading, setLoading] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
@@ -39,6 +104,11 @@ const DeveloperOptions = () => {
             setSelectedAction(null);
         }
     };
+
+    // Show captcha gate until verified
+    if (!verified) {
+        return <CaptchaGate onSuccess={() => setVerified(true)} />;
+    }
 
     return (
         <div className="developer-options-container">

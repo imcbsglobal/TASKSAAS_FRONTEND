@@ -4,7 +4,6 @@ import { GoSearch } from 'react-icons/go';
 import { FaEye, FaMapMarkerAlt } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import {
-    createColumnHelper,
     flexRender,
     getCoreRowModel,
     useReactTable,
@@ -14,10 +13,9 @@ import {
 import { PunchAPI } from '../services/punchService';
 import BaseModal from '../../../components/ui/Modal/BaseModal';
 import { formatDT, timeDiff, formatDateApi } from '@/utils';
-import DatePickerFilter from './DatePickerFilter';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-// status pending ...... ok lets implement this page 
+
 const StatusCell = ({ initialStatus, row, onStatusUpdate }) => {
     const [status, setStatus] = useState(initialStatus);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -26,14 +24,16 @@ const StatusCell = ({ initialStatus, row, onStatusUpdate }) => {
         const newStatus = e.target.value;
         setStatus(newStatus);
         setIsUpdating(true);
-
         try {
-            // Call API to update status
-            await PunchAPI.updatePunchinStatus({ "shop_id": row.original.firm_code, "status": newStatus, "id": row.original.id, "createdBy": row.original.created_by });
+            await PunchAPI.updatePunchinStatus({
+                "shop_id": row.original.firm_code,
+                "status": newStatus,
+                "id": row.original.id,
+                "createdBy": row.original.created_by
+            });
             onStatusUpdate?.(row.original.id, newStatus);
         } catch (error) {
             console.error("Failed to update status", error);
-            // Revert to previous status on error
             setStatus(initialStatus);
         } finally {
             setIsUpdating(false);
@@ -70,19 +70,52 @@ const PunchinTable = () => {
     const [toDate, setToDate] = useState(formatDateApi(new Date()));
     const [showPunchDetails, setShowPunchDetails] = useState(false);
     const [selectedPunch, setSelectedPunch] = useState(null);
+    const [userFilter, setUserFilter] = useState('all');
+    const [usersList, setUsersList] = useState([]);
 
+    // ── Fetch ALL users — no role filter ──────────────────────────────────
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const token =
+                    localStorage.getItem('token') || sessionStorage.getItem('token');
+                const response = await fetch('https://tasksas.com/api/users_api/list/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { Authorization: `Bearer ${token}` }),
+                    },
+                });
+                const result = await response.json();
 
+                // Support both { users: [...] } and plain array responses
+                const users =
+                    result.users && Array.isArray(result.users)
+                        ? result.users
+                        : Array.isArray(result)
+                        ? result
+                        : [];
+
+                // ✅ No role filter — ALL users included
+                setUsersList(users);
+            } catch (err) {
+                console.error('Failed to fetch users list', err);
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    // ── Fetch punch-in table data ──────────────────────────────────────────
     useEffect(() => {
         const fetchTableData = async () => {
             try {
                 setLoading(true)
                 const response = await PunchAPI.getPunchinTable([fromDate, toDate])
-
                 if (response?.data) {
                     setStoresData(response.data)
                 } else {
                     console.warn("No data received from API")
-                    setError("No Punch in Data  available")
+                    setError("No Punch in Data available")
                 }
             } catch (error) {
                 console.error('Failed to fetch table data', error)
@@ -95,21 +128,31 @@ const PunchinTable = () => {
     }, [fromDate, toDate])
 
     const handleStatusUpdate = (id, newStatus) => {
-        // Update local state to reflect the change immediately
-        setStoresData(prev => prev.map(store =>
-            store.id === id ? { ...store, status: newStatus } : store
-        ))
+        setStoresData(prev =>
+            prev.map(store => store.id === id ? { ...store, status: newStatus } : store)
+        )
     }
 
-    // Filter data based on status filter
+    // ── Filter by status AND user ──────────────────────────────────────────
+    // u.id in your API is the username string (e.g. "ARUN", "NAUFAL")
+    // which directly matches store.created_by
     const filteredData = useMemo(() => {
-        if (statusFilter === 'all') {
-            return storesData;
+        let data = storesData;
+
+        if (statusFilter !== 'all') {
+            data = data.filter(
+                (store) => store.status?.toLowerCase() === statusFilter.toLowerCase()
+            );
         }
-        return storesData.filter(store =>
-            store.status?.toLowerCase() === statusFilter.toLowerCase()
-        );
-    }, [storesData, statusFilter]);
+
+        if (userFilter !== 'all') {
+            data = data.filter(
+                (store) => store.created_by === userFilter
+            );
+        }
+
+        return data;
+    }, [storesData, statusFilter, userFilter]);
 
     const userColumns = useMemo(() => [
         {
@@ -142,11 +185,9 @@ const PunchinTable = () => {
         {
             header: "Punch Details",
             cell: ({ row }) => (
-                <div style={{ display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
-                    onClick={() => {
-                        setSelectedPunch(row.original);
-                        setShowPunchDetails(true);
-                    }}
+                <div
+                    style={{ display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
+                    onClick={() => { setSelectedPunch(row.original); setShowPunchDetails(true); }}
                 >
                     <FaEye size={20} color="#2563eb" />
                 </div>
@@ -157,10 +198,8 @@ const PunchinTable = () => {
             accessorKey: "current_location",
             cell: ({ row }) => {
                 const location = row.original.current_location;
-                // Parse coordinates from location string (format: "latitude,longitude")
                 const coords = location ? location.split(',') : null;
                 const hasValidCoords = coords && coords.length === 2;
-
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ maxWidth: '180px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
@@ -181,33 +220,16 @@ const PunchinTable = () => {
                 );
             }
         },
-
         {
             header: "Punch In Status",
             accessorKey: "punchin_status",
             cell: ({ row }) => {
                 const punchinStatus = row.original.punchin_status;
-                let bgColor = '#dbeafe';
-                let textColor = '#1e40af';
-
-                if (punchinStatus?.toLowerCase() === 'manual') {
-                    bgColor = '#fef3c7';
-                    textColor = '#92400e';
-                } else if (punchinStatus?.toLowerCase() === 'mismatch location') {
-                    bgColor = '#fee2e2';
-                    textColor = '#ef4444'; // Brighter red
-                }
-
+                let bgColor = '#dbeafe', textColor = '#1e40af';
+                if (punchinStatus?.toLowerCase() === 'manual') { bgColor = '#fef3c7'; textColor = '#92400e'; }
+                else if (punchinStatus?.toLowerCase() === 'mismatch location') { bgColor = '#fee2e2'; textColor = '#ef4444'; }
                 return (
-                    <div style={{
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        display: 'inline-block',
-                        backgroundColor: bgColor,
-                        color: textColor,
-                        fontWeight: '500',
-                        fontSize: '13px'
-                    }}>
+                    <div style={{ padding: '4px 8px', borderRadius: '4px', display: 'inline-block', backgroundColor: bgColor, color: textColor, fontWeight: '500', fontSize: '13px' }}>
                         {punchinStatus || 'N/A'}
                     </div>
                 );
@@ -218,10 +240,8 @@ const PunchinTable = () => {
             cell: ({ row }) => {
                 const { latitude, longitude } = row.original
                 if (!latitude || !longitude) return 'N/A'
-
-                const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`
                 return (
-                    <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={`https://www.google.com/maps?q=${latitude},${longitude}`} target="_blank" rel="noopener noreferrer">
                         View on Map
                     </a>
                 )
@@ -229,19 +249,11 @@ const PunchinTable = () => {
         },
         {
             header: "Photo",
-            cell: ({ row }) => {
-                const { photo_url } = row.original;
-                return (
-                    <div className='punchin-image' onClick={(e) => {
-                        setShowPhoto(prev => !prev)
-                        setPhotoUrl(e.target.src)
-                    }
-                    }>
-                        <img src={photo_url} alt="404" />
-                    </div>
-                )
-            }
-
+            cell: ({ row }) => (
+                <div className='punchin-image' onClick={(e) => { setShowPhoto(prev => !prev); setPhotoUrl(e.target.src); }}>
+                    <img src={row.original.photo_url} alt="404" />
+                </div>
+            )
         },
         {
             header: "Status",
@@ -292,11 +304,9 @@ const PunchinTable = () => {
         {
             header: "Punch Details",
             cell: ({ row }) => (
-                <div style={{ display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
-                    onClick={() => {
-                        setSelectedPunch(row.original);
-                        setShowPunchDetails(true);
-                    }}
+                <div
+                    style={{ display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
+                    onClick={() => { setSelectedPunch(row.original); setShowPunchDetails(true); }}
                 >
                     <FaEye size={20} color="#2563eb" />
                 </div>
@@ -307,10 +317,8 @@ const PunchinTable = () => {
             accessorKey: "current_location",
             cell: ({ row }) => {
                 const location = row.original.current_location;
-                // Parse coordinates from location string (format: "latitude,longitude")
                 const coords = location ? location.split(',') : null;
                 const hasValidCoords = coords && coords.length === 2;
-
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ maxWidth: '180px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
@@ -331,33 +339,16 @@ const PunchinTable = () => {
                 );
             }
         },
-
         {
             header: "Punch In Status",
             accessorKey: "punchin_status",
             cell: ({ row }) => {
                 const punchinStatus = row.original.punchin_status;
-                let bgColor = '#dbeafe';
-                let textColor = '#1e40af';
-
-                if (punchinStatus?.toLowerCase() === 'manual') {
-                    bgColor = '#fef3c7';
-                    textColor = '#92400e';
-                } else if (punchinStatus?.toLowerCase() === 'mismatch location') {
-                    bgColor = '#fee2e2';
-                    textColor = '#ef4444'; // Brighter red
-                }
-
+                let bgColor = '#dbeafe', textColor = '#1e40af';
+                if (punchinStatus?.toLowerCase() === 'manual') { bgColor = '#fef3c7'; textColor = '#92400e'; }
+                else if (punchinStatus?.toLowerCase() === 'mismatch location') { bgColor = '#fee2e2'; textColor = '#ef4444'; }
                 return (
-                    <div style={{
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        display: 'inline-block',
-                        backgroundColor: bgColor,
-                        color: textColor,
-                        fontWeight: '500',
-                        fontSize: '13px'
-                    }}>
+                    <div style={{ padding: '4px 8px', borderRadius: '4px', display: 'inline-block', backgroundColor: bgColor, color: textColor, fontWeight: '500', fontSize: '13px' }}>
                         {punchinStatus || 'N/A'}
                     </div>
                 );
@@ -368,10 +359,8 @@ const PunchinTable = () => {
             cell: ({ row }) => {
                 const { latitude, longitude } = row.original
                 if (!latitude || !longitude) return 'N/A'
-
-                const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`
                 return (
-                    <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={`https://www.google.com/maps?q=${latitude},${longitude}`} target="_blank" rel="noopener noreferrer">
                         View on Map
                     </a>
                 )
@@ -379,22 +368,12 @@ const PunchinTable = () => {
         },
         {
             header: "Photo",
-            cell: ({ row }) => {
-                const { photo_url } = row.original;
-                return (
-                    <div className='punchin-image' onClick={(e) => {
-                        setShowPhoto(prev => !prev)
-                        setPhotoUrl(e.target.src)
-                    }
-                    }>
-                        <img src={photo_url} alt="404" />
-                    </div>
-                )
-            }
-
+            cell: ({ row }) => (
+                <div className='punchin-image' onClick={(e) => { setShowPhoto(prev => !prev); setPhotoUrl(e.target.src); }}>
+                    <img src={row.original.photo_url} alt="404" />
+                </div>
+            )
         },
-
-
         {
             header: "Approval Status",
             accessorKey: "status",
@@ -409,53 +388,38 @@ const PunchinTable = () => {
     ], [handleStatusUpdate])
 
     const table = useReactTable({
-        data: filteredData,  // Use filtered data instead of raw data
+        data: filteredData,
         columns: userRole === "Admin" ? adminColumns : userColumns,
-        state: {
-            globalFilter: globalFilter,
-        },
+        state: { globalFilter },
         onGlobalFilterChange: setGlobalFilter,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        initialState: {
-            pagination: { pageSize: 10 }
-        }
+        initialState: { pagination: { pageSize: 10 } }
     })
 
-    // if (loading) {
-    //     return <div className="loading">Loading store data...</div>
-    // }
     if (loading) {
         const columnsCount = userRole === "Admin" ? 8 : 7;
         return (
             <div className="table_section">
-                <h4 className="table_title">Recently Added Store Locations</h4>
-
-                {/* Skeleton for Filters */}
+                <h4 className="table_title">Punch-in Table</h4>
                 <div className="filter_search_section">
                     <Skeleton height={40} width="100%" />
                 </div>
-
-                {/* Skeleton Table */}
                 <div className="table_container skeleton-loading">
                     <table>
                         <thead>
                             <tr>
-                                {[...Array(columnsCount)].map((_, index) => (
-                                    <th key={index}>
-                                        <Skeleton height={20} width="70%" />
-                                    </th>
+                                {[...Array(columnsCount)].map((_, i) => (
+                                    <th key={i}><Skeleton height={20} width="70%" /></th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody>
-                            {[...Array(4)].map((_, rowIndex) => (
-                                <tr key={rowIndex}>
-                                    {[...Array(columnsCount)].map((_, colIndex) => (
-                                        <td key={colIndex}>
-                                            <Skeleton height={20} width="90%" />
-                                        </td>
+                            {[...Array(4)].map((_, r) => (
+                                <tr key={r}>
+                                    {[...Array(columnsCount)].map((_, c) => (
+                                        <td key={c}><Skeleton height={20} width="90%" /></td>
                                     ))}
                                 </tr>
                             ))}
@@ -466,16 +430,14 @@ const PunchinTable = () => {
         );
     }
 
-
-    if (error) {
-        return <div className="error">Error: {error}</div>
-    }
+    if (error) return <div className="error">Error: {error}</div>
 
     return (
         <div className='table_section'>
             <h4 className="table_title">Punch-in Table</h4>
+
             <div className="filter_search_section">
-                {/* Search Section */}
+                {/* Search */}
                 <div className="search_section">
                     <GoSearch className="search_icon" />
                     <input
@@ -486,12 +448,12 @@ const PunchinTable = () => {
                         className="search_input"
                     />
                 </div>
-                {/* Filter Section */}
+
                 <div className="filters_section">
+
+                    {/* Status Filter */}
                     <div className="filter_status">
-                        <span className="filter_label">
-                            Status:
-                        </span>
+                        <span className="filter_label">Status:</span>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
@@ -503,6 +465,26 @@ const PunchinTable = () => {
                             <option value="rejected">Rejected</option>
                         </select>
                     </div>
+
+                    {/* ── User Filter — ALL users, u.id matches store.created_by ── */}
+                    <div className="filter_status">
+                        <span className="filter_label">User:</span>
+                        <select
+                            value={userFilter}
+                            onChange={(e) => setUserFilter(e.target.value)}
+                            className="status-filter-select"
+                        >
+                            <option value="all">All Users</option>
+                            {usersList.map((u) => (
+                                <option key={u.id} value={u.id}>
+                                    {u.id}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    {/* ──────────────────────────────────────────────────────── */}
+
+                    {/* Date Filters */}
                     <div className="filter_date_inputs">
                         <div className="date_input_group">
                             <span className="filter_label">From:</span>
@@ -531,7 +513,7 @@ const PunchinTable = () => {
                 Showing {table.getFilteredRowModel().rows.length} of {storesData.length} results
             </div>
 
-            {/* Table Container */}
+            {/* Table */}
             <div className="table_container">
                 <table>
                     <thead>
@@ -539,10 +521,7 @@ const PunchinTable = () => {
                             <tr key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
                                     <th key={header.id}>
-                                        {flexRender(
-                                            header.column.columnDef.header,
-                                            header.getContext()
-                                        )}
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
                                     </th>
                                 ))}
                             </tr>
@@ -553,10 +532,7 @@ const PunchinTable = () => {
                             table.getRowModel().rows.map((row) => (
                                 <tr key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
-                                        <td
-                                            key={cell.id}
-                                            data-label={cell.column.columnDef.header}
-                                        >
+                                        <td key={cell.id} data-label={cell.column.columnDef.header}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </td>
                                     ))}
@@ -573,7 +549,7 @@ const PunchinTable = () => {
                 </table>
             </div>
 
-            {/* Pagination controls */}
+            {/* Pagination */}
             {table.getPageCount() > 1 && (
                 <div className="pagination_controls">
                     <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
@@ -590,53 +566,51 @@ const PunchinTable = () => {
                         onChange={(e) => table.setPageSize(Number(e.target.value))}
                     >
                         {[10, 50, 100].map((size) => (
-                            <option key={size} value={size}>
-                                Show {size}
-                            </option>
+                            <option key={size} value={size}>Show {size}</option>
                         ))}
                     </select>
                 </div>
             )}
 
-
-            {/* Image View Modal */}
-            {
-                showPhoto && (
-                    <BaseModal
-                        isOpen={showPhoto}
-                        onClose={() => setShowPhoto(prev => !prev)}
-                        children={(<div className='photo-model-container' >
-                            <img src={photoUrl} alt="" srcSet="" />
-                        </div>)} />
-                )
-            }
+            {/* Photo Modal */}
+            {showPhoto && (
+                <BaseModal
+                    isOpen={showPhoto}
+                    onClose={() => setShowPhoto(prev => !prev)}
+                    children={
+                        <div className='photo-model-container'>
+                            <img src={photoUrl} alt="" />
+                        </div>
+                    }
+                />
+            )}
 
             {/* Punch Details Modal */}
-            {
-                showPunchDetails && selectedPunch && (
-                    <BaseModal
-                        isOpen={showPunchDetails}
-                        onClose={() => {
-                            setShowPunchDetails(false);
-                            setSelectedPunch(null);
-                        }}
-                        children={(
-                            <div className="punch-details-content" style={{ padding: '20px' }}>
-                                <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: 'bold', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>Punch Details</h3>
-                                <div style={{ marginBottom: '15px' }}>
-                                    <strong>Punch In Time:</strong> {selectedPunch.punchin_time ? formatDT(selectedPunch.punchin_time) : 'N/A'}
-                                </div>
-                                <div style={{ marginBottom: '15px' }}>
-                                    <strong>Punch Out Time:</strong> {selectedPunch.punchout_time ? formatDT(selectedPunch.punchout_time) : 'N/A'}
-                                </div>
-                                <div>
-                                    <strong>Duration:</strong> {timeDiff(selectedPunch.punchin_time, selectedPunch.punchout_time) || 'N/A'}
-                                </div>
+            {showPunchDetails && selectedPunch && (
+                <BaseModal
+                    isOpen={showPunchDetails}
+                    onClose={() => { setShowPunchDetails(false); setSelectedPunch(null); }}
+                    children={
+                        <div className="punch-details-content" style={{ padding: '20px' }}>
+                            <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: 'bold', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>
+                                Punch Details
+                            </h3>
+                            <div style={{ marginBottom: '15px' }}>
+                                <strong>Punch In Time:</strong>{' '}
+                                {selectedPunch.punchin_time ? formatDT(selectedPunch.punchin_time) : 'N/A'}
                             </div>
-                        )}
-                    />
-                )
-            }
+                            <div style={{ marginBottom: '15px' }}>
+                                <strong>Punch Out Time:</strong>{' '}
+                                {selectedPunch.punchout_time ? formatDT(selectedPunch.punchout_time) : 'N/A'}
+                            </div>
+                            <div>
+                                <strong>Duration:</strong>{' '}
+                                {timeDiff(selectedPunch.punchin_time, selectedPunch.punchout_time) || 'N/A'}
+                            </div>
+                        </div>
+                    }
+                />
+            )}
         </div>
     )
 }

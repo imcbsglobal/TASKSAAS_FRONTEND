@@ -11,15 +11,16 @@ const OrderReport = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArea, setSelectedArea] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedUsername, setSelectedUsername] = useState("");
   const [startDate, setStartDate] = useState(getToday());
   const [endDate, setEndDate] = useState(getToday());
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
-  
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
-  
+
   // API states
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -28,22 +29,57 @@ const OrderReport = () => {
   const [uniqueAreas, setUniqueAreas] = useState([]);
   const [uniqueStatuses, setUniqueStatuses] = useState([]);
 
+  // ── ALL users list for the Username dropdown ───────────────────────────
+  const [usersList, setUsersList] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token =
+          localStorage.getItem('token') || sessionStorage.getItem('token');
+        const response = await fetch('https://tasksas.com/api/users_api/list/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        });
+        const result = await response.json();
+
+        // Support both { users: [...] } and plain array responses
+        const users =
+          result.users && Array.isArray(result.users)
+            ? result.users
+            : Array.isArray(result)
+            ? result
+            : [];
+
+        // ✅ No role filter — ALL users
+        setUsersList(users);
+      } catch (err) {
+        console.error('Failed to fetch users list', err);
+      }
+    };
+    fetchUsers();
+  }, []);
+  // ──────────────────────────────────────────────────────────────────────
+
   // Fetch orders from API
   const fetchOrders = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-      
+
       const headers = {
         "Content-Type": "application/json",
       };
-      
+
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
-      
+
       const response = await fetch("https://tasksas.com/api/item-orders/list-all", {
         method: "GET",
         headers: headers,
@@ -57,18 +93,18 @@ const OrderReport = () => {
       }
 
       const data = await response.json();
-      
+
       if (data.success) {
         setOrders(data.orders || []);
         setTotalOrders(data.total_orders || 0);
-        
+
         const areas = [...new Set(
           data.orders
             .map(order => order.area)
             .filter(area => area && area.trim() !== "")
         )].sort();
         setUniqueAreas(areas);
-        
+
         const statuses = [...new Set(
           data.orders
             .map(order => order.status)
@@ -95,7 +131,7 @@ const OrderReport = () => {
 
     if (searchTerm.trim()) {
       const search = searchTerm.toLowerCase();
-      filtered = filtered.filter(order => 
+      filtered = filtered.filter(order =>
         order.order_id?.toLowerCase().includes(search) ||
         order.customer_name?.toLowerCase().includes(search) ||
         order.customer_code?.toLowerCase().includes(search) ||
@@ -103,7 +139,7 @@ const OrderReport = () => {
         order.username?.toLowerCase().includes(search) ||
         order.remark?.toLowerCase().includes(search) ||
         order.status?.toLowerCase().includes(search) ||
-        order.items?.some(item => 
+        order.items?.some(item =>
           item.product_name?.toLowerCase().includes(search)
         )
       );
@@ -112,11 +148,17 @@ const OrderReport = () => {
     if (selectedArea) {
       filtered = filtered.filter(order => order.area === selectedArea);
     }
-    
+
     if (selectedStatus) {
       filtered = filtered.filter(order => order.status === selectedStatus);
     }
-    
+
+    // ── Username filter: exact match against u.id (username string) ────────
+    if (selectedUsername) {
+      filtered = filtered.filter(order => order.username === selectedUsername);
+    }
+    // ───────────────────────────────────────────────────────────────────────
+
     if (startDate) {
       filtered = filtered.filter(order => {
         if (!order.created_date) return false;
@@ -125,7 +167,7 @@ const OrderReport = () => {
         return orderDate >= start;
       });
     }
-    
+
     if (endDate) {
       filtered = filtered.filter(order => {
         if (!order.created_date) return false;
@@ -155,6 +197,7 @@ const OrderReport = () => {
     setSearchTerm("");
     setSelectedArea("");
     setSelectedStatus("");
+    setSelectedUsername("");
     setStartDate("");
     setEndDate("");
     setPageSize(10);
@@ -174,10 +217,10 @@ const OrderReport = () => {
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-IN', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric' 
+    return date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
     });
   };
 
@@ -251,8 +294,8 @@ const OrderReport = () => {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isModalOpen]);
-  
-  const hasActiveFilters = searchTerm || selectedArea || selectedStatus || startDate || endDate;
+
+  const hasActiveFilters = searchTerm || selectedArea || selectedStatus || selectedUsername || startDate || endDate;
 
   return (
     <div className="or-page">
@@ -265,7 +308,7 @@ const OrderReport = () => {
                 <p className="or-subtitle">Complete overview of all orders</p>
               </div>
               <div className="or-header-actions">
-                <button 
+                <button
                   className="or-refresh-btn"
                   onClick={fetchOrders}
                   disabled={loading}
@@ -290,20 +333,20 @@ const OrderReport = () => {
           )}
 
           {error && (
-            <div className="or-error-message" style={{ 
-              padding: "1rem", 
-              color: "#d32f2f", 
-              background: "#ffebee", 
-              borderRadius: "4px", 
-              margin: "1rem 0" 
+            <div className="or-error-message" style={{
+              padding: "1rem",
+              color: "#d32f2f",
+              background: "#ffebee",
+              borderRadius: "4px",
+              margin: "1rem 0"
             }}>
               Error: {error}
-              <button 
-                onClick={fetchOrders} 
-                style={{ 
-                  marginLeft: "1rem", 
-                  padding: "0.5rem 1rem", 
-                  cursor: "pointer" 
+              <button
+                onClick={fetchOrders}
+                style={{
+                  marginLeft: "1rem",
+                  padding: "0.5rem 1rem",
+                  cursor: "pointer"
                 }}
               >
                 Retry
@@ -411,6 +454,30 @@ const OrderReport = () => {
                       </select>
                     </div>
 
+                    {/* ── Username Filter — dropdown of ALL users from API ── */}
+                    <div className="or-filter-item">
+                      <label htmlFor="username-select">Username</label>
+                      <select
+                        id="username-select"
+                        value={selectedUsername}
+                        onChange={(e) => {
+                          setSelectedUsername(e.target.value);
+                          setPage(1);
+                        }}
+                        className="or-select-input"
+                      >
+                        <option value="">All Users</option>
+                        {usersList.map((u) => (
+                          // u.id is the username string (e.g. "ARUN")
+                          // which matches order.username directly
+                          <option key={u.id} value={u.id}>
+                            {u.id}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {/* ─────────────────────────────────────────────────────── */}
+
                     {/* Rows per page */}
                     <div className="or-filter-item">
                       <label htmlFor="rows-select">Rows per page</label>
@@ -474,11 +541,11 @@ const OrderReport = () => {
                           <td className="or-order-no">
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
                               <span>{order.order_id}</span>
-                              <button 
+                              <button
                                 className="or-details-btn"
                                 onClick={() => openDetailsModal(order)}
                                 aria-label="View details"
-                                style={{ 
+                                style={{
                                   padding: '4px 10px',
                                   fontSize: '0.85em',
                                   display: 'inline-flex',
@@ -533,8 +600,8 @@ const OrderReport = () => {
               </div>
 
               <div className="or-pagination" role="navigation" aria-label="Pagination">
-                <button 
-                  className="or-page-btn" 
+                <button
+                  className="or-page-btn"
                   disabled={page === 1 || loading}
                   onClick={() => setPage(page - 1)}
                 >
@@ -549,8 +616,8 @@ const OrderReport = () => {
                     "No records"
                   )}
                 </div>
-                <button 
-                  className="or-page-btn" 
+                <button
+                  className="or-page-btn"
                   disabled={page >= totalPages || loading}
                   onClick={() => setPage(page + 1)}
                 >
@@ -572,7 +639,7 @@ const OrderReport = () => {
                 ✕
               </button>
             </div>
-            
+
             <div className="or-modal-body">
               <div className="or-modal-info-section">
                 <div className="or-modal-info-grid">
@@ -591,7 +658,7 @@ const OrderReport = () => {
                 <h3 className="or-modal-section-title">
                   Order Items ({selectedOrderDetails.items.length})
                 </h3>
-                
+
                 <div className="or-modal-table-wrap">
                   <table className="or-modal-items-table">
                     <thead>

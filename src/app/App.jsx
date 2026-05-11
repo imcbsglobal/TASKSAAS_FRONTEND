@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import Login from '../features/auth/pages/Login';
 import DashboardAdmin from '../features/dashboard/pages/Dashboard_admin';
 import DashboardUser from '../features/dashboard/pages/Dashboard_user';
+import Dashboard from '../features/masters/Dashboard';
 import ProtectedRoute from '../features/auth/components/ProtectedRoute';
 import Navbar from '../components/layout/Navbar';
 import Debtors from '../features/finance/pages/Debtors';
@@ -45,6 +46,15 @@ const AppLayout = () => {
                 <Route path="/" element={<Login />} />
 
                 {/* Dashboards */}
+                {/* Dashboard ← NEW */}
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route
                     path="/dashboard/admin"
                     element={

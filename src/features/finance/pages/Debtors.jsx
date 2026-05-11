@@ -29,6 +29,7 @@ const Debtors = () => {
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedArea, setSelectedArea] = useState('');
+    const [balanceFilter, setBalanceFilter] = useState('all'); // 'all' | 'zero' | 'nonzero'
     const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState(null);
@@ -56,11 +57,10 @@ const Debtors = () => {
         return [...new Set(areas)].sort();
     }, [allData]);
 
-    // Update filtered data with debounced search and area filter
+    // Update filtered data with debounced search, area filter, and balance filter
     useEffect(() => {
         let filtered = allData;
 
-        // Apply search filter
         if (debouncedSearchTerm.trim()) {
             const search = debouncedSearchTerm.toLowerCase();
             filtered = filtered.filter(item =>
@@ -71,33 +71,36 @@ const Debtors = () => {
             );
         }
 
-        // Apply area filter
         if (selectedArea) {
             filtered = filtered.filter(item => item.area === selectedArea);
         }
 
+        if (balanceFilter === 'zero') {
+            filtered = filtered.filter(item => parseFloat(item.balance ?? 0) === 0);
+        } else if (balanceFilter === 'nonzero') {
+            filtered = filtered.filter(item => parseFloat(item.balance ?? 0) !== 0);
+        }
+
         setFilteredData(filtered);
-        // Reset visible range when filter changes
         setVisibleRange({ start: 0, end: 20 });
-    }, [debouncedSearchTerm, selectedArea, allData]);
+    }, [debouncedSearchTerm, selectedArea, balanceFilter, allData]);
 
     // Handle scroll for virtualization
     const handleScroll = useCallback(() => {
         if (!dropdownListRef.current) return;
-        
+
         const scrollTop = dropdownListRef.current.scrollTop;
         const clientHeight = dropdownListRef.current.clientHeight;
-        
+
         const visibleStart = Math.floor(scrollTop / itemHeight);
         const visibleEnd = Math.ceil((scrollTop + clientHeight) / itemHeight);
-        
+
         const start = Math.max(0, visibleStart - overscan);
         const end = Math.min(filteredData.length, visibleEnd + overscan);
-        
+
         setVisibleRange({ start, end });
     }, [filteredData, itemHeight, overscan]);
 
-    // Initial load when dropdown opens
     useEffect(() => {
         if (isOpen && filteredData.length > 0) {
             handleScroll();
@@ -164,7 +167,6 @@ const Debtors = () => {
 
     const handleShowLedger = account => {
         if (!account) return;
-
         navigate(`/debtors/ledger/${account.code}`, {
             state: { accountName: account.name, accountData: account }
         });
@@ -178,6 +180,7 @@ const Debtors = () => {
     const clearFilters = () => {
         setSearchTerm('');
         setSelectedArea('');
+        setBalanceFilter('all');
     };
 
     // ----------------- HELPERS -----------------
@@ -191,9 +194,7 @@ const Debtors = () => {
     };
 
     const renderBalance = (account) => {
-        // Get balance directly from the account object (from API)
         const balance = parseFloat(account?.balance ?? 0);
-        
         return (
             <span className={`dbt-balance-amount ${balance >= 0 ? 'dbt-balance-positive' : 'dbt-balance-negative'}`}>
                 {formatCurrency(balance)}
@@ -201,10 +202,32 @@ const Debtors = () => {
         );
     };
 
-    // Calculate virtualization values
+    // Virtualization values
     const visibleAccounts = filteredData.slice(visibleRange.start, visibleRange.end);
     const offsetY = visibleRange.start * itemHeight;
     const totalHeight = filteredData.length * itemHeight;
+
+    // Live counts (based on current search + area, ignoring balance filter)
+    const baseFiltered = React.useMemo(() => {
+        let filtered = allData;
+        if (debouncedSearchTerm.trim()) {
+            const search = debouncedSearchTerm.toLowerCase();
+            filtered = filtered.filter(item =>
+                (item.name || '').toLowerCase().includes(search) ||
+                (item.code || '').toLowerCase().includes(search) ||
+                (item.place || '').toLowerCase().includes(search) ||
+                (item.area || '').toLowerCase().includes(search)
+            );
+        }
+        if (selectedArea) {
+            filtered = filtered.filter(item => item.area === selectedArea);
+        }
+        return filtered;
+    }, [allData, debouncedSearchTerm, selectedArea]);
+
+    const allCount     = baseFiltered.length;
+    const zeroCount    = baseFiltered.filter(item => parseFloat(item.balance ?? 0) === 0).length;
+    const nonZeroCount = baseFiltered.filter(item => parseFloat(item.balance ?? 0) !== 0).length;
 
     // ----------------- RENDER -----------------
 
@@ -231,19 +254,9 @@ const Debtors = () => {
                         </div>
                     </header>
 
-                    {/* Error */}
-                    {error && (
-                        <div className="dbt-error">⚠️ Error: {error}</div>
-                    )}
+                    {error && <div className="dbt-error">⚠️ Error: {error}</div>}
+                    {loading && <div className="dbt-loading">Loading debtors data...</div>}
 
-                    {/* Loading */}
-                    {loading && (
-                        <div className="dbt-loading">
-                            Loading debtors data...
-                        </div>
-                    )}
-
-                    {/* Main content */}
                     {!loading && !error && (
                         <>
                             {/* Filter Section */}
@@ -258,13 +271,11 @@ const Debtors = () => {
                                         >
                                             <option value="">All Areas</option>
                                             {uniqueAreas.map(area => (
-                                                <option key={area} value={area}>
-                                                    {area}
-                                                </option>
+                                                <option key={area} value={area}>{area}</option>
                                             ))}
                                         </select>
                                     </div>
-                                    {(searchTerm || selectedArea) && (
+                                    {(searchTerm || selectedArea || balanceFilter !== 'all') && (
                                         <button
                                             type="button"
                                             className="dbt-clear-filters-btn"
@@ -282,7 +293,6 @@ const Debtors = () => {
                                     Select Debtor Account
                                 </label>
 
-                                {/* Dropdown Button */}
                                 <div className="dbt-dropdown-container">
                                     <button
                                         className="dbt-dropdown-button"
@@ -292,18 +302,12 @@ const Debtors = () => {
                                         <span className="dbt-dropdown-text">
                                             {selectedAccount ? (
                                                 <>
-                                                    <span>
-                                                        {selectedAccount.name}
-                                                    </span>
-                                                    {(selectedAccount.place ||
-                                                        selectedAccount.area) && (
+                                                    <span>{selectedAccount.name}</span>
+                                                    {(selectedAccount.place || selectedAccount.area) && (
                                                         <>
-                                                            <span className="dbt-dropdown-separator">
-                                                                •
-                                                            </span>
+                                                            <span className="dbt-dropdown-separator">•</span>
                                                             <span className="dbt-dropdown-place">
-                                                                {selectedAccount.area ||
-                                                                    selectedAccount.place}
+                                                                {selectedAccount.area || selectedAccount.place}
                                                             </span>
                                                         </>
                                                     )}
@@ -312,23 +316,16 @@ const Debtors = () => {
                                                 'Choose an account...'
                                             )}
                                         </span>
-                                        <span
-                                            className={`dbt-dropdown-arrow ${
-                                                isOpen ? 'open' : ''
-                                            }`}
-                                        >
-                                            ▼
-                                        </span>
+                                        <span className={`dbt-dropdown-arrow ${isOpen ? 'open' : ''}`}>▼</span>
                                     </button>
 
                                     {/* Dropdown Menu */}
                                     {isOpen && (
                                         <div className="dbt-dropdown-menu">
+
                                             {/* Search */}
                                             <div className="dbt-dropdown-search">
-                                                <span className="dbt-search-icon">
-                                                    🔍
-                                                </span>
+                                                <span className="dbt-search-icon">🔍</span>
                                                 <input
                                                     type="text"
                                                     placeholder="Search by name, code, or place..."
@@ -347,21 +344,49 @@ const Debtors = () => {
                                                 )}
                                             </div>
 
-                                            {/* Virtualized Options List */}
+                                            {/* ── Balance Filter Toggle (inside dropdown) ── */}
+                                            <div className="dbt-dropdown-balance-filter">
+                                                <button
+                                                    type="button"
+                                                    className={`dbt-bal-btn${balanceFilter === 'all' ? ' active' : ''}`}
+                                                    onClick={() => setBalanceFilter('all')}
+                                                >
+                                                    All
+                                                    <span className="dbt-bal-count">{allCount}</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className={`dbt-bal-btn dbt-bal-btn--nonzero${balanceFilter === 'nonzero' ? ' active' : ''}`}
+                                                    onClick={() => setBalanceFilter('nonzero')}
+                                                >
+                                                    Has Balance
+                                                    <span className="dbt-bal-count">{nonZeroCount}</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className={`dbt-bal-btn dbt-bal-btn--zero${balanceFilter === 'zero' ? ' active' : ''}`}
+                                                    onClick={() => setBalanceFilter('zero')}
+                                                >
+                                                    Zero Balance
+                                                    <span className="dbt-bal-count">{zeroCount}</span>
+                                                </button>
+                                            </div>
+                                            {/* ─────────────────────────────────────────── */}
+
+                                            {/* List */}
                                             {filteredData.length === 0 ? (
                                                 <div className="dbt-dropdown-empty">
-                                                    {searchTerm || selectedArea
-                                                        ? `No accounts found`
+                                                    {searchTerm || selectedArea || balanceFilter !== 'all'
+                                                        ? 'No accounts found'
                                                         : 'No accounts available'}
                                                 </div>
                                             ) : (
-                                                <div 
+                                                <div
                                                     className="dbt-dropdown-list"
                                                     ref={dropdownListRef}
                                                     onScroll={handleScroll}
                                                     style={{ maxHeight: '400px', overflow: 'auto' }}
                                                 >
-                                                    {/* Virtual scrolling container */}
                                                     <div style={{ height: totalHeight, position: 'relative' }}>
                                                         <div style={{ transform: `translateY(${offsetY}px)` }}>
                                                             {visibleAccounts.map((account) => (
@@ -410,9 +435,7 @@ const Debtors = () => {
                                     <div className="dbt-selected-account">
                                         <div className="dbt-selected-account-inner">
                                             <div className="dbt-selected-account-header">
-                                                <h3 className="dbt-selected-account-title">
-                                                    Selected Account
-                                                </h3>
+                                                <h3 className="dbt-selected-account-title">Selected Account</h3>
                                                 <button
                                                     className="dbt-clear-selection"
                                                     onClick={clearSelection}
@@ -423,57 +446,34 @@ const Debtors = () => {
                                             </div>
                                             <div className="dbt-selected-account-details">
                                                 <p>
-                                                    <span className="label">
-                                                        Code:
-                                                    </span>{' '}
-                                                    <span className="value code">
-                                                        {selectedAccount.code}
-                                                    </span>
+                                                    <span className="label">Code:</span>{' '}
+                                                    <span className="value code">{selectedAccount.code}</span>
                                                 </p>
                                                 <p>
-                                                    <span className="label">
-                                                        Name:
-                                                    </span>{' '}
-                                                    <span className="value">
-                                                        {selectedAccount.name}
-                                                    </span>
+                                                    <span className="label">Name:</span>{' '}
+                                                    <span className="value">{selectedAccount.name}</span>
                                                 </p>
-                                                {(selectedAccount.area ||
-                                                    selectedAccount.place) && (
+                                                {(selectedAccount.area || selectedAccount.place) && (
                                                     <p>
                                                         <span className="label">
-                                                            {selectedAccount.area
-                                                                ? 'Area'
-                                                                : 'Place'}
-                                                            :
+                                                            {selectedAccount.area ? 'Area' : 'Place'}:
                                                         </span>
                                                         <span className="value">
-                                                            {selectedAccount.area ||
-                                                                selectedAccount.place}
+                                                            {selectedAccount.area || selectedAccount.place}
                                                         </span>
                                                     </p>
                                                 )}
                                                 <p>
                                                     <span className="label">Balance:</span>
-                                                    <span className="value">
-                                                        {renderBalance(selectedAccount)}
-                                                    </span>
+                                                    <span className="value">{renderBalance(selectedAccount)}</span>
                                                 </p>
                                             </div>
-
                                             <p className="dbt-hint">
-                                                Click <strong>Show</strong> next
-                                                to any account to load its
-                                                ledger.
+                                                Click <strong>Show</strong> next to any account to load its ledger.
                                             </p>
-
                                             <button
                                                 className="dbt-view-ledger-btn"
-                                                onClick={() =>
-                                                    handleShowLedger(
-                                                        selectedAccount
-                                                    )
-                                                }
+                                                onClick={() => handleShowLedger(selectedAccount)}
                                             >
                                                 View Ledger Details
                                             </button>
@@ -485,18 +485,12 @@ const Debtors = () => {
                                 {allData.length > 0 && (
                                     <div className="dbt-total-stats">
                                         Total Accounts:{' '}
-                                        <span className="highlight">
-                                            {allData.length}
-                                        </span>
-                                        {(searchTerm || selectedArea) &&
-                                            filteredData.length !==
-                                                allData.length && (
+                                        <span className="highlight">{allData.length}</span>
+                                        {(searchTerm || selectedArea || balanceFilter !== 'all') &&
+                                            filteredData.length !== allData.length && (
                                                 <>
-                                                    {' '}
-                                                    | Filtered:{' '}
-                                                    <span className="highlight">
-                                                        {filteredData.length}
-                                                    </span>
+                                                    {' '}| Filtered:{' '}
+                                                    <span className="highlight">{filteredData.length}</span>
                                                 </>
                                             )}
                                     </div>

@@ -2,100 +2,133 @@
     margin-left: 15%;
     margin-top: 50px;
 
-    
-    @media screen and (min-width:768px)  and (max-width:968px) {
+    @media screen and (min-width: 768px) and (max-width: 968px) {
         margin-left: 21%;
     }
-      @media screen and (min-width:968px)  and (max-width:1210px) {
+    @media screen and (min-width: 968px) and (max-width: 1210px) {
         margin-left: 17%;
     }
 }
-    
+
 .dashboard {
-    padding: 20px;
+    padding: 0;
     font-family: Arial, sans-serif;
 
+    /* ── Header ─────────────────────────────────────────────────── */
     header {
-        background-color: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        background-color: #e8f0fb;
+        padding: 24px 28px 20px;
+        margin-bottom: 0;
+        border-bottom: 1px solid #d0ddf0;
+        box-shadow: none;
+        border-radius: 0;
+        width: 100%;
+        box-sizing: border-box;
 
         h1 {
-            margin: 0 0 10px;
-            font-size: 24px;
-            color: #333;
+            margin: 0 0 8px;
+            font-size: 26px;
+            color: #1a1a2e;
+            font-weight: 800;
         }
 
         .user-info {
             font-size: 14px;
+            font-weight: 700;
 
-            .role-admin {
-                color: #d9534f;
-            }
-
-            .role-user {
-                color: #0275d8;
-            }
-
-            .role-level1 {
-                color: #5cb85c;
-            }
+            .role-admin  { color: #d9534f; font-weight: 700; }
+            .role-user   { color: #0275d8; font-weight: 700; }
+            .role-level1 { color: #5cb85c; font-weight: 700; }
         }
 
         p {
-            margin: 5px 0;
+            margin: 4px 0;
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
         }
     }
 
+    /* ── Main content ───────────────────────────────────────────── */
     .dashboard-content {
         background-color: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        padding: 24px 28px;
+        border-radius: 0;
+        box-shadow: none;
+        width: 100%;
+        box-sizing: border-box;
 
         h2 {
             margin-top: 0;
-            font-size: 22px;
+            margin-bottom: 16px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #1a1a2e;
         }
 
+        /* ── MISEL / Company section ─────────────────────────────── */
         .misel-data-section {
-            margin-top: 20px;
+            width: 100%;
 
             h3 {
-                font-size: 18px;
-                margin-bottom: 15px;
-                color: #444;
+                font-size: 16px;
+                margin-bottom: 16px;
+                color: #222;
+                font-weight: 700;
             }
 
+            .company-record { width: 100%; }
 
+            .full-table {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
 
             .misel-table {
                 width: 100%;
                 border-collapse: collapse;
-
+                table-layout: fixed;
 
                 td {
-                    padding: 10px;
-                    border: 1px solid #ddd;
-                    vertical-align: top;
+                    padding: 12px 16px;
+                    border: 1px solid #e0e0e0;
+                    vertical-align: middle;
+                    font-size: 14px;
+                    font-weight: 700;        /* ← bold all cells */
                 }
 
+                /* Label column */
                 td:first-child {
-                    font-weight: bold;
-                    background-color: #f1f1f1;
-                    width: 30%;
+                    background-color: #f5f5f5;
+                    width: 22%;
+                    color: #222;
+                    white-space: nowrap;
+                    font-weight: 800;        /* ← extra bold for labels */
                 }
 
+                /* Value column */
                 td:last-child {
-                    width: 70%;
+                    width: 78%;
+                    color: #111;
+                    font-weight: 700;
                 }
+
+                tr:hover td            { background-color: #fafcff; }
+                tr:hover td:first-child { background-color: #eef2f8; }
             }
         }
 
+        .loading-section,
+        .no-data-section {
+            padding: 32px 0;
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
         .admin-section {
-            margin-top: 30px;
+            margin-top: 24px;
             padding: 15px;
             background-color: #f9f9f9;
             border-left: 4px solid #007bff;
@@ -103,15 +136,20 @@
     }
 }
 
+/* ── Mobile ─────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-
     .all-body {
         margin-left: 0;
-        // margin-top: 15%;
         margin-top: 50px;
     }
 
+    .dashboard {
+        width: 100%;
+        box-sizing: border-box;
 
+        header        { padding: 16px; }
+        .dashboard-content { padding: 16px; }
+    }
 
     .full-table {
         overflow-x: auto;
@@ -120,14 +158,10 @@
         -webkit-overflow-scrolling: touch;
     }
 
-    .dashboard {
-        width: 100%;
-        padding: 10px;
-        box-sizing: border-box;
-        overflow-x: hidden;
-        /* prevents unexpected horizontal scroll */
+    .misel-table {
+        table-layout: auto !important;
 
+        td:first-child { width: auto !important; white-space: normal !important; }
+        td:last-child  { width: auto !important; }
     }
 }
-
-// s

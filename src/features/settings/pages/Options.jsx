@@ -101,10 +101,10 @@ const Options = () => {
     alert("Settings saved successfully");
   };
 
-  if (loading) return <div className="loading">Loading</div>;
+  if (loading) return <div className="options-loading">Loading</div>;
 
   return (
-    <div className="all-body">
+    <div className="options-body">
       <div className="options-page">
         <h2>Settings Options</h2>
         <p>

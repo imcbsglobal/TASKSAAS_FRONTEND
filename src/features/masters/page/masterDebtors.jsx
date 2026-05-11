@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import "./masterDebtors.scss";
 
 const MasterDebtors = () => {
@@ -6,41 +6,29 @@ const MasterDebtors = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Extract fetchDebtors as a separate function
   const fetchDebtors = async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-      
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const response = await fetch("https://tasksas.com/api/debtors/get-debtors/", {
         method: 'GET',
-        headers: headers,
+        headers,
       });
-      
+
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Unauthorized - Please login again');
-        }
+        if (response.status === 401) throw new Error('Unauthorized - Please login again');
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success && Array.isArray(result.data)) {
-        // Filter only records where super_code is 'DEBTO'
-        const debtoData = result.data.filter(item => 
-          item.super_code === 'DEBTO'
-        );
+        const debtoData = result.data.filter(item => item.super_code === 'DEBTO');
         setData(debtoData);
       } else {
         throw new Error("Invalid data format received");
@@ -53,42 +41,34 @@ const MasterDebtors = () => {
     }
   };
 
-  useEffect(() => {
-    fetchDebtors();
-  }, []);
+  useEffect(() => { fetchDebtors(); }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedArea, setSelectedArea] = useState(""); // Area filter
-  const [balanceFilter, setBalanceFilter] = useState("greater_than_1"); // Default to balance only
-  const [areaSearchTerm, setAreaSearchTerm] = useState(""); // Search within area dropdown
+  const [selectedArea, setSelectedArea] = useState("");
+  const [balanceFilter, setBalanceFilter] = useState("greater_than_1");
+  const [areaSearchTerm, setAreaSearchTerm] = useState("");
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
+  const [goToPage, setGoToPage] = useState("");
+  const goToRef = useRef(null);
 
-  // Get unique areas from data
   const uniqueAreas = useMemo(() => {
-    const areas = data
-      .map(d => d.area)
-      .filter(area => area && area.trim() !== "");
+    const areas = data.map(d => d.area).filter(a => a && a.trim() !== "");
     return [...new Set(areas)].sort();
   }, [data]);
 
-  // Filter areas based on search term
   const filteredAreas = useMemo(() => {
     if (!areaSearchTerm.trim()) return uniqueAreas;
     const search = areaSearchTerm.toLowerCase();
-    return uniqueAreas.filter(area => 
-      area.toLowerCase().includes(search)
-    );
+    return uniqueAreas.filter(a => a.toLowerCase().includes(search));
   }, [uniqueAreas, areaSearchTerm]);
 
   const filtered = useMemo(() => {
     let result = data;
-    
-    // Apply search filter
     if (searchTerm) {
       const t = searchTerm.trim().toLowerCase();
-      result = result.filter(d => 
+      result = result.filter(d =>
         (d.code || "").toString().toLowerCase().includes(t) ||
         (d.name || "").toString().toLowerCase().includes(t) ||
         (d.place || "").toString().toLowerCase().includes(t) ||
@@ -96,28 +76,15 @@ const MasterDebtors = () => {
         (d.area || "").toString().toLowerCase().includes(t)
       );
     }
-    
-    // Apply area filter
-    if (selectedArea) {
-      result = result.filter(d => d.area === selectedArea);
-    }
-    
-    // Apply balance filter
-    if (balanceFilter === "greater_than_1") {
-      result = result.filter(d => (d.balance || 0) > 1);
-    }
-    
-    // Sort alphabetically by name
-    return result.sort((a, b) => {
-      const nameA = (a.name || "").toString().toLowerCase();
-      const nameB = (b.name || "").toString().toLowerCase();
-      return nameA.localeCompare(nameB);
-    });
+    if (selectedArea) result = result.filter(d => d.area === selectedArea);
+    if (balanceFilter === "greater_than_1") result = result.filter(d => (d.balance || 0) > 1);
+    return result.sort((a, b) =>
+      (a.name || "").toString().toLowerCase().localeCompare((b.name || "").toString().toLowerCase())
+    );
   }, [data, searchTerm, selectedArea, balanceFilter]);
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
   if (page > totalPages && totalPages > 0) setPage(totalPages);
 
   const pageItems = useMemo(() => {
@@ -127,15 +94,11 @@ const MasterDebtors = () => {
   }, [filtered, page, pageSize, total]);
 
   const changePage = (p) => {
-    if (p < 1 || p > totalPages) return;
-    setPage(p);
+    const clamped = Math.max(1, Math.min(totalPages, p));
+    setPage(clamped);
   };
 
-  const clearSearch = () => {
-    setSearchTerm("");
-    setPage(1);
-  };
-
+  const clearSearch = () => { setSearchTerm(""); setPage(1); };
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedArea("");
@@ -143,7 +106,6 @@ const MasterDebtors = () => {
     setAreaSearchTerm("");
     setPage(1);
   };
-
   const handleAreaSelect = (area) => {
     setSelectedArea(area);
     setIsAreaDropdownOpen(false);
@@ -151,282 +113,342 @@ const MasterDebtors = () => {
     setPage(1);
   };
 
-  // Close dropdown when clicking outside
+  const handleGoToPage = (e) => {
+    e.preventDefault();
+    const num = parseInt(goToPage, 10);
+    if (!isNaN(num)) { changePage(num); setGoToPage(""); }
+  };
+
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!e.target.closest('.md-area-dropdown-container')) {
-        setIsAreaDropdownOpen(false);
-      }
+      if (!e.target.closest('.mdb-area-dropdown-container')) setIsAreaDropdownOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Build visible page number buttons
+  const pageButtons = useMemo(() => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages = new Set([1, totalPages, page]);
+    for (let i = page - 1; i <= page + 1; i++) if (i > 0 && i <= totalPages) pages.add(i);
+    const sorted = [...pages].sort((a, b) => a - b);
+    const result = [];
+    let prev = null;
+    for (const p of sorted) {
+      if (prev !== null && p - prev > 1) result.push('...');
+      result.push(p);
+      prev = p;
+    }
+    return result;
+  }, [page, totalPages]);
+
+  const hasActiveFilters = searchTerm || selectedArea;
+
   return (
-    <div className="md-page">
-      <div className="md-card" role="main" aria-labelledby="md-page-title">
-        <div className="md-card-inner">
-          <header className="md-card-header">
-            <div className="md-header-content">
-              <div className="md-header-left">
-                <h1 id="md-page-title" className="md-title">Customer Statement</h1>
-                <p className="md-subtitle">Manage and view all Customers</p>
-              </div>
-              <button 
-                className="md-refresh-btn" 
-                onClick={() => {
-                  setLoading(true);
-                  fetchDebtors();
-                }}
+    <div className="mdb-page">
+      <div className="mdb-outer">
+        <div className="mdb-card">
+
+          {/* ── Page Header ── */}
+          <div className="mdb-page-header">
+            <div className="mdb-page-identity">
+              <h1 className="mdb-title">Customer Statement</h1>
+              <p className="mdb-subtitle">Manage and view all customers</p>
+            </div>
+            <div className="mdb-header-actions">
+              <button
+                className="mdb-refresh-btn"
+                onClick={() => { setLoading(true); fetchDebtors(); }}
                 disabled={loading}
               >
-                🔄 Refresh
+                <span className="mdb-refresh-icon">↺</span>
+                {loading ? 'Loading...' : 'Refresh'}
               </button>
             </div>
-          </header>
+          </div>
 
+          {/* ── Loading ── */}
           {loading && (
-            <div className="md-loading" style={{ padding: "2rem", textAlign: "center" }}>
-              Loading debtors data...
-            </div>
-          )}
-          
-          {error && (
-            <div className="md-error" style={{ padding: "1rem", color: "#d32f2f", background: "#ffebee", borderRadius: "4px", margin: "1rem 0" }}>
-              Error: {error}
+            <div className="mdb-loading">
+              <span className="mdb-spinner" />
+              Loading customers…
             </div>
           )}
 
+          {/* ── Error ── */}
+          {error && (
+            <div className="mdb-error">
+              ⚠ {error}
+              <button
+                onClick={fetchDebtors}
+                style={{ marginLeft: "1rem", padding: "0.5rem 1rem", cursor: "pointer" }}
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* ── Main Content ── */}
           {!loading && !error && (
             <>
-              <div className="md-filter-row">
-                <div className="md-filter-left">
-                  <div className="md-filter-item md-filter-search compact">
-                    <label htmlFor="md-search">Search</label>
-                    <div className="md-search-wrap">
-                      <span className="md-search-icon">🔍</span>
-                      <input
-                        id="md-search"
-                        type="search"
-                        placeholder="Search by code, name, place, phone or area..."
-                        value={searchTerm}
-                        onChange={(e) => {
-                          setSearchTerm(e.target.value);
-                          setPage(1);
-                        }}
-                      />
-                      {searchTerm && (
+              {/* ── Toolbar / Filters ── */}
+              <div className="mdb-toolbar">
+                <div className="mdb-toolbar-filters">
+                  <div className="mdb-filters-left">
+
+                    {/* Search */}
+                    <div className="mdb-filter-item">
+                      <label htmlFor="mdb-search">Search</label>
+                      <div className="mdb-search-wrap">
+                        <span className="mdb-search-icon">🔍</span>
+                        <input
+                          id="mdb-search"
+                          type="search"
+                          placeholder="Search name, code, place, phone…"
+                          value={searchTerm}
+                          onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+                        />
+                        {searchTerm && (
+                          <button type="button" className="mdb-search-clear" onClick={clearSearch} aria-label="Clear search">
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Area dropdown */}
+                    <div className="mdb-filter-item mdb-filter-area">
+                      <label>Area</label>
+                      <div className="mdb-area-dropdown-container">
                         <button
                           type="button"
-                          className="md-search-clear"
-                          onClick={clearSearch}
-                          aria-label="Clear search"
+                          className="mdb-area-select-button"
+                          onClick={() => setIsAreaDropdownOpen(!isAreaDropdownOpen)}
                         >
-                          ✕
+                          <span className="mdb-area-selected">{selectedArea || "All Areas"}</span>
+                          <span className="mdb-area-arrow">{isAreaDropdownOpen ? "▲" : "▼"}</span>
                         </button>
-                      )}
-                    </div>
-                  </div>
 
-                  <div className="md-filter-item md-filter-area">
-                    <label htmlFor="area-select">Filter by Area</label>
-                    <div className="md-area-dropdown-container">
-                      <button
-                        type="button"
-                        className="md-area-select-button"
-                        onClick={() => setIsAreaDropdownOpen(!isAreaDropdownOpen)}
-                      >
-                        <span className="md-area-selected">
-                          {selectedArea || "All Areas"}
-                        </span>
-                        <span className="md-area-arrow">{isAreaDropdownOpen ? "▲" : "▼"}</span>
-                      </button>
-                      
-                      {isAreaDropdownOpen && (
-                        <div className="md-area-dropdown-menu">
-                          <div className="md-area-search-container">
-                            <span className="md-area-search-icon">🔍</span>
-                            <input
-                              type="text"
-                              placeholder="Search areas..."
-                              value={areaSearchTerm}
-                              onChange={(e) => setAreaSearchTerm(e.target.value)}
-                              className="md-area-search-input"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </div>
-                          
-                          <div className="md-area-options">
-                            <div
-                              className={`md-area-option ${!selectedArea ? 'active' : ''}`}
-                              onClick={() => handleAreaSelect("")}
-                            >
-                              All Areas
-                              {!selectedArea && <span className="md-check">✓</span>}
+                        {isAreaDropdownOpen && (
+                          <div className="mdb-area-dropdown-menu">
+                            <div className="mdb-area-search-container">
+                              <span className="mdb-area-search-icon">⌕</span>
+                              <input
+                                type="text"
+                                placeholder="Search areas…"
+                                value={areaSearchTerm}
+                                onChange={(e) => setAreaSearchTerm(e.target.value)}
+                                className="mdb-area-search-input"
+                                onClick={(e) => e.stopPropagation()}
+                              />
                             </div>
-                            
-                            {filteredAreas.length > 0 ? (
-                              filteredAreas.map(area => (
-                                <div
-                                  key={area}
-                                  className={`md-area-option ${selectedArea === area ? 'active' : ''}`}
-                                  onClick={() => handleAreaSelect(area)}
-                                >
-                                  {area}
-                                  {selectedArea === area && <span className="md-check">✓</span>}
-                                </div>
-                              ))
-                            ) : (
-                              <div className="md-area-no-results">
-                                No areas found
+                            <div className="mdb-area-options">
+                              <div
+                                className={`mdb-area-option ${!selectedArea ? 'active' : ''}`}
+                                onClick={() => handleAreaSelect("")}
+                              >
+                                All Areas
+                                {!selectedArea && <span className="mdb-check">✓</span>}
+                              </div>
+                              {filteredAreas.length > 0 ? (
+                                filteredAreas.map(area => (
+                                  <div
+                                    key={area}
+                                    className={`mdb-area-option ${selectedArea === area ? 'active' : ''}`}
+                                    onClick={() => handleAreaSelect(area)}
+                                  >
+                                    {area}
+                                    {selectedArea === area && <span className="mdb-check">✓</span>}
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="mdb-area-no-results">No areas found</div>
+                              )}
+                            </div>
+                            {uniqueAreas.length > 10 && (
+                              <div className="mdb-area-count">
+                                Showing {filteredAreas.length} of {uniqueAreas.length} areas
                               </div>
                             )}
                           </div>
-                          
-                          {uniqueAreas.length > 10 && (
-                            <div className="md-area-count">
-                              Showing {filteredAreas.length} of {uniqueAreas.length} areas
-                            </div>
-                          )}
-                        </div>
-                      )}
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Balance filter */}
+                    <div className="mdb-filter-item">
+                      <label htmlFor="mdb-balance">Balance</label>
+                      <select
+                        id="mdb-balance"
+                        className="mdb-balance-select"
+                        value={balanceFilter}
+                        onChange={(e) => { setBalanceFilter(e.target.value); setPage(1); }}
+                      >
+                        <option value="all">All Customers</option>
+                        <option value="greater_than_1">Balance Only</option>
+                      </select>
+                    </div>
+
+                    {/* Active filter chips */}
+                    {searchTerm && (
+                      <span className="mdb-chip">
+                        "{searchTerm.length > 12 ? searchTerm.slice(0, 12) + "…" : searchTerm}"
+                        <button onClick={clearSearch}>✕</button>
+                      </span>
+                    )}
+                    {selectedArea && (
+                      <span className="mdb-chip">
+                        {selectedArea}
+                        <button onClick={() => { setSelectedArea(""); setPage(1); }}>✕</button>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Rows per page (right side) */}
+                  <div className="mdb-toolbar-right">
+                    <div className="mdb-filter-item">
+                      <label htmlFor="mdb-rows">Rows per page</label>
+                      <select
+                        id="mdb-rows"
+                        className="mdb-rows-select"
+                        value={pageSize}
+                        onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                      >
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
                     </div>
                   </div>
 
-                  <div className="md-filter-item md-filter-balance">
-                    <label htmlFor="balance-filter">Filter by Balance</label>
-                    <select
-                      id="balance-filter"
-                      className="md-balance-select"
-                      value={balanceFilter}
-                      onChange={(e) => {
-                        setBalanceFilter(e.target.value);
-                        setPage(1);
-                      }}
-                    >
-                      <option value="all">All Customers</option>
-                      <option value="greater_than_1">Balance Only</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="md-stats">
-                  {(searchTerm || selectedArea) && (
-  <button
-    type="button"
-    className="md-clear-filters-btn"
-    onClick={clearFilters}
-  >
-    Clear All Filters
-  </button>
-)}
-                  
-                  <div className="md-rows-selector">
-                    <label htmlFor="rows-select">Rows:</label>
-                    <select
-                      id="rows-select"
-                      value={pageSize}
-                      onChange={(e) => {
-                        setPageSize(Number(e.target.value));
-                        setPage(1);
-                      }}
-                    >
-                      <option value={10}>10</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                  </div>
+                  {/* Clear All Filters */}
+                  {hasActiveFilters && (
+                    <button type="button" className="mdb-clear-btn" onClick={clearFilters}>
+                      Clear All Filters
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="md-table-wrap" role="region" aria-label="Debtors table">
-                <table className="md-debtors-table" role="table" aria-describedby="md-desc">
-                  <caption id="md-desc" style={{ display: "none" }}>
-                    Columns: serialno, code, name, place, phone, area, balance
-                  </caption>
+              {/* ── Content ── */}
+              <div className="mdb-content">
+                <div className="mdb-results-bar">
+                  <span className="mdb-results-count">
+                    Showing <strong>{pageItems.length}</strong> of <strong>{total}</strong> customers
+                  </span>
+                </div>
 
-                  <thead>
-                    <tr>
-                      <th scope="col" className="th-serial">No</th>
-                      <th scope="col" className="th-name">Code</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Place</th>
-                      <th scope="col">Phone</th>
-                      <th scope="col">Area</th>
-                      <th scope="col">Balance</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {total === 0 ? (
+                <div className="mdb-table-wrap" role="region" aria-label="Debtors table">
+                  <table className="mdb-table" role="table">
+                    <thead>
                       <tr>
-                        <td colSpan="7" className="md-no-data">No customers found</td>
+                        <th scope="col" className="col-no">#</th>
+                        <th scope="col">Code</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Place</th>
+                        <th scope="col">Phone</th>
+                        <th scope="col">Area</th>
+                        <th scope="col" className="col-balance">Balance</th>
                       </tr>
-                    ) : (
-                      pageItems.map((row, i) => (
-                        <tr key={row.code ?? `${(page-1)*pageSize + i}`}>
-                          <td data-label="serialno">{(page - 1) * pageSize + i + 1}</td>
-                          <td data-label="code">{row.code}</td>
-                          <td data-label="name">{row.name}</td>
-                          <td data-label="place">{row.place || "-"}</td>
-                          <td data-label="phone">{row.phone || "-"}</td>
-                          <td data-label="area">{row.area || "-"}</td>
-                          <td
-                            data-label="balance"
-                            style={{ fontWeight: "bold", fontSize: "16px" }}
-                          >
-                            {row.balance?.toLocaleString('en-IN', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                    </thead>
+                    <tbody>
+                      {total === 0 ? (
+                        <tr>
+                          <td colSpan="7" className="mdb-no-data">
+                            <span className="mdb-empty-icon">◎</span>
+                            <span>No customers found</span>
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="md-pagination" role="navigation" aria-label="Pagination">
-                <button 
-                  className="md-page-btn" 
-                  onClick={() => changePage(1)} 
-                  disabled={page === 1 || total === 0}
-                >
-                  First
-                </button>
-
-                <button 
-                  className="md-page-btn" 
-                  onClick={() => changePage(page - 1)} 
-                  disabled={page === 1 || total === 0}
-                >
-                  Prev
-                </button>
-
-                <div className="md-page-info">
-                  {total === 0 ? "No records" : `Page ${page} of ${totalPages}`}
+                      ) : (
+                        pageItems.map((row, i) => {
+                          const rowNum = (page - 1) * pageSize + i + 1;
+                          return (
+                            <tr key={row.code ?? rowNum}>
+                              <td className="col-no">
+                                <span className="mdb-row-num">{rowNum}</span>
+                              </td>
+                              <td className="col-code">{row.code}</td>
+                              <td className="col-name">{row.name}</td>
+                              <td>{row.place || "—"}</td>
+                              <td>{row.phone || "—"}</td>
+                              <td>
+                                {row.area
+                                  ? <span className="mdb-area-badge">{row.area}</span>
+                                  : "—"}
+                              </td>
+                              <td className="col-balance">
+                                {row.balance?.toLocaleString('en-IN', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
                 </div>
 
-                <button 
-                  className="md-page-btn" 
-                  onClick={() => changePage(page + 1)} 
-                  disabled={page === totalPages || total === 0}
-                >
-                  Next
-                </button>
+                {/* ── Pagination ── */}
+                <div className="mdb-pagination">
+                  <div className="mdb-page-nav">
+                    <button
+                      className="mdb-page-btn mdb-page-edge"
+                      onClick={() => changePage(1)}
+                      disabled={page === 1 || total === 0}
+                      title="First page"
+                    >«</button>
+                    <button
+                      className="mdb-page-btn"
+                      onClick={() => changePage(page - 1)}
+                      disabled={page === 1 || total === 0}
+                    >‹</button>
 
-                <button 
-                  className="md-page-btn" 
-                  onClick={() => changePage(totalPages)} 
-                  disabled={page === totalPages || total === 0}
-                >
-                  Last
-                </button>
+                    {pageButtons.map((btn, idx) =>
+                      btn === '...'
+                        ? <span key={`ellipsis-${idx}`} className="mdb-page-ellipsis">…</span>
+                        : <button
+                            key={btn}
+                            className={`mdb-page-btn mdb-page-num ${page === btn ? 'active' : ''}`}
+                            onClick={() => changePage(btn)}
+                          >{btn}</button>
+                    )}
+
+                    <button
+                      className="mdb-page-btn"
+                      onClick={() => changePage(page + 1)}
+                      disabled={page === totalPages || total === 0}
+                    >›</button>
+                    <button
+                      className="mdb-page-btn mdb-page-edge"
+                      onClick={() => changePage(totalPages)}
+                      disabled={page === totalPages || total === 0}
+                      title="Last page"
+                    >»</button>
+                  </div>
+
+                  <form className="mdb-goto" onSubmit={handleGoToPage}>
+                    <label className="mdb-goto-label">Go to</label>
+                    <input
+                      ref={goToRef}
+                      type="number"
+                      min="1"
+                      max={totalPages}
+                      value={goToPage}
+                      onChange={(e) => setGoToPage(e.target.value)}
+                      placeholder={page}
+                      className="mdb-goto-input"
+                    />
+                    <button type="submit" className="mdb-goto-btn">→</button>
+                  </form>
+                </div>
               </div>
             </>
           )}
+
         </div>
       </div>
     </div>

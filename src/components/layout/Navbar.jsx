@@ -1,6 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaBars, FaTimes } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './Navbar.scss';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../features/auth/store/authSlice';
@@ -9,178 +8,111 @@ import {
     MENU_TYPES,
     CHEVRON_ICONS,
     getMenuItemsByAllowedIds,
-    getMenuItemsByAllowedRoutes
 } from '../../constants/menuConfig';
-import { NavLink } from 'react-router-dom';
-/**
- * Navbar Component - Scalable Navigation with Secure Menu ID-Based Access
- * 
- * Features:
- * - Dynamic menu rendering from centralized configuration (menuConfig.js)
- * - Secure ID-based menu filtering (users get menu IDs, not actual routes)
- * - Hierarchical dropdown support with recursive rendering
- * - Mobile-responsive design with collapsible sidebar
- * - Consistent icon and routing management
- * 
- * Configuration:
- * - Menu items are defined in src/constants/menuConfig.js
- * - User access controlled via allowedMenuIds array (more secure than routes)
- * - Routes are mapped internally and hidden from client
- * - Supports both simple and dropdown menu types
- * 
- * Secure User Object Structure:
- * {
- *   id: 1,
- *   username: "john_doe",
- *   role: "Admin",
- *   allowedMenuIds: ["item-details", "bank-cash", "cash-book", "bank-book", ...]
- * }
- * 
- * Legacy support: Still accepts allowedRoutes for backward compatibility
- */
+import sidebarLogo from '../../assets/sidebarlogo.jpg';
+
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(true);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const [openSubmenus, setOpenSubmenus] = useState({});
+    const [openSubmenuId, setOpenSubmenuId] = useState(null);
 
-    const dropdownRef = useRef(null);
     const navigate = useNavigate();
+    const location = useLocation();
     const user = JSON.parse(localStorage.getItem('user'));
     const dispatch = useDispatch();
 
-    // Get menu items based on user's allowed menu IDs (Secure approach)
     const menuItems =
-        user?.role?.toLowerCase() === "admin"
+        user?.role?.toLowerCase() === 'admin'
             ? MENU_CONFIG
             : user?.allowedMenuIds?.length
                 ? getMenuItemsByAllowedIds(user.allowedMenuIds)
                 : [];
 
-    // Check if device is mobile
     useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth <= 768);
-            // Keep sidebar open on desktop, closed on mobile by default
-            if (window.innerWidth > 768) {
-                setIsOpen(true);
-            } else {
-                setIsOpen(false);
-            }
+            setIsOpen(window.innerWidth > 768);
         };
-
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Close dropdown when clicking outside
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsDropdownOpen(false);
-            }
-        };
+        const activeParent = menuItems.find(
+            item =>
+                item.type === MENU_TYPES.DROPDOWN &&
+                item.children?.some(child =>
+                    isRouteActive(computeTargetRoute(item, child))
+                )
+        );
+        setOpenSubmenuId(activeParent ? activeParent.id : null);
+    }, [location.pathname]);
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    const toggleSubmenu = (menuId) =>
+        setOpenSubmenuId(prev => (prev === menuId ? null : menuId));
 
-    const toggleSidebar = () => {
-        // Only allow toggle on mobile devices
-        if (isMobile) {
-            setIsOpen(!isOpen);
-        }
-    };
-
-    const toggleDropdown = () => {
-        setIsDropdownOpen(!isDropdownOpen);
-    };
-
-    const toggleSubmenu = (menuId) => {
-        setOpenSubmenus(prev => ({
-            ...prev,
-            [menuId]: !prev[menuId]
-        }));
-    };
-
-    // Navigate safely; route should be an absolute path like '/masters/debtors' or special key 'company'
     const handleNavigation = (route) => {
         if (!route) return;
-
-        if (route === 'company') {
-            if (user?.role === 'Admin') {
-                navigate('/dashboard/admin');
-            } else {
-                navigate('/dashboard/user');
-            }
-        } else {
-            // If route is a relative path accidentally provided, normalize it
-            const target = route.startsWith('/') ? route : `/${route}`;
-            navigate(target);
-        }
-
-        // Close sidebar on mobile after navigation
-        if (isMobile) {
-            setIsOpen(false);
-        }
+        navigate(route.startsWith('/') ? route : `/${route}`);
+        if (isMobile) setIsOpen(false);
     };
 
     const handleLogout = () => {
         localStorage.removeItem('user');
-        dispatch(logout())
+        dispatch(logout());
         navigate('/');
     };
 
-    // Get user initials for avatar
-    const getUserInitials = (username) => {
-        if (!username) return 'U';
-        return username.charAt(0).toUpperCase();
-    };
+    const getUserInitials = (username) =>
+        username ? username.charAt(0).toUpperCase() : 'U';
 
-    // Helper to compute final target URL for a menu item / child
     const computeTargetRoute = (parent, child) => {
-        // If child provided and has route
-        if (child && child.route) {
-            // Absolute route -> use as-is
-            if (child.route.startsWith('/')) {
-                return child.route;
-            }
-            // Relative child route -> join with parent (ensure single slash)
-            const parentRoute = (parent && parent.route) ? parent.route.replace(/\/$/, '') : '';
-            return `${parentRoute}/${child.route}`.replace(/\/+/g, '/');
+        if (child?.route) {
+            if (child.route.startsWith('/')) return child.route;
+            const base = parent?.route ? parent.route.replace(/\/$/, '') : '';
+            return `${base}/${child.route}`.replace(/\/+/g, '/');
         }
-
-        // If child not provided, use parent.route (if available)
-        if (parent && parent.route) {
-            return parent.route.startsWith('/') ? parent.route : `/${parent.route}`;
-        }
-
-        // fallback
+        if (parent?.route) return parent.route.startsWith('/') ? parent.route : `/${parent.route}`;
         return '/';
     };
 
-    // Render menu items recursively
+    const isRouteActive = (route) => {
+        if (!route) return false;
+        const target = route.startsWith('/') ? route : `/${route}`;
+        return location.pathname === target;
+    };
+
+    const isDropdownActive = (item) =>
+        item.children?.some(child => isRouteActive(computeTargetRoute(item, child)));
+
     const renderMenuItem = (item) => {
-        const IconComponent = item.icon;
-        const ChevronIcon = openSubmenus[item.id] ? CHEVRON_ICONS.OPEN : CHEVRON_ICONS.CLOSED;
-        const isSubmenuOpen = openSubmenus[item.id];
+        const Icon = item.icon;
 
         if (item.type === MENU_TYPES.SIMPLE) {
             const to = computeTargetRoute(item, null);
+            const active = isRouteActive(to);
             return (
-                <li key={item.id} onClick={() => handleNavigation(to)}>
-                    {IconComponent && <IconComponent className="icon" />}
+                <li
+                    key={item.id}
+                    className={active ? 'nav-active' : ''}
+                    onClick={() => handleNavigation(to)}
+                >
+                    {Icon && <Icon className="icon" />}
                     <span>{item.label}</span>
                 </li>
             );
         }
 
         if (item.type === MENU_TYPES.DROPDOWN && item.children) {
+            const dropActive = isDropdownActive(item);
+            const isSubmenuOpen = openSubmenuId === item.id;
+            const ChevronIcon = isSubmenuOpen ? CHEVRON_ICONS.OPEN : CHEVRON_ICONS.CLOSED;
+
             return (
-                <li key={item.id} className={`menu-item ${isSubmenuOpen ? 'active' : ''}`}>
+                <li key={item.id} className={`menu-item ${dropActive ? 'active' : ''}`}>
                     <div className="menu-main" onClick={() => toggleSubmenu(item.id)}>
-                        {IconComponent && <IconComponent className="icon" />}
+                        {Icon && <Icon className="icon" />}
                         <span>{item.label}</span>
                         <ChevronIcon className="chevron" />
                     </div>
@@ -189,9 +121,14 @@ const Navbar = () => {
                             {item.children.map(child => {
                                 const ChildIcon = child.icon;
                                 const to = computeTargetRoute(item, child);
+                                const childActive = isRouteActive(to);
                                 return (
-                                    <li key={child.id} onClick={() => handleNavigation(to)}>
-                                        {ChildIcon && <ChildIcon style={{ marginRight: '8px' }} />}
+                                    <li
+                                        key={child.id}
+                                        className={childActive ? 'sub-active' : ''}
+                                        onClick={() => handleNavigation(to)}
+                                    >
+                                        {ChildIcon && <ChildIcon />}
                                         <span>{child.label}</span>
                                     </li>
                                 );
@@ -207,125 +144,74 @@ const Navbar = () => {
 
     return (
         <>
+            <div className={`sidebar ${!isOpen ? 'collapsed' : ''}`}>
 
-            <div className={`navbar-container-${isMobile ? 'mob' : 'desk'} `}>
-                {/* Top Navbar with Profile Dropdown */}
-                <div className="top-navbar">
-                    <div className="profile-dropdown" ref={dropdownRef}>
-                        <button
-                            className="profile-button"
-                            onClick={toggleDropdown}
-                            aria-label="User menu"
-                        >
-                            <div className="profile-avatar">
-                                {getUserInitials(user?.username)}
-                            </div>
-                            <svg
-                                className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}
-                                width="12"
-                                height="12"
-                                viewBox="0 0 12 12"
-                            >
-                                <path d="M6 8L2 4h8l-4 4z" fill="currentColor" />
-                            </svg>
-                        </button>
-
-                        {isDropdownOpen && (
-                            <div className="dropdown-menu">
-                                <div className="dropdown-header">
-                                    <div className="user-avatar">
-                                        {getUserInitials(user?.username)}
-                                    </div>
-                                    <div className="user-info">
-                                        <p className="username">{user?.username}</p>
-                                        <p className="user-role">{user?.role}</p>
-                                    </div>
-                                </div>
-                                <div className="dropdown-divider"></div>
-                                <button
-                                    className="logout-button"
-                                    onClick={handleLogout}
-                                >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <path
-                                            d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                        <polyline
-                                            points="16,17 21,12 16,7"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                        <line
-                                            x1="21"
-                                            y1="12"
-                                            x2="9"
-                                            y2="12"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                    Logout
-                                </button>
-                            </div>
-                        )}
+                {/* ── Logo Header ── */}
+                <div className="sidebar-header">
+                    <img src={sidebarLogo} alt="Task SAS" className="sidebar-logo" />
+                    <div className="sidebar-brand">
+                        <span className="sidebar-brand-text">TASK SAS</span>
+                        <span className="sidebar-brand-sub">Management Portal</span>
                     </div>
                 </div>
 
-                {/* Toggle button that appears when sidebar is collapsed (Mobile only) */}
-                {isMobile && (
-                    <button
-                        className={`sidebar-toggle ${!isOpen ? 'show' : ''}`}
-                        onClick={toggleSidebar}
-                        aria-label="Open sidebar"
-                    >
-                        <FaBars />
-                    </button>
-                )}
-            </div>
-
-            {/* Side Navbar */}
-            <div className={`sidebar ${!isOpen && isMobile ? 'collapsed' : ''}`}>
-                <div className="sidebar-header">
-                    {isMobile && (
-                        <button
-                            className="toggle-btn"
-                            onClick={toggleSidebar}
-                            aria-label="Close sidebar"
-                        >
-                            <FaTimes />
-                        </button>
-                    )}
-                </div>
-
+                {/* ── Nav Menu ── */}
                 <ul className="nav-menu">
                     {menuItems.map(renderMenuItem)}
                 </ul>
+
+                {/* ── Profile pinned to bottom ── */}
+                <div className="sidebar-profile">
+                    <div className="profile-card">
+
+                        <div className="profile-avatar-sidebar">
+                            {getUserInitials(user?.username)}
+                        </div>
+
+                        <div className="profile-info">
+                            <p className="profile-name-sidebar">{user?.username || 'Admin'}</p>
+                            <p className="profile-role">{user?.role || 'Administrator'}</p>
+                        </div>
+
+                        <div
+                            className="logout-icon-wrap"
+                            onClick={(e) => { e.stopPropagation(); handleLogout(); }}
+                            title="Sign out"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" className="logout-icon">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                <polyline points="16,17 21,12 16,7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </div>
+
+                    </div>
+                </div>
             </div>
 
-            {/* Overlay to close sidebar when clicking outside on mobile */}
+            {/* ── Mobile Overlay ── */}
             {isOpen && isMobile && (
-                <div
-                    className="sidebar-overlay"
-                    onClick={() => setIsOpen(false)}
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                        zIndex: 999
-                    }}
-                />
+                <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />
             )}
+
+            {/* ── Mobile floating toggle ── */}
+            {isMobile && !isOpen && (
+                <button
+                    className="mobile-open-btn"
+                    onClick={() => setIsOpen(true)}
+                    aria-label="Open sidebar"
+                >
+                    ☰
+                </button>
+            )}
+
+            <style>{`
+                .main-content {
+                    margin-left: ${isMobile ? 0 : (isOpen ? 240 : 0)}px;
+                    margin-top: 0;
+                    transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+            `}</style>
         </>
     );
 };

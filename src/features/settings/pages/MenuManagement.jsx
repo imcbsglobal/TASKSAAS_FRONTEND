@@ -61,18 +61,18 @@ const MenuManagement = () => {
     };
 
     // Fetch users from API
-    const fetchUsers = async () => {     
+    const fetchUsers = async () => {
         try {
             setLoading(true);
             const response = await SettingsApi.getUsers();
             console.log("usr data ,", response.users)
-            
+
             const raw = Array.isArray(response?.users)
                 ? response.users
                 : Array.isArray(response)
                 ? response
                 : [];
-            
+
             // Filter to show only level one users
             const level1 = raw.filter((u) => isLevelOne(u));
 
@@ -99,9 +99,9 @@ const MenuManagement = () => {
     // Filter users based on dropdown search
     const filteredDropdownUsers = useMemo(() => {
         if (!dropdownSearch.trim()) return users;
-        
+
         const searchLower = dropdownSearch.toLowerCase();
-        return users.filter(user => 
+        return users.filter(user =>
             user.id?.toLowerCase().includes(searchLower) ||
             user.email?.toLowerCase().includes(searchLower) ||
             user.role?.toLowerCase().includes(searchLower) ||
@@ -125,7 +125,6 @@ const MenuManagement = () => {
         setDropdownSearch('');
 
         try {
-            // Fetch user's allowed menu IDs from API
             setSelectedMenuIds(["company"]);
             const response = await SettingsApi.getUserMenus(user.id);
             setSelectedMenuIds(response.allowedMenuIds || response.data?.allowedMenuIds || []);
@@ -142,7 +141,7 @@ const MenuManagement = () => {
             if (prev.includes(menuId)) {
                 return prev.filter(id => id !== menuId);
             } else {
-                return [...prev, menuId,'company'];
+                return [...prev, menuId, 'company'];
             }
         });
         setSaveStatus('');
@@ -189,7 +188,7 @@ const MenuManagement = () => {
 
         setLoading(true);
         setSaveStatus('');
-        
+
         try {
             await SettingsApi.updateUserMenus(selectedUser.id, selectedMenuIds);
 
@@ -198,7 +197,7 @@ const MenuManagement = () => {
             setSaveStatus('success');
             setTimeout(() => setSaveStatus(''), 3000);
         } catch (error) {
-            console.log("update menu error ,",error)
+            console.log("update menu error ,", error)
             toast.error(error.detail)
             console.error('Error saving permissions:', error.detail);
             setSaveStatus('error');
@@ -221,8 +220,8 @@ const MenuManagement = () => {
                     <label className="menu-checkbox">
                         <input
                             type="checkbox"
-                            checked={(isParent ? allSelected : isSelected)|| (item.id =='company'?true :false)}
-                            onChange={() => isParent ? handleParentToggle(item) : item.id !="company"? handleMenuToggle(item.id):''}
+                            checked={(isParent ? allSelected : isSelected) || (item.id == 'company' ? true : false)}
+                            onChange={() => isParent ? handleParentToggle(item) : item.id != "company" ? handleMenuToggle(item.id) : ''}
                             disabled={!selectedUser || loading}
                             className={isParent && hasChildren && !allSelected ? 'indeterminate' : ''}
                         />
@@ -269,7 +268,7 @@ const MenuManagement = () => {
     };
 
     return (
-        <div className="all-body">
+        <div className="menu-management-body">
             <div className="menu-management-container">
                 <div className="management-header">
                     <h1>Menu Management</h1>
@@ -281,7 +280,7 @@ const MenuManagement = () => {
                         <label htmlFor="user-select" className="user-dropdown-label">
                             Select User
                         </label>
-                        
+
                         <div className={`user-dropdown ${isDropdownOpen ? 'user-dropdown--open' : ''}`} ref={dropdownRef}>
                             <div className="user-dropdown__trigger">
                                 <div className="user-dropdown__input-wrapper">
@@ -302,7 +301,7 @@ const MenuManagement = () => {
                                         className="user-dropdown__input"
                                         disabled={loading}
                                     />
-                                    <i 
+                                    <i
                                         className={`fas fa-chevron-down user-dropdown__arrow ${isDropdownOpen ? 'user-dropdown__arrow--up' : ''}`}
                                         onClick={(e) => {
                                             e.stopPropagation();

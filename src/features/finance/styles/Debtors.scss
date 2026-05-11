@@ -799,3 +799,146 @@
     }
   }
 }
+/* ── Paste into Debtors.scss ── */
+
+.dbt-balance-toggle {
+    display: flex;
+    gap: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1.5px solid #d0d7e3;
+}
+
+.dbt-balance-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: #fff;
+    color: #4a5568;
+    border: none;
+    border-right: 1.5px solid #d0d7e3;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+
+    &:last-child {
+        border-right: none;
+    }
+
+    &:hover:not(.active) {
+        background: #f0f4ff;
+        color: #1a56db;
+    }
+
+    /* All — blue when active */
+    &.active {
+        background: #1a56db;
+        color: #fff;
+
+        .dbt-balance-btn-count {
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+        }
+    }
+
+    /* Has Balance — green when active */
+    &--nonzero.active {
+        background: #0d7c3d;
+    }
+
+    /* Zero Balance — red when active */
+    &--zero.active {
+        background: #c0392b;
+    }
+}
+
+.dbt-balance-btn-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #e8edf5;
+    color: #4a5568;
+    transition: background 0.15s, color 0.15s;
+}
+/* ── Paste into Debtors.scss ── */
+
+/* Balance filter bar inside the dropdown */
+.dbt-dropdown-balance-filter {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.dbt-bal-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    border-right: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+
+    &:last-child {
+        border-right: none;
+    }
+
+    &:hover:not(.active) {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+    /* All — blue active */
+    &.active {
+        background: #1d4ed8;
+        color: #fff;
+        font-weight: 600;
+
+        .dbt-bal-count {
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+        }
+    }
+
+    /* Has Balance — green active */
+    &--nonzero.active {
+        background: #15803d;
+    }
+
+    /* Zero Balance — red active */
+    &--zero.active {
+        background: #dc2626;
+    }
+}
+
+.dbt-bal-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: #e2e8f0;
+    color: #475569;
+    transition: background 0.15s, color 0.15s;
+}

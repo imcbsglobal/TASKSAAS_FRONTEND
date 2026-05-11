@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
+import * as XLSX from 'xlsx';
 import "./salesreturn.scss";
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
@@ -194,9 +195,45 @@ const SalesReturn = () => {
     return () => { document.body.style.overflow = ""; };
   }, [modalGroup]);
 
+  // ── ALL users list for the Username dropdown (same as OrderReport) ────────
+  const [usersList, setUsersList] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token =
+          localStorage.getItem('token') || sessionStorage.getItem('token');
+        const response = await fetch('https://tasksas.com/api/users_api/list/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        });
+        const result = await response.json();
+
+        // Support both { users: [...] } and plain array responses
+        const users =
+          result.users && Array.isArray(result.users)
+            ? result.users
+            : Array.isArray(result)
+            ? result
+            : [];
+
+        // No role filter — ALL users
+        setUsersList(users);
+      } catch (err) {
+        console.error('Failed to fetch users list', err);
+      }
+    };
+    fetchUsers();
+  }, []);
+  // ─────────────────────────────────────────────────────────────────────────
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArea, setSelectedArea] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedUsername, setSelectedUsername] = useState("");
   const [areaSearchTerm, setAreaSearchTerm] = useState("");
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
   const [pageSize, setPageSize] = useState(10);
@@ -256,6 +293,10 @@ const SalesReturn = () => {
       result = result.filter((g) =>
         g.orders.some((o) => o.status === selectedStatus)
       );
+    // ── Username filter: exact match against u.id (username string) ──────
+    if (selectedUsername)
+      result = result.filter((g) => g.username === selectedUsername);
+    // ─────────────────────────────────────────────────────────────────────
     return result.sort((a, b) => {
       const latest = (g) =>
         Math.max(
@@ -265,7 +306,7 @@ const SalesReturn = () => {
         );
       return latest(b) - latest(a);
     });
-  }, [grouped, searchTerm, selectedArea, selectedStatus]);
+  }, [grouped, searchTerm, selectedArea, selectedStatus, selectedUsername]);
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -286,6 +327,7 @@ const SalesReturn = () => {
     setSearchTerm("");
     setSelectedArea("");
     setSelectedStatus("");
+    setSelectedUsername("");
     setAreaSearchTerm("");
     setPage(1);
   };
@@ -305,6 +347,62 @@ const SalesReturn = () => {
     return "status-default";
   };
 
+  // ── Excel Export ───────────────────────────────────────────────────────────
+  const handleExport = () => {
+    // Flatten filtered grouped data: customer → orders → items → one row each
+    const exportRows = [];
+    let sno = 1;
+
+    filtered.forEach((group) => {
+      group.orders.forEach((order) => {
+        (order.items || []).forEach((item) => {
+          exportRows.push({
+            'SNO': sno++,
+            'Customer Code': group.customer_code || '',
+            'Customer Name': group.customer_name || '',
+            'Area': group.area || '',
+            'Salesman': group.username || '',
+            'Sales ID': order.order_id || '',
+            'Created Date': order.created_date || '',
+            'Created Time': order.created_time || '',
+            'Product Name': item.product_name || '',
+            'Item Code': item.item_code || '',
+            'Barcode': item.barcode || '',
+            'Price': item.price || 0,
+            'Quantity': item.quantity || 0,
+            'Amount': item.amount || 0,
+            'Status': order.status || '',
+            'Remark': item.remark || '',
+          });
+        });
+      });
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportRows);
+    worksheet['!cols'] = [
+      { wch: 6 },  // SNO
+      { wch: 14 }, // Customer Code
+      { wch: 24 }, // Customer Name
+      { wch: 18 }, // Area
+      { wch: 16 }, // Salesman
+      { wch: 14 }, // Sales ID
+      { wch: 14 }, // Created Date
+      { wch: 12 }, // Created Time
+      { wch: 28 }, // Product Name
+      { wch: 14 }, // Item Code
+      { wch: 14 }, // Barcode
+      { wch: 12 }, // Price
+      { wch: 10 }, // Quantity
+      { wch: 12 }, // Amount
+      { wch: 16 }, // Status
+      { wch: 20 }, // Remark
+    ];
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Return');
+    XLSX.writeFile(workbook, `Sales_Return_Report.xlsx`);
+  };
+  // ──────────────────────────────────────────────────────────────────────────
+
   // Close area dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
@@ -315,7 +413,7 @@ const SalesReturn = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const hasActiveFilters = searchTerm || selectedArea || selectedStatus;
+  const hasActiveFilters = searchTerm || selectedArea || selectedStatus || selectedUsername;
 
   return (
     <div className="sr-page">
@@ -338,13 +436,29 @@ const SalesReturn = () => {
                 <h1 id="sr-page-title" className="sr-title">Sales Return</h1>
                 <p className="sr-subtitle">Manage and view all Sales Return records</p>
               </div>
-              <button
-                className="sr-refresh-btn"
-                onClick={() => { setLoading(true); fetchSalesReturn(); }}
-                disabled={loading}
-              >
-                🔄 Refresh
-              </button>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button
+                  className="sr-refresh-btn"
+                  onClick={() => { setLoading(true); fetchSalesReturn(); }}
+                  disabled={loading}
+                >
+                  🔄 Refresh
+                </button>
+                <button
+                  className="sr-refresh-btn"
+                  onClick={handleExport}
+                  disabled={loading || filtered.length === 0}
+                  style={{
+                    background: '#16a34a',
+                    color: '#fff',
+                    border: 'none',
+                    cursor: filtered.length === 0 ? 'not-allowed' : 'pointer',
+                    opacity: filtered.length === 0 ? 0.5 : 1,
+                  }}
+                >
+                  📥 Export Excel
+                </button>
+              </div>
             </div>
           </header>
 
@@ -472,6 +586,31 @@ const SalesReturn = () => {
                       ))}
                     </select>
                   </div>
+
+                  {/* ── Username Filter — dropdown of ALL users from API ── */}
+                  <div className="sr-filter-item">
+                    <label htmlFor="sr-username-select">Username</label>
+                    <select
+                      id="sr-username-select"
+                      className="sr-select"
+                      value={selectedUsername}
+                      onChange={(e) => {
+                        setSelectedUsername(e.target.value);
+                        setPage(1);
+                      }}
+                    >
+                      <option value="">All Users</option>
+                      {usersList.map((u) => (
+                        // u.id is the username string (e.g. "ARUN")
+                        // which matches group.username directly
+                        <option key={u.id} value={u.id}>
+                          {u.id}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* ─────────────────────────────────────────────────────── */}
+
                 </div>
 
                 <div className="sr-stats">
