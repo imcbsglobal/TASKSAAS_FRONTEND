@@ -2,12 +2,11 @@
 
 .developer-options-container {
     padding: 40px;
-    background-color: #f4f6f9; // Light grey-blue background
+    background-color: #f4f6f9;
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
     color: #1f2937;
 
-    // Layout fixes for Sidebar/Navbar overlap
     margin-left: 200px;
     margin-top: 50px;
 
@@ -17,12 +16,10 @@
 
     @media (max-width: 768px) {
         margin-left: 0;
-        margin-top: 54px; // Mobile navbar height
+        margin-top: 54px;
         padding: 20px;
     }
 
-
-    // Header Section
     .header-section {
         margin-bottom: 30px;
 
@@ -36,7 +33,7 @@
             margin-bottom: 8px;
 
             .header-icon {
-                color: #4f46e5; // Indigo-600
+                color: #4f46e5;
             }
         }
 
@@ -46,7 +43,6 @@
         }
     }
 
-    // Client Info Banner
     .client-info-banner {
         background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
         border-radius: 12px;
@@ -93,14 +89,12 @@
         }
     }
 
-    // Cards Grid
     .actions-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: 24px;
     }
 
-    // Action Card
     .action-card {
         background: white;
         border-radius: 16px;
@@ -127,7 +121,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #3b82f6; // Blue-500
+            color: #3b82f6;
             font-size: 24px;
             margin-bottom: 20px;
         }
@@ -140,7 +134,7 @@
         }
 
         p {
-            color: #6b7280; // Gray-500
+            color: #6b7280;
             font-size: 14px;
             line-height: 1.5;
             margin-bottom: 24px;
@@ -157,8 +151,8 @@
             transition: all 0.2s;
 
             &.danger {
-                background-color: #fee2e2; // Red-100
-                color: #ef4444; // Red-500
+                background-color: #fee2e2;
+                color: #ef4444;
 
                 &:hover {
                     background-color: #ef4444;
@@ -173,7 +167,6 @@
         }
     }
 
-    // Modal
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -198,7 +191,7 @@
             animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
             .modal-header {
-                background: #fef2f2; // Red-50
+                background: #fef2f2;
                 padding: 24px;
                 display: flex;
                 align-items: center;
@@ -206,12 +199,12 @@
                 border-bottom: 1px solid #fee2e2;
 
                 .warning-icon {
-                    color: #dc2626; // Red-600
+                    color: #dc2626;
                     font-size: 24px;
                 }
 
                 h3 {
-                    color: #991b1b; // Red-800
+                    color: #991b1b;
                     font-size: 18px;
                     font-weight: 600;
                     margin: 0;
@@ -426,6 +419,31 @@
 
         &:active {
             transform: translateY(0);
+        }
+    }
+
+    .captcha-back-btn {
+        width: 100%;
+        padding: 11px;
+        background: transparent;
+        color: #6b7280;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: all 0.2s;
+        font-family: 'Inter', sans-serif;
+
+        &:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+            color: #374151;
+        }
+
+        &:active {
+            background: #e5e7eb;
         }
     }
 }

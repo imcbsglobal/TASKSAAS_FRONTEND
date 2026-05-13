@@ -61,6 +61,9 @@ const CaptchaGate = ({ onSuccess }) => {
                 <button className="captcha-btn" onClick={handleVerify}>
                     <FaLock style={{ marginRight: 8 }} /> Verify & Enter
                 </button>
+                <button className="captcha-back-btn" onClick={() => window.history.back()}>
+                    ← Back
+                </button>
             </div>
         </div>
     );
